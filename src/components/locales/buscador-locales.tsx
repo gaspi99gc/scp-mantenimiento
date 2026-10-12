@@ -7,7 +7,7 @@ import { useId, useState } from "react";
 import { IconoCerrar } from "@/components/iconos";
 import { Boton, Planilla, Vacio } from "@/components/ui";
 import { FilaLocal, type DatosFilaLocal } from "./fila-local";
-import { IconoBuscar } from "./iconos";
+import { IconoBuscar } from "@/components/iconos";
 
 export interface GrupoCliente {
   id: string;

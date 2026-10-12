@@ -19,6 +19,7 @@ export interface Registro {
   origen: "calculado" | "certificado";
   motivo?: string;
   oblea?: string;
+  serieNueva?: string; // si se cambió la unidad
 }
 
 type Opcion = { valor: ResultadoEjecucion; texto: string; ayuda: string };
@@ -74,7 +75,7 @@ export function RegistrarEjecucion({
   if (renueva && otraFecha && !fechaTarjeta) faltan.push("la fecha que dice la tarjeta");
   if (renueva && otraFecha && !motivo.trim()) faltan.push("el motivo del cambio de fecha");
   if (!renueva && resultado && !motivo.trim()) faltan.push("por qué no se pudo hacer");
-  if (bloqueo && resultado === "ok") faltan.push("resolver la prueba hidráulica vencida");
+  if (bloqueo && (resultado === "ok" || resultado === "observado")) faltan.push("resolver la prueba hidráulica vencida");
 
   const sobre = elemento ? `${elemento.tipo}, ${elemento.ubicacion.toLowerCase()}` : "Control del local";
 
@@ -88,6 +89,7 @@ export function RegistrarEjecucion({
       origen: otraFecha ? "certificado" : "calculado",
       motivo: motivo.trim() || undefined,
       oblea: Object.entries(evidencia).find(([k]) => esNumero(k))?.[1],
+      serieNueva: resultado === "reemplazo" ? serieNueva.trim() || undefined : undefined,
     });
   }
 
@@ -122,7 +124,7 @@ export function RegistrarEjecucion({
         <legend className="mb-2 font-semibold">¿Cómo quedó?</legend>
         <div className="grid gap-2">
           {OPCIONES.filter((o) => o.valor !== "reemplazo" || elemento?.unidad).map((o) => {
-            const deshabilitada = !!bloqueo && o.valor === "ok";
+            const deshabilitada = !!bloqueo && (o.valor === "ok" || o.valor === "observado");
             const elegida = resultado === o.valor;
             return (
               <label

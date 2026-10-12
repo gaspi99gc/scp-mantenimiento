@@ -4,7 +4,7 @@
 // Los datos llegan ya armados desde el servidor; acá solo se filtra y se agrupa.
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { IconoCerrar } from "@/components/iconos";
+import { IconoBuscar, IconoCerrar } from "@/components/iconos";
 import { Boton, Chip, cx, ESTADO, Planilla, Vacio } from "@/components/ui";
 import type { EstadoControl } from "@/lib/tipos";
 import type { FilaAgenda } from "./consultas";
@@ -28,25 +28,6 @@ const VACIO: Record<FiltroAgenda, string> = {
   sin_datos: "Todos los controles tienen la fecha cargada.",
   al_dia: "No hay controles al día.",
 };
-
-function IconoBuscar({ className }: { className?: string }) {
-  return (
-    <svg
-      width={20}
-      height={20}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.75}
-      strokeLinecap="round"
-      aria-hidden="true"
-      className={className}
-    >
-      <circle cx="10.5" cy="10.5" r="6" />
-      <path d="M15 15l5 5" />
-    </svg>
-  );
-}
 
 /** Deja el filtro en la dirección, para poder volver o compartirla tal cual. */
 function sincronizar(filtro: FiltroAgenda, q: string) {
@@ -123,7 +104,7 @@ export function Agenda({
           <label htmlFor="buscar-agenda" className="sr-only">
             Buscar por local o elemento
           </label>
-          <IconoBuscar className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-cemento" />
+          <IconoBuscar tamano={20} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-cemento" />
           <input
             id="buscar-agenda"
             type="text"

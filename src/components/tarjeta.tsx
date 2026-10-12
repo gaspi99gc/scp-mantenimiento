@@ -44,7 +44,7 @@ export function Tarjeta({
   return (
     <article
       className={cx(
-        "relative flex w-[244px] shrink-0 snap-start flex-col overflow-hidden rounded-[6px] border border-junta bg-papel",
+        "relative flex w-[264px] shrink-0 snap-start flex-col overflow-hidden rounded-[6px] border border-junta bg-papel",
         className,
       )}
       aria-label={`${tipo.nombre}: ${e.nombre}`}

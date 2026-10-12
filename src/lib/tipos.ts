@@ -64,6 +64,8 @@ export interface TipoControl {
   norma?: string;
   verbo: string; // texto del botón: "Registrar recarga"
   hecho: string; // texto de confirmación: "Recarga registrada"
+  satisfaceA?: string[]; // tipos que quedan cumplidos al hacer este (la prueba hidráulica cumple la recarga)
+  dependeDeUnidad?: boolean; // se recalcula al cambiar la unidad física (prueba hidráulica, vida útil)
 }
 
 export interface Control {

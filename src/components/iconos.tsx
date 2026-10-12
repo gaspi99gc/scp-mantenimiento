@@ -154,3 +154,10 @@ export const IconoHerramienta = (p: P) => (
     <path d="M14.5 5.5L17 3l4 4-2.5 2.5" />
   </Base>
 );
+
+export const IconoBuscar = (p: P) => (
+  <Base {...p}>
+    <circle cx="10.5" cy="10.5" r="6" />
+    <path d="M15 15l5 5" />
+  </Base>
+);

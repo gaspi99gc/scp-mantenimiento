@@ -100,3 +100,11 @@ Escala: 13 · 14 · 16 · 19 · 23 · 28 · 34 · 46.
 - El foco de teclado siempre visible: contorno de 2 px `tinta` con 2 px de separación.
 - El estado nunca se comunica solo con color: siempre hay texto.
 - `lang="es-AR"`.
+
+## Notas para programar
+
+- **Ocultar por tamaño:** `className="hidden lg:inline-flex"` no funciona en `Boton` o `BotonLink`, porque gana su `inline-flex`. Para ocultar en el celular usá `max-lg:hidden`, y para ocultar en la computadora, `lg:hidden`.
+- **Botón sobre una franja `bg-tinta`:** variante `sobreOscuro`.
+- **Enlaces externos con aspecto de botón** (`tel:`, `wa.me`, Maps): `<a className={claseBoton("secundario")}>`.
+- **Iconos:** todos en `src/components/iconos.tsx`. Si falta uno, se agrega ahí con el mismo trazo.
+- **Tarjeta de control:** mide 264 px de ancho. En el celular se ve una entera y asoma la siguiente, así se nota que se puede deslizar.

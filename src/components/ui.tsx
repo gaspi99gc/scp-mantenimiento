@@ -42,14 +42,20 @@ export function Cifra({ children, className }: { children: ReactNode; className?
 
 // ——— Botones ———
 
-type Variante = "primario" | "secundario" | "peligro" | "fantasma";
+type Variante = "primario" | "secundario" | "peligro" | "fantasma" | "sobreOscuro";
 
 const VARIANTES: Record<Variante, string> = {
   primario: "bg-tinta text-papel hover:bg-tinta/90 active:bg-tinta/80",
   secundario: "bg-papel text-tinta border border-tinta/25 hover:border-tinta/60 active:bg-yeso",
   peligro: "bg-papel text-rojo border border-rojo/40 hover:border-rojo active:bg-rojo/5",
   fantasma: "text-tinta hover:bg-tinta/5 active:bg-tinta/10",
+  // Para usar sobre una franja `bg-tinta`: botón claro y foco claro
+  sobreOscuro: "bg-papel text-tinta hover:bg-papel/90 active:bg-papel/80 focus-visible:outline-papel",
 };
+
+/** Clases de botón, para enlaces externos (tel:, wa.me) que no pueden ser <Link>. */
+export const claseBoton = (variante: Variante = "primario", ancho?: boolean) =>
+  cx(BASE_BOTON, VARIANTES[variante], ancho && "w-full");
 
 const BASE_BOTON =
   "inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--radius-boton)] px-4 text-base font-semibold " +
@@ -83,7 +89,7 @@ export function Chip({
     <button
       aria-pressed={activo}
       className={cx(
-        "inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-[var(--radius-chip)] border px-3 text-sm font-medium transition-colors",
+        "inline-flex min-h-12 shrink-0 items-center gap-1.5 rounded-[var(--radius-chip)] border px-3 text-sm font-medium transition-colors",
         activo ? "border-tinta bg-tinta text-papel" : "border-junta bg-papel text-tinta hover:border-tinta/50",
         className,
       )}

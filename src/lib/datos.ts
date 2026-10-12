@@ -10,6 +10,8 @@ import type {
 const H = hoy();
 const d = (n: number) => sumarDias(H, n);
 const m = (n: number) => sumarMeses(H, n);
+// Última limpieza de la campana de La Espiga Caballito: visita vi-4, ejecución ej-1 e informe inf-1 son del mismo día.
+const ultimaCampana = sumarMeses(d(21), -3);
 
 export const supervisorActual: Supervisor = { id: "sup-1", nombre: "Matías Ferreyra", telefono: "+54 9 11 5555-0142" };
 export const supervisores: Supervisor[] = [
@@ -62,10 +64,12 @@ export const tiposControl: TipoControl[] = [
     id: "tc-ph", nombre: "Prueba hidráulica", periodoValor: 5, periodoUnidad: "anio", base: "desde_ejecucion", anticipacionDias: 60,
     evidencia: ["Certificado"], ejecutor: "tercero", norma: "IRAM 3517-2",
     verbo: "Registrar prueba hidráulica", hecho: "Prueba hidráulica registrada",
+    satisfaceA: ["tc-recarga"], dependeDeUnidad: true,
   },
   {
     id: "tc-vida", nombre: "Vida útil", periodoValor: 20, periodoUnidad: "anio", base: "desde_ejecucion", anticipacionDias: 90,
     evidencia: [], ejecutor: "SCP", norma: "IRAM 3517-2", verbo: "Registrar reemplazo", hecho: "Reemplazo registrado",
+    dependeDeUnidad: true,
   },
   {
     id: "tc-tanque", nombre: "Limpieza y análisis", periodoValor: 6, periodoUnidad: "mes", base: "desde_ejecucion", anticipacionDias: 20,
@@ -165,7 +169,7 @@ export const controles: Control[] = [
   { id: "co-7", localId: "loc-1", elementoId: "el-3", tipoControlId: "tc-recarga", vencimiento: d(6), ultimaEjecucion: sumarMeses(d(6), -12), ultimoEjecutor: "Recargas Norte" },
   { id: "co-8", localId: "loc-1", elementoId: "el-3", tipoControlId: "tc-ph", ultimoEjecutor: undefined },
   { id: "co-9", localId: "loc-1", elementoId: "el-4", tipoControlId: "tc-tanque", vencimiento: d(51), ultimaEjecucion: sumarMeses(d(51), -6), ultimoEjecutor: "Aguas Claras S.A." },
-  { id: "co-10", localId: "loc-1", elementoId: "el-5", tipoControlId: "tc-campana", vencimiento: d(21), ultimaEjecucion: sumarMeses(d(21), -3), ultimoEjecutor: "SCP" },
+  { id: "co-10", localId: "loc-1", elementoId: "el-5", tipoControlId: "tc-campana", vencimiento: d(21), ultimaEjecucion: ultimaCampana, ultimoEjecutor: "SCP" },
   { id: "co-11", localId: "loc-1", elementoId: "el-6", tipoControlId: "tc-tablero", vencimiento: d(97), ultimaEjecucion: sumarMeses(d(97), -6), ultimoEjecutor: "SCP" },
   { id: "co-12", localId: "loc-1", tipoControlId: "tc-plagas", vencimiento: d(3), ultimaEjecucion: sumarMeses(d(3), -1), ultimoEjecutor: "Fumigadora Sur" },
   { id: "co-13", localId: "loc-1", tipoControlId: "tc-pat", vencimiento: d(140), ultimaEjecucion: sumarMeses(d(140), -12), ultimoEjecutor: "Ing. Carla Domínguez" },
@@ -205,7 +209,7 @@ export const visitas: Visita[] = [
     controlIds: ["co-26"], supervisorId: "sup-1", nota: "Permiso de trabajo pedido al shopping.",
   },
   {
-    id: "vi-4", localId: "loc-1", fecha: d(-88), franja: "8 a 10 h", tipo: "preventiva", estado: "cerrada",
+    id: "vi-4", localId: "loc-1", fecha: ultimaCampana, franja: "8 a 10 h", tipo: "preventiva", estado: "cerrada",
     controlIds: ["co-10"], supervisorId: "sup-1",
   },
   {
@@ -215,7 +219,7 @@ export const visitas: Visita[] = [
 ];
 
 export const ejecuciones: Ejecucion[] = [
-  { id: "ej-1", controlId: "co-10", visitaId: "vi-4", fecha: d(-69), resultado: "ok", vencimientoAnterior: d(-67), vencimientoNuevo: d(21), origen: "calculado", ejecutor: "SCP" },
+  { id: "ej-1", controlId: "co-10", visitaId: "vi-4", fecha: ultimaCampana, resultado: "ok", vencimientoAnterior: sumarDias(ultimaCampana, 2), vencimientoNuevo: d(21), origen: "calculado", ejecutor: "SCP" },
   { id: "ej-2", controlId: "co-1", fecha: sumarMeses(d(6), -12), resultado: "reemplazo", vencimientoAnterior: sumarMeses(d(6), -12), vencimientoNuevo: d(6), origen: "certificado", oblea: "0045821", ejecutor: "Recargas Norte", nota: "Se reemplazó la unidad C-301877 por C-448120." },
   { id: "ej-3", controlId: "co-1", fecha: sumarMeses(d(6), -24), resultado: "ok", vencimientoAnterior: sumarMeses(d(6), -24), vencimientoNuevo: sumarMeses(d(6), -12), origen: "calculado", oblea: "0031177", ejecutor: "Recargas Norte" },
   { id: "ej-4", controlId: "co-2", fecha: "2024-03-10", resultado: "ok", vencimientoNuevo: "2029-03-10", origen: "certificado", ejecutor: "Recargas Norte" },
@@ -223,7 +227,7 @@ export const ejecuciones: Ejecucion[] = [
 
 export const informes: Informe[] = [
   {
-    id: "inf-1", numero: "SCP-2026-000118", visitaId: "vi-4", localId: "loc-1", fecha: d(-88), estado: "publicado",
+    id: "inf-1", numero: "SCP-2026-000118", visitaId: "vi-4", localId: "loc-1", fecha: ultimaCampana, estado: "publicado",
     resumen: "Limpieza completa de la campana de la cuadra y del primer tramo de conducto. Se cambiaron los filtros metálicos.",
     trabajos: ["Limpieza de campana y filtros", "Cambio de 3 filtros metálicos", "Ajuste de la tapa de inspección del conducto"],
     recomendaciones: ["El motor del extractor hace ruido en los rulemanes. Conviene cambiarlos en los próximos 2 meses."],
@@ -235,7 +239,7 @@ export const informes: Informe[] = [
     firma: { nombre: "Sandra Gómez", dni: "28.441.903" },
     subsanaciones: [
       {
-        id: "sub-1", fecha: d(-86), motivo: "Dato mal cargado",
+        id: "sub-1", fecha: sumarDias(ultimaCampana, 2), motivo: "Dato mal cargado",
         texto: "Se cambiaron 3 filtros metálicos, no 2 como decía el resumen original.", autor: "Matías Ferreyra",
       },
     ],
