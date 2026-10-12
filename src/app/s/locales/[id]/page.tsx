@@ -1,0 +1,442 @@
+// Ficha del local: estado, contacto y acceso arriba; controles, elementos, historial, informes y pedidos en pestañas.
+
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { AccionesContacto } from "@/components/locales/contacto";
+import {
+  clienteDeLocal,
+  detallePedido,
+  estadosDeLocal,
+  fraseResumen,
+  haceCuanto,
+  historialDeLocal,
+  peorDe,
+  plazoPedido,
+  proximaVisita,
+  textoVisita,
+} from "@/components/locales/consultas";
+import { ControlesLocal, type ItemControl } from "@/components/locales/controles-local";
+import { LineaDeTiempo } from "@/components/locales/historial";
+import { Pestanas } from "@/components/locales/pestanas";
+import { Regla } from "@/components/locales/regla";
+import {
+  IconoAlerta,
+  IconoCheck,
+  IconoDocumento,
+  IconoHerramienta,
+  IconoReloj,
+  IconoSumar,
+  IconoTelefono,
+} from "@/components/iconos";
+import {
+  BarraAccion,
+  Boton,
+  BotonLink,
+  Cifra,
+  Dato,
+  Encabezado,
+  FechaFila,
+  Fila,
+  MarcaEstado,
+  Planilla,
+  Vacio,
+} from "@/components/ui";
+import {
+  controlesDeElemento,
+  controlesDeLocal,
+  describirControl,
+  elementosDeLocal,
+  estadoControl,
+  informesDeLocal,
+  localDe,
+  ORDEN_ESTADO,
+  pedidosDeLocal,
+  resumenLocal,
+  tipoDe,
+  visitaProgramadaDe,
+  visitaDe,
+} from "@/lib/datos";
+import { fechaConDia, fechaCorta, textoRelativo } from "@/lib/fechas";
+import type { Control, Local } from "@/lib/tipos";
+
+const SECCIONES = ["controles", "elementos", "historial", "informes", "pedidos"] as const;
+type Seccion = (typeof SECCIONES)[number];
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return { title: localDe(id)?.nombre ?? "Local" };
+}
+
+const minuscula = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
+
+/** Peor estado primero; a igual estado, el que vence antes (sin fecha, primero). */
+function compararControles(a: Control, b: Control) {
+  return (
+    ORDEN_ESTADO[estadoControl(a)] - ORDEN_ESTADO[estadoControl(b)] ||
+    (a.vencimiento ?? "").localeCompare(b.vencimiento ?? "")
+  );
+}
+
+export default async function FichaLocal({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [clave: string]: string | string[] | undefined }>;
+}) {
+  const { id } = await params;
+  const { ver } = await searchParams;
+  const local = localDe(id);
+  if (!local) notFound();
+
+  const seccion: Seccion = SECCIONES.includes(ver as Seccion) ? (ver as Seccion) : "controles";
+  const cliente = clienteDeLocal(local);
+  const resumen = resumenLocal(local.id);
+  const estados = estadosDeLocal(local.id);
+  const visita = proximaVisita(local.id);
+  const elementos = elementosDeLocal(local.id);
+  const informes = informesDeLocal(local.id);
+  const pedidos = pedidosDeLocal(local.id);
+  const pedidosAbiertos = pedidos.filter((p) => p.estado !== "resuelto");
+
+  return (
+    <>
+      <Encabezado
+        volver={{ href: "/s/locales", texto: "Locales" }}
+        titulo={local.nombre}
+        bajada={`${cliente.nombre}, ${local.direccion}, ${local.barrio}`}
+        acciones={
+          // En la computadora la acción principal va arriba; en el celular, en la barra de abajo.
+          <BotonLink href={`/s/visitas/nueva?local=${local.id}`} className="max-lg:hidden">
+            Armar visita
+          </BotonLink>
+        }
+      >
+        <div className="mt-5">
+          <Regla estados={estados} etiqueta={fraseResumen(resumen)} className="max-w-md" />
+          <p className="mt-2 font-medium" aria-hidden>
+            {fraseResumen(resumen)}
+          </p>
+          {visita && (
+            <p className="mt-1 text-cemento">
+              <span className="font-medium text-tinta">{textoVisita(visita, true)}</span>
+              {visita.estado === "programada" && `, con ${visita.controlIds.length === 1 ? "1 control" : `${visita.controlIds.length} controles`}`}.
+              {visita.nota && ` ${visita.nota}`}
+            </p>
+          )}
+          {pedidosAbiertos.length > 0 && seccion !== "pedidos" && (
+            <p className="mt-1">
+              <Link
+                href={`/s/locales/${local.id}?ver=pedidos`}
+                scroll={false}
+                className="font-medium underline decoration-junta decoration-2 underline-offset-4 hover:decoration-tinta"
+              >
+                {pedidosAbiertos.length === 1 ? "Hay 1 pedido abierto" : `Hay ${pedidosAbiertos.length} pedidos abiertos`}
+              </Link>
+            </p>
+          )}
+        </div>
+      </Encabezado>
+
+      <AccionesContacto local={local} />
+
+      <Acceso local={local} />
+
+      <Pestanas
+        base={`/s/locales/${local.id}`}
+        activa={seccion}
+        pestanas={[
+          { clave: "controles", texto: "Controles", cantidad: resumen.total },
+          { clave: "elementos", texto: "Elementos", cantidad: elementos.length },
+          { clave: "historial", texto: "Historial" },
+          { clave: "informes", texto: "Informes", cantidad: informes.length },
+          { clave: "pedidos", texto: "Pedidos", cantidad: pedidosAbiertos.length },
+        ]}
+      />
+
+      <div>
+        {seccion === "controles" && <SeccionControles localId={local.id} />}
+        {seccion === "elementos" && <SeccionElementos localId={local.id} />}
+        {seccion === "historial" && <SeccionHistorial localId={local.id} />}
+        {seccion === "informes" && <SeccionInformes localId={local.id} />}
+        {seccion === "pedidos" && <SeccionPedidos localId={local.id} />}
+      </div>
+
+      <div className="lg:hidden">
+        <BarraAccion>
+          <BotonLink href={`/s/visitas/nueva?local=${local.id}`} ancho>
+            Armar visita
+          </BotonLink>
+        </BarraAccion>
+      </div>
+    </>
+  );
+}
+
+// ——— Acceso ———
+
+function Acceso({ local }: { local: Local }) {
+  return (
+    <section className="mb-8" aria-labelledby="acceso">
+      <h2 id="acceso" className="mb-2 px-0.5 text-lg font-[650] leading-tight">
+        Acceso al local
+      </h2>
+      <div className="rounded-[var(--radius-planilla)] border border-junta bg-papel">
+        {local.requisitosAcceso && (
+          <div className="m-2 mb-0 flex gap-3 rounded-[var(--radius-boton)] border-2 border-tinta px-3 py-3">
+            <IconoAlerta className="mt-0.5 shrink-0" tamano={22} />
+            <div className="min-w-0">
+              <p className="text-sm text-cemento">Para entrar hace falta</p>
+              <p className="mt-0.5 font-semibold">{local.requisitosAcceso}.</p>
+              <p className="mt-1 text-sm">Sin esto no te dejan pasar. Pedilo antes de cada visita.</p>
+            </div>
+          </div>
+        )}
+        <div className="divide-y divide-junta px-4 sm:grid sm:grid-cols-2 sm:gap-6 sm:divide-y-0">
+          <Dato rotulo="Horario de acceso" icono={<IconoReloj tamano={22} />}>
+            {local.horarioAcceso}
+          </Dato>
+          <Dato rotulo="Encargado" icono={<IconoTelefono tamano={22} />}>
+            {local.encargado.nombre},{" "}
+            <a
+              href={`tel:+${local.encargado.telefono.replace(/[^\d]/g, "")}`}
+              className="cifra whitespace-nowrap text-lg underline decoration-junta decoration-2 underline-offset-4 hover:decoration-tinta"
+            >
+              {local.encargado.telefono}
+            </a>
+          </Dato>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ——— Secciones ———
+
+function Bajada({ children }: { children: React.ReactNode }) {
+  return <p className="mb-2 px-0.5 text-sm text-cemento">{children}</p>;
+}
+
+function SeccionControles({ localId }: { localId: string }) {
+  const items: ItemControl[] = controlesDeLocal(localId)
+    .sort(compararControles)
+    .map((c) => {
+      const { tipo, elemento } = describirControl(c);
+      const v = visitaProgramadaDe(c.id);
+      return {
+        control: c,
+        tipo,
+        elemento,
+        programada: v && (v.estado === "en_curso" ? "En la visita de hoy" : `Visita el ${fechaConDia(v.fecha)}`),
+      };
+    });
+
+  if (items.length === 0) {
+    return (
+      <Vacio accion={<BotonLink href={`/s/visitas/nueva?local=${localId}`} variante="secundario">Armar visita</BotonLink>}>
+        Todavía no hay controles cargados. Armá una visita de relevamiento para cargar los elementos y sus fechas.
+      </Vacio>
+    );
+  }
+
+  const delLocal = items.filter((i) => !i.elemento).length;
+  return (
+    <section aria-labelledby="titulo-seccion">
+      <h2 id="titulo-seccion" className="sr-only">
+        Controles
+      </h2>
+      <Bajada>
+        Del peor estado al mejor.
+        {delLocal > 0 && ` ${delLocal === 1 ? "El control del local se registra" : "Los controles del local se registran"} desde acá; los demás, en la ficha de cada elemento.`}
+      </Bajada>
+      <ControlesLocal items={items} />
+    </section>
+  );
+}
+
+function SeccionElementos({ localId }: { localId: string }) {
+  const filas = elementosDeLocal(localId)
+    .map((e) => {
+      const cs = controlesDeElemento(e.id).sort(compararControles);
+      return { e, peor: cs[0], estado: peorDe(cs.map(estadoControl)) };
+    })
+    .sort((a, b) => ORDEN_ESTADO[a.estado] - ORDEN_ESTADO[b.estado] || a.e.codigo.localeCompare(b.e.codigo));
+
+  return (
+    <section aria-labelledby="titulo-seccion">
+      <h2 id="titulo-seccion" className="sr-only">
+        Elementos
+      </h2>
+      {filas.length === 0 ? (
+        <div className="mb-7">
+          <Vacio>Este local todavía no tiene elementos cargados. Agregá los matafuegos, el tanque y los equipos que haya.</Vacio>
+        </div>
+      ) : (
+        <>
+          <Bajada>{filas.length === 1 ? "1 elemento" : `${filas.length} elementos`}, del peor estado al mejor.</Bajada>
+          <Planilla>
+            {filas.map(({ e, peor, estado }) => (
+              <Fila
+                key={e.id}
+                href={`/s/elementos/${e.id}`}
+                estado={estado}
+                titulo={e.tipo}
+                detalle={e.ubicacion}
+                derecha={<Cifra className="text-lg leading-none">{e.codigo}</Cifra>}
+                debajo={
+                  <div className="space-y-1 text-sm">
+                    <p className="flex flex-wrap items-center gap-x-2">
+                      <MarcaEstado estado={estado} />
+                      {peor && (
+                        <span className="text-cemento">
+                          {tipoDe(peor).nombre},{" "}
+                          {peor.vencimiento ? minuscula(textoRelativo(peor.vencimiento)) : "falta cargar la fecha"}
+                        </span>
+                      )}
+                    </p>
+                    {e.estado === "en_servicio_externo" && (
+                      <p className="flex items-center gap-1.5 font-medium">
+                        <IconoHerramienta tamano={18} />
+                        En el taller
+                      </p>
+                    )}
+                  </div>
+                }
+              />
+            ))}
+          </Planilla>
+        </>
+      )}
+      {/* TODO(supabase): alta de elemento (tipo, código, ubicación) y su etiqueta QR. */}
+      <Boton variante="secundario" className="mb-7">
+        <IconoSumar tamano={20} />
+        Agregar elemento
+      </Boton>
+    </section>
+  );
+}
+
+function SeccionHistorial({ localId }: { localId: string }) {
+  const dias = historialDeLocal(localId);
+  return (
+    <section aria-labelledby="titulo-seccion">
+      <h2 id="titulo-seccion" className="sr-only">
+        Historial
+      </h2>
+      {dias.length === 0 ? (
+        <div className="mb-7">
+          <Vacio>Todavía no hay visitas ni trabajos registrados en este local. Lo que registres va a quedar acá.</Vacio>
+        </div>
+      ) : (
+        <>
+          <Bajada>Visitas y trabajos, del más nuevo al más viejo.</Bajada>
+          <LineaDeTiempo dias={dias} />
+        </>
+      )}
+    </section>
+  );
+}
+
+function SeccionInformes({ localId }: { localId: string }) {
+  const lista = informesDeLocal(localId).sort((a, b) => (a.fecha < b.fecha ? 1 : -1));
+  return (
+    <section aria-labelledby="titulo-seccion">
+      <h2 id="titulo-seccion" className="sr-only">
+        Informes
+      </h2>
+      {lista.length === 0 ? (
+        <div className="mb-7">
+          <Vacio>Todavía no hay informes. Se arman solos al cerrar una visita.</Vacio>
+        </div>
+      ) : (
+        <>
+          <Bajada>Del más nuevo al más viejo. Un informe publicado no se edita: se subsana.</Bajada>
+          <Planilla>
+            {lista.map((inf) => {
+              const visita = visitaDe(inf.visitaId);
+              const subs = inf.subsanaciones.length;
+              return (
+                <Fila
+                  key={inf.id}
+                  href={`/s/informes/${inf.id}`}
+                  titulo={<Cifra className="text-lg">{inf.numero}</Cifra>}
+                  detalle={
+                    inf.resumen ? (
+                      <span className="line-clamp-2">{inf.resumen}</span>
+                    ) : visita ? (
+                      `Visita ${visita.tipo}, ${visita.estado === "en_curso" ? "en curso" : visita.estado}. Todavía sin resumen.`
+                    ) : (
+                      "Todavía sin resumen."
+                    )
+                  }
+                  derecha={<FechaFila fecha={fechaCorta(inf.fecha)} relativo={haceCuanto(inf.fecha)} />}
+                  debajo={
+                    <p className="text-sm font-medium">
+                      <span className="inline-flex items-center gap-1.5 align-top">
+                        {inf.estado === "publicado" ? <IconoCheck tamano={18} /> : <IconoDocumento tamano={18} />}
+                        {inf.estado === "publicado" ? "Publicado" : "Borrador, falta publicar"}
+                      </span>
+                      {subs > 0 && (
+                        <span className="font-normal text-cemento">
+                          , con {subs === 1 ? "1 subsanación" : `${subs} subsanaciones`}
+                        </span>
+                      )}
+                    </p>
+                  }
+                />
+              );
+            })}
+          </Planilla>
+        </>
+      )}
+    </section>
+  );
+}
+
+function SeccionPedidos({ localId }: { localId: string }) {
+  const lista = pedidosDeLocal(localId).sort((a, b) => (a.slaVence < b.slaVence ? -1 : 1));
+  return (
+    <section aria-labelledby="titulo-seccion">
+      <h2 id="titulo-seccion" className="sr-only">
+        Pedidos
+      </h2>
+      {lista.length === 0 ? (
+        <div className="mb-7">
+          <Vacio
+            accion={
+              // TODO(supabase): carga de pedidos que llegan por WhatsApp o por teléfono.
+              <Boton variante="secundario">
+                <IconoSumar tamano={20} />
+                Cargar pedido
+              </Boton>
+            }
+          >
+            No hay pedidos de este local. Si el encargado te pide algo por WhatsApp o por teléfono, cargalo acá para que
+            corra el plazo del abono.
+          </Vacio>
+        </div>
+      ) : (
+        <>
+          <Bajada>Ordenados por el plazo del abono que les queda.</Bajada>
+          <Planilla>
+            {lista.map((p) => {
+              const plazo = plazoPedido(p);
+              return (
+                <Fila
+                  key={p.id}
+                  estado={plazo.estado}
+                  titulo={p.titulo}
+                  detalle={p.detalle}
+                  derecha={
+                    <FechaFila fecha={plazo.cifra} relativo={plazo.texto} tono={plazo.estado === "vencido" ? "rojo" : "normal"} />
+                  }
+                  debajo={<p className="text-sm">{detallePedido(p)}</p>}
+                />
+              );
+            })}
+          </Planilla>
+        </>
+      )}
+    </section>
+  );
+}
