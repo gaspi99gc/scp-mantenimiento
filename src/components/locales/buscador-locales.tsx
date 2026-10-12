@@ -83,8 +83,8 @@ export function BuscadorLocales({ grupos }: { grupos: GrupoCliente[] }) {
           key={g.id}
           titulo={
             <>
-              {g.nombre}{" "}
-              <span className="ml-1 whitespace-nowrap text-sm font-normal text-cemento">{g.razonSocial}</span>
+              {g.nombre}
+              <span className="mt-0.5 block text-sm font-normal text-cemento">{g.razonSocial}</span>
             </>
           }
           aparte={g.locales.length === 1 ? "1 local" : `${g.locales.length} locales`}

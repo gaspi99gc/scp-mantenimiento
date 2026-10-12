@@ -9,7 +9,32 @@ Plataforma web para SCP, una empresa de mantenimiento integral de comercios y lo
 
 Next.js (App Router, TypeScript) · Supabase (Postgres, Auth, Storage, RLS) · Vercel.
 
+## Cómo verlo
+
+```bash
+npm install
+npm run dev
+```
+
+Abrí <http://localhost:3000/s> (la app del supervisor) o <http://localhost:3000/login>. Por ahora funciona con **datos de ejemplo** (`src/lib/datos.ts`), con fechas relativas a hoy, y nada se guarda: Supabase viene en el paso siguiente.
+
+| Pantalla | Ruta |
+|---|---|
+| Hoy | `/s` |
+| Agenda de vencimientos | `/s/agenda` |
+| Locales y ficha de local | `/s/locales`, `/s/locales/loc-1` |
+| Ficha de elemento (tarjetas de control y QR) | `/s/elementos/el-1`, `/s/elementos/el-9` |
+| Escanear QR | `/s/escanear` |
+| Modo visita | `/s/visitas/vi-1` |
+| Armar visita | `/s/visitas/nueva?local=loc-4` |
+| Informe (publicado con subsanación / borrador) | `/s/informes/inf-1`, `/s/informes/inf-2` |
+| Catálogo de controles | `/s/mas/catalogo` |
+| Muestras del sistema de diseño | `/s/muestras` |
+| Login | `/login` |
+
 ## Documentación
+
+- [`docs/diseno.md`](docs/diseno.md): sistema de diseño (colores, tipografía, la tarjeta de control, reglas de textos).
 
 - [`docs/decisiones.md`](docs/decisiones.md): decisiones tomadas por el dueño (mandan sobre la propuesta).
 - [`docs/autenticacion.md`](docs/autenticacion.md): usuarios, login y permisos con Supabase Auth y RLS.
