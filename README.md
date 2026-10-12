@@ -36,6 +36,7 @@ Abrí <http://localhost:3000/s> (la app del supervisor) o <http://localhost:3000
 
 - [`docs/diseno.md`](docs/diseno.md): sistema de diseño (colores, tipografía, la tarjeta de control, reglas de textos).
 
+- [`docs/proximos-pasos.md`](docs/proximos-pasos.md): lista de tareas de las próximas sesiones.
 - [`docs/decisiones.md`](docs/decisiones.md): decisiones tomadas por el dueño (mandan sobre la propuesta).
 - [`docs/autenticacion.md`](docs/autenticacion.md): usuarios, login y permisos con Supabase Auth y RLS.
 - [`docs/propuesta-final.md`](docs/propuesta-final.md): propuesta consolidada de producto y arquitectura (auditoría de 5 propuestas y diseño final).
@@ -43,4 +44,4 @@ Abrí <http://localhost:3000/s> (la app del supervisor) o <http://localhost:3000
 
 ## Estado
 
-Etapa de diseño. Se construye primero la parte del supervisor y después la del cliente. Próximo paso: diseñar la base de datos (ver §11 de la propuesta).
+Etapa de diseño. Se construye primero la parte del supervisor y después la del cliente. Próximos pasos: subir a Vercel, la base de datos en Supabase, conectar las pantallas y el alta de locales (ver [`docs/proximos-pasos.md`](docs/proximos-pasos.md)).
