@@ -59,9 +59,21 @@ Hoy los formularios andan, pero todo vive en la pantalla y se pierde al recargar
 
 **Listo cuando:** se registra una recarga, se recarga la página y sigue registrada con su vencimiento nuevo.
 
-## 4. Alta de locales y controles de cada local
+## 4. Catálogo de controles editable
 
-Hoy los botones "Agregar local" y "Agregar elemento" no hacen nada, y no hay forma de cargar un local real. Los bloques 3 y 4 se pueden hacer en cualquier orden; si se quiere cargar locales reales cuanto antes, conviene empezar por este.
+Hoy *Más → Catálogo de controles* solo muestra los 11 controles de ejemplo. Tiene que poder editarse y aceptar controles nuevos, porque es la lista de "todo" que usa el alta de locales (bloque 5). Lo edita solo el admin; los supervisores lo ven.
+
+- [ ] **Editar un control:** nombre, a qué se aplica (un tipo de elemento o el local), período (o "manual", cuando la fecha la da el certificado), desde cuándo se cuenta (día trabajado o vencimiento anterior), días de aviso, quién lo hace (SCP o un tercero), norma y evidencia obligatoria.
+- [ ] **Agregar un control nuevo** con esos mismos datos.
+- [ ] **Desactivar en lugar de borrar**, así no se pierde el historial de lo que ya se registró.
+- [ ] **Cambio de período:** no reescribe la historia y rige desde la próxima renovación. Para los vencimientos que ya están abiertos, una acción "Recalcular abiertos" que muestra antes qué fechas cambian (§3.3 de [`propuesta-final.md`](propuesta-final.md)).
+- [ ] **Decidir:** cuando se agrega un control nuevo, si se suma solo a todos los locales que corresponden. Si se suma, en esos locales arranca como "sin datos", que cuenta como rojo, hasta que se cargue la primera fecha.
+
+**Listo cuando:** el admin agrega un control desde el celular y aparece en el alta de un local nuevo.
+
+## 5. Alta de locales y controles de cada local
+
+Hoy los botones "Agregar local" y "Agregar elemento" no hacen nada, y no hay forma de cargar un local real. El bloque 3 y los bloques 4 y 5 se pueden hacer en cualquier orden; si se quiere cargar locales reales cuanto antes, conviene empezar por 4 y 5.
 
 Como casi todos los locales hacen todo, el alta arranca con todo marcado y el supervisor solo destilda las excepciones.
 
@@ -76,4 +88,5 @@ Como casi todos los locales hacen todo, el alta arranca con todo marcado y el su
 
 ## Detalles chicos
 
+- [ ] *Más → Muestras del sistema de diseño* es una página de referencia para quien arma las pantallas, no para el supervisor. Cuando haya usuarios reales, mostrarla solo en desarrollo o al admin.
 - [ ] En pantallas angostas, los códigos largos se cortan en el guion: "SCP-2026-" queda en un renglón y "000118" en el siguiente. Pasa lo mismo con "C-700112" en el modo visita.

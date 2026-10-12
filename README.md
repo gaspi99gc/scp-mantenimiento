@@ -44,4 +44,4 @@ Abrí <http://localhost:3000/s> (la app del supervisor) o <http://localhost:3000
 
 ## Estado
 
-Etapa de diseño. Se construye primero la parte del supervisor y después la del cliente. Próximos pasos: subir a Vercel, la base de datos en Supabase, conectar las pantallas y el alta de locales (ver [`docs/proximos-pasos.md`](docs/proximos-pasos.md)).
+Etapa de diseño. Se construye primero la parte del supervisor y después la del cliente. Próximos pasos: subir a Vercel, la base de datos en Supabase, conectar las pantallas, el catálogo de controles editable y el alta de locales (ver [`docs/proximos-pasos.md`](docs/proximos-pasos.md)).
