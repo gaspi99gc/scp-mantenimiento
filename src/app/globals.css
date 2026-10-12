@@ -1,0 +1,106 @@
+@import "tailwindcss";
+@import "@fontsource-variable/archivo/wdth.css";
+
+/* Tokens del sistema de diseño (ver docs/diseno.md). No usar colores sueltos en las pantallas. */
+@theme {
+  --color-yeso: #eceeea;
+  --color-papel: #fafaf7;
+  --color-tinta: #1d2940;
+  --color-cemento: #5b6472;
+  --color-junta: #cdd2cc;
+  --color-rojo: #c42b2b;
+  --color-amarillo: #f0be2c;
+  --color-verde: #2e7a4e;
+
+  --font-sans: "Archivo Variable", system-ui, sans-serif;
+
+  --text-xs: 13px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 19px;
+  --text-xl: 23px;
+  --text-2xl: 28px;
+  --text-3xl: 34px;
+  --text-4xl: 46px;
+
+  --radius-chip: 6px;
+  --radius-boton: 8px;
+  --radius-planilla: 10px;
+
+  --animate-sellar: sellar 380ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+  --animate-subir: subir 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+
+  @keyframes sellar {
+    0% { transform: scale(1.35); opacity: 0; }
+    60% { transform: scale(0.96); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes subir {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+}
+
+@layer base {
+  html {
+    background: var(--color-yeso);
+    color: var(--color-tinta);
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.45;
+    font-variation-settings: normal;
+    font-stretch: 100%;
+    min-height: 100dvh;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-tinta);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 1ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Fechas y cifras: Archivo condensada, números tabulares. La "voz de sello" de la tarjeta. */
+  .cifra {
+    font-stretch: 66%;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+  }
+  /* Títulos de pantalla */
+  .titulo {
+    font-stretch: 87%;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+  }
+  /* Rayado de "sin datos": zona en obra */
+  .rayado {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      var(--color-cemento) 0 3px,
+      transparent 3px 7px
+    );
+  }
+  .rayado-suave {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      color-mix(in srgb, var(--color-cemento) 28%, transparent) 0 3px,
+      transparent 3px 8px
+    );
+  }
+  /* Agujero perforado: deja ver el yeso de la pared */
+  .perforado {
+    background: var(--color-yeso);
+    box-shadow: inset 0 1px 2px rgb(29 41 64 / 0.35);
+  }
+}

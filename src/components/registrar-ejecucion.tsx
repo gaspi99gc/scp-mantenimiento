@@ -1,0 +1,296 @@
+"use client";
+
+// Formulario para registrar un trabajo sobre un control. Lo usan la ficha del elemento y el modo visita.
+// Es la interacción más importante de la app: tiene que poder hacerse en menos de un minuto, parado en el local.
+// Por ahora no guarda nada: devuelve el resultado con `alRegistrar` y la pantalla que lo usa actualiza su estado.
+
+import { useMemo, useState } from "react";
+import { fechaMedia, hoy, proponerVencimiento, textoPeriodo } from "@/lib/fechas";
+import type { Control, Elemento, FechaISO, ResultadoEjecucion, TipoControl } from "@/lib/tipos";
+import { Hoja } from "./hoja";
+import { IconoAlerta, IconoCamara, IconoCheck, IconoDocumento } from "./iconos";
+import { Boton, Cifra, cx } from "./ui";
+
+export interface Registro {
+  controlId: string;
+  resultado: ResultadoEjecucion;
+  fecha: FechaISO;
+  vencimientoNuevo?: FechaISO; // undefined si no se renovó (no se pudo hacer)
+  origen: "calculado" | "certificado";
+  motivo?: string;
+  oblea?: string;
+}
+
+type Opcion = { valor: ResultadoEjecucion; texto: string; ayuda: string };
+
+const OPCIONES: Opcion[] = [
+  { valor: "ok", texto: "Hecho", ayuda: "Se hizo el trabajo y quedó bien." },
+  { valor: "reemplazo", texto: "Se cambió la unidad", ayuda: "Se puso otro equipo en el mismo lugar." },
+  { valor: "observado", texto: "Hecho, con observaciones", ayuda: "Se hizo, pero hay algo para seguir." },
+  { valor: "no_realizado", texto: "No se pudo hacer", ayuda: "El vencimiento sigue abierto." },
+];
+
+const esFoto = (ev: string) => ev.toLowerCase().startsWith("foto");
+const esArchivo = (ev: string) => /certificado|protocolo|análisis/i.test(ev);
+const esNumero = (ev: string) => /número|oblea|precinto/i.test(ev);
+
+export function RegistrarEjecucion({
+  abierta,
+  alCerrar,
+  alRegistrar,
+  control,
+  tipo,
+  elemento,
+  bloqueo,
+}: {
+  abierta: boolean;
+  alCerrar: () => void;
+  alRegistrar: (r: Registro) => void;
+  control: Control;
+  tipo: TipoControl;
+  elemento?: Elemento;
+  bloqueo?: { texto: string; permiteReemplazo: boolean };
+}) {
+  const [resultado, setResultado] = useState<ResultadoEjecucion | null>(bloqueo ? "reemplazo" : "ok");
+  const [fecha, setFecha] = useState<FechaISO>(hoy());
+  const [evidencia, setEvidencia] = useState<Record<string, string>>({});
+  const [otraFecha, setOtraFecha] = useState(false);
+  const [fechaTarjeta, setFechaTarjeta] = useState<FechaISO>("");
+  const [motivo, setMotivo] = useState("");
+  const [serieNueva, setSerieNueva] = useState("");
+
+  const renueva = resultado === "ok" || resultado === "reemplazo" || resultado === "observado";
+  const propuesta = useMemo(
+    () => proponerVencimiento(tipo, fecha || hoy(), control.vencimiento),
+    [tipo, fecha, control.vencimiento],
+  );
+  const vencimientoFinal = otraFecha && fechaTarjeta ? fechaTarjeta : propuesta;
+
+  const faltan: string[] = [];
+  if (!resultado) faltan.push("elegir el resultado");
+  if (!fecha) faltan.push("la fecha del trabajo");
+  if (renueva) for (const ev of tipo.evidencia) if (!evidencia[ev]) faltan.push(ev.toLowerCase());
+  if (resultado === "reemplazo" && elemento?.unidad && !serieNueva) faltan.push("el número de serie de la unidad nueva");
+  if (renueva && otraFecha && !fechaTarjeta) faltan.push("la fecha que dice la tarjeta");
+  if (renueva && otraFecha && !motivo.trim()) faltan.push("el motivo del cambio de fecha");
+  if (!renueva && resultado && !motivo.trim()) faltan.push("por qué no se pudo hacer");
+  if (bloqueo && resultado === "ok") faltan.push("resolver la prueba hidráulica vencida");
+
+  const sobre = elemento ? `${elemento.tipo}, ${elemento.ubicacion.toLowerCase()}` : "Control del local";
+
+  function confirmar() {
+    if (faltan.length || !resultado) return;
+    alRegistrar({
+      controlId: control.id,
+      resultado,
+      fecha,
+      vencimientoNuevo: renueva ? vencimientoFinal : undefined,
+      origen: otraFecha ? "certificado" : "calculado",
+      motivo: motivo.trim() || undefined,
+      oblea: Object.entries(evidencia).find(([k]) => esNumero(k))?.[1],
+    });
+  }
+
+  return (
+    <Hoja
+      abierta={abierta}
+      alCerrar={alCerrar}
+      titulo={tipo.verbo}
+      pie={
+        <div>
+          <Boton ancho onClick={confirmar} disabled={faltan.length > 0}>
+            {renueva || !resultado ? tipo.verbo : "Registrar que no se pudo hacer"}
+          </Boton>
+          {faltan.length > 0 && (
+            <p className="mt-2 text-sm text-cemento" aria-live="polite">
+              Falta {faltan.join(", ")}.
+            </p>
+          )}
+        </div>
+      }
+    >
+      <p className="-mt-1 mb-4 text-cemento">{sobre}</p>
+
+      {bloqueo && (
+        <div className="mb-5 flex gap-3 rounded-[var(--radius-boton)] border border-rojo/50 bg-rojo/5 p-3 text-sm">
+          <IconoAlerta className="mt-0.5 shrink-0 text-rojo" tamano={20} />
+          <p>{bloqueo.texto}</p>
+        </div>
+      )}
+
+      <fieldset className="mb-5">
+        <legend className="mb-2 font-semibold">¿Cómo quedó?</legend>
+        <div className="grid gap-2">
+          {OPCIONES.filter((o) => o.valor !== "reemplazo" || elemento?.unidad).map((o) => {
+            const deshabilitada = !!bloqueo && o.valor === "ok";
+            const elegida = resultado === o.valor;
+            return (
+              <label
+                key={o.valor}
+                className={cx(
+                  "flex min-h-12 cursor-pointer items-start gap-3 rounded-[var(--radius-boton)] border px-3 py-2.5",
+                  elegida ? "border-tinta bg-tinta/[0.04]" : "border-junta",
+                  deshabilitada && "cursor-not-allowed opacity-45",
+                )}
+              >
+                <input
+                  type="radio"
+                  name="resultado"
+                  className="mt-1 size-4 accent-[var(--color-tinta)]"
+                  checked={elegida}
+                  disabled={deshabilitada}
+                  onChange={() => setResultado(o.valor)}
+                />
+                <span>
+                  <span className="block font-medium">{o.texto}</span>
+                  <span className="block text-sm text-cemento">{o.ayuda}</span>
+                </span>
+              </label>
+            );
+          })}
+        </div>
+      </fieldset>
+
+      <label className="mb-5 block">
+        <span className="mb-1.5 block font-semibold">Fecha del trabajo</span>
+        <input
+          type="date"
+          value={fecha}
+          max={hoy()}
+          onChange={(e) => setFecha(e.target.value)}
+          className="cifra min-h-12 w-full rounded-[var(--radius-boton)] border border-junta bg-papel px-3 text-xl"
+        />
+        <span className="mt-1 block text-sm text-cemento">La del día en que se hizo, aunque lo cargues después.</span>
+      </label>
+
+      {resultado === "reemplazo" && elemento?.unidad && (
+        <label className="mb-5 block">
+          <span className="mb-1.5 block font-semibold">Número de serie de la unidad nueva</span>
+          <input
+            value={serieNueva}
+            onChange={(e) => setSerieNueva(e.target.value)}
+            placeholder={`La anterior era ${elemento.unidad.serie}`}
+            className="cifra min-h-12 w-full rounded-[var(--radius-boton)] border border-junta bg-papel px-3 text-xl"
+          />
+        </label>
+      )}
+
+      {renueva && tipo.evidencia.length > 0 && (
+        <fieldset className="mb-5">
+          <legend className="mb-2 font-semibold">Evidencia</legend>
+          <div className="grid gap-2">
+            {tipo.evidencia.map((ev) =>
+              esNumero(ev) ? (
+                <label key={ev} className="block">
+                  <span className="mb-1 block text-sm text-cemento">{ev}</span>
+                  <input
+                    inputMode="numeric"
+                    value={evidencia[ev] ?? ""}
+                    onChange={(e) => setEvidencia({ ...evidencia, [ev]: e.target.value })}
+                    className="cifra min-h-12 w-full rounded-[var(--radius-boton)] border border-junta bg-papel px-3 text-xl"
+                  />
+                </label>
+              ) : esFoto(ev) || esArchivo(ev) ? (
+                <label
+                  key={ev}
+                  className={cx(
+                    "flex min-h-12 cursor-pointer items-center gap-3 rounded-[var(--radius-boton)] border px-3",
+                    evidencia[ev] ? "border-verde/60" : "border-dashed border-cemento/50",
+                  )}
+                >
+                  <span className={evidencia[ev] ? "text-verde" : "text-cemento"}>
+                    {evidencia[ev] ? <IconoCheck /> : esFoto(ev) ? <IconoCamara /> : <IconoDocumento />}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-medium">{evidencia[ev] ? ev : `Agregar ${ev.toLowerCase()}`}</span>
+                    {evidencia[ev] && <span className="block truncate text-sm text-cemento">{evidencia[ev]}</span>}
+                  </span>
+                  <input
+                    type="file"
+                    accept={esFoto(ev) ? "image/*" : "image/*,application/pdf"}
+                    capture={esFoto(ev) ? "environment" : undefined}
+                    className="sr-only"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) setEvidencia({ ...evidencia, [ev]: f.name });
+                    }}
+                  />
+                </label>
+              ) : (
+                <label key={ev} className="flex min-h-12 cursor-pointer items-center gap-3 rounded-[var(--radius-boton)] border border-junta px-3">
+                  <input
+                    type="checkbox"
+                    className="size-5 accent-[var(--color-tinta)]"
+                    checked={!!evidencia[ev]}
+                    onChange={(e) => setEvidencia({ ...evidencia, [ev]: e.target.checked ? "completo" : "" })}
+                  />
+                  <span className="font-medium">{ev} completo</span>
+                </label>
+              ),
+            )}
+          </div>
+        </fieldset>
+      )}
+
+      {renueva ? (
+        <section className="rounded-[var(--radius-planilla)] border border-junta bg-yeso/60 p-4" aria-live="polite">
+          <div className="text-sm text-cemento">Nuevo vencimiento</div>
+          <Cifra key={vencimientoFinal} className="block text-[40px] leading-none">
+            {fechaMedia(vencimientoFinal)}
+          </Cifra>
+          <p className="mt-1 text-sm text-cemento">
+            {otraFecha && fechaTarjeta
+              ? "Según la tarjeta o el certificado."
+              : `${textoPeriodo(tipo).replace(/^./, (c) => c.toUpperCase())} ${
+                  tipo.base === "desde_ejecucion" ? "desde el día del trabajo" : "desde el vencimiento anterior"
+                }.`}
+          </p>
+
+          <label className="mt-3 flex min-h-11 cursor-pointer items-center gap-3">
+            <input
+              type="checkbox"
+              className="size-5 accent-[var(--color-tinta)]"
+              checked={otraFecha}
+              onChange={(e) => setOtraFecha(e.target.checked)}
+            />
+            <span className="font-medium">La tarjeta dice otra fecha</span>
+          </label>
+          {otraFecha && (
+            <div className="mt-2 grid gap-3">
+              <input
+                type="date"
+                value={fechaTarjeta}
+                onChange={(e) => setFechaTarjeta(e.target.value)}
+                aria-label="Fecha que dice la tarjeta"
+                className="cifra min-h-12 w-full rounded-[var(--radius-boton)] border border-junta bg-papel px-3 text-xl"
+              />
+              <textarea
+                value={motivo}
+                onChange={(e) => setMotivo(e.target.value)}
+                placeholder="Por qué es otra fecha. Ej.: la recargadora fechó la tarjeta el día que retiró el equipo."
+                rows={2}
+                className="w-full rounded-[var(--radius-boton)] border border-junta bg-papel px-3 py-2"
+              />
+            </div>
+          )}
+        </section>
+      ) : (
+        resultado && (
+          <label className="block">
+            <span className="mb-1.5 block font-semibold">¿Por qué no se pudo hacer?</span>
+            <textarea
+              value={motivo}
+              onChange={(e) => setMotivo(e.target.value)}
+              rows={3}
+              placeholder="Ej.: el local estaba cerrado; el equipo no está en el lugar."
+              className="w-full rounded-[var(--radius-boton)] border border-junta bg-papel px-3 py-2"
+            />
+            <span className="mt-1 block text-sm text-cemento">
+              El vencimiento sigue abierto y queda anotado como observación del local.
+            </span>
+          </label>
+        )
+      )}
+    </Hoja>
+  );
+}
