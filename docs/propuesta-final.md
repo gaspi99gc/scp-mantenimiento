@@ -1,7 +1,9 @@
 # SCP Mantenimiento: propuesta final consolidada
 
-> Versión 1.0 · 12/10/2026 · Auditoría y síntesis de 5 propuestas independientes (`docs/propuestas-agentes/agente-1..5.md`).
+> Versión 1.1 · 12/10/2026 · Auditoría y síntesis de 5 propuestas independientes (`docs/propuestas-agentes/agente-1..5.md`).
 > Es una propuesta de producto y arquitectura, todavía sin código. La etapa siguiente es el diseño de la base de datos (§11).
+>
+> **v1.1:** el dueño definió el stack (**Next.js + Vercel + Supabase**) y respondió las preguntas principales. Ver [`decisiones.md`](decisiones.md) y [`autenticacion.md`](autenticacion.md). **Si algo de este documento contradice a `decisiones.md`, manda `decisiones.md`.** La Parte A (auditoría) queda como registro histórico.
 
 ---
 
@@ -108,7 +110,7 @@ Cinco agentes recibieron el mismo brief y trabajaron sin ver lo que hacían los 
 **Reglas de seguridad (no negociables):**
 
 - Una `Membresia(usuario, cliente, rol, locales[] | todos)` define el alcance de cada usuario. Un usuario puede tener membresías en varios clientes (por ejemplo, franquicias).
-- **Toda** consulta del portal pasa por un único filtro `visible_para(usuario)`. Nunca se busca un registro solo por el ID de la URL. Cada endpoint tiene su test automático de que el cliente A no ve los datos del cliente B (IDOR).
+- **Row Level Security (RLS) de Supabase en todas las tablas:** la base solo devuelve las filas que el usuario puede ver, aunque el código pida otra cosa o alguien cambie un ID en la URL. Hay tests automáticos de que el cliente A no ve los datos del cliente B (IDOR). Detalle en `autenticacion.md`.
 - Notas, adjuntos, montos y hallazgos tienen visibilidad `INTERNA` o `CLIENTE`. El cliente nunca ve borradores, notas internas ni costos.
 - Los archivos se guardan en un bucket privado y se sirven con una URL firmada de 10 minutos, después de chequear el permiso.
 - Nada se borra: se **anula con motivo**, y queda auditado quién, qué, cuándo, el valor anterior y el nuevo.
@@ -163,7 +165,8 @@ Cliente 1─N Local 1─N Elemento(puesto) 1─N Unidad (cilindro / equipo físi
 - **Obra:** local, título, alcance, rubro (pintura, durlock, impermeabilización, construcción), estado (`PRESUPUESTADA`, `APROBADA`, `EN_CURSO`, `FINALIZADA`), avance %, dentro del abono o con presupuesto, `garantia_meses`. Tiene varias visitas. Al finalizar crea los **controles de garantía o revisión** correspondientes.
 - **Hallazgo:** algo detectado y no resuelto ("membrana fisurada en el sector norte"), con severidad, recomendación, foto, visibilidad y estado (`ABIERTO`, `PRESUPUESTADO`, `RESUELTO`, `DESCARTADO`). De acá salen los correctivos y los presupuestos.
 - **Pedido:** local, autor, canal (`PORTAL`, `WHATSAPP`, `TELEFONO`, `EMAIL`), rubro, urgencia (`EMERGENCIA`, `URGENTE`, `NORMAL`), estado (`NUEVO`, `ACEPTADO`, `PROGRAMADO`, `ESPERANDO_TERCERO`, `RESUELTO`, `CERRADO`, `RECHAZADO`), `sla_vence_at`, si entra en el abono, visita u obra vinculada.
-- **Informe:** visita u obra, número correlativo (`SCP-2026-000123`), versión, estado (`BORRADOR`, `PUBLICADO`, `REEMPLAZADO`), resumen, recomendaciones, PDF, **hash SHA-256**, QR de verificación, quién lo publicó y cuándo.
+- **Informe:** visita u obra, número correlativo (`SCP-2026-000123`), estado (`BORRADOR`, `PUBLICADO`), resumen, recomendaciones, PDF, **hash SHA-256**, QR de verificación, quién lo publicó y cuándo. Publicado **no se edita nunca**.
+- **Subsanacion:** informe, motivo, texto de la corrección, adjuntos, quién y cuándo. Se agrega debajo del informe original, que queda intacto; el cliente ve las dos cosas.
 - **Adjunto:** clave en el storage, hash, tipo de archivo, fecha de captura, etapa (`ANTES`, `DESPUES`, `CERTIFICADO`, `HALLAZGO`), visibilidad para el cliente.
 - **Notificacion** (outbox): evento, destinatario, canal, plantilla, **clave de idempotencia única**, estado e intentos.
 - **Auditoria:** quién, qué, cuándo, valor anterior, valor nuevo.
@@ -227,7 +230,7 @@ Si la tarjeta de la recargadora dice otra fecha, **vale la tarjeta**, y la difer
 
 | Control | Período | Base | Aviso | Evidencia | Ejecuta |
 |---|---|---|---|---|---|
-| Matafuego: recarga *(o control, [P1])* | 12 m (¿6 m?) | ejecución | 10 d | Foto de la tarjeta y n.º de oblea | Recargadora |
+| Matafuego: recarga (según norma, IRAM 3517-2) | 12 m | **ejecución** (confirmado) | 10 d | Foto de la tarjeta y n.º de oblea | Recargadora |
 | Matafuego: prueba hidráulica (por cilindro) | 5 a | ejecución | 60 d | Certificado | Recargadora |
 | Matafuego: vida útil | 20 a desde fabricación | — | 90 d | — | — |
 | Tanque de agua: limpieza y análisis bacteriológico | 6 m | ejecución | 20 d | Certificado y análisis | Empresa habilitada |
@@ -254,14 +257,14 @@ Si la tarjeta de la recargadora dice otra fecha, **vale la tarjeta**, y la difer
 | 4 | **Cartera / matriz de cumplimiento** | Grilla de locales contra controles, con semáforo | Filtrar y entrar al local |
 | 5 | **Ficha de cliente** | Abono, SLA, contactos, locales con semáforo, usuarios | Editar e invitar usuarios |
 | 6 | **Ficha de local** | Datos, accesos, abono y pestañas: Controles · Elementos · Historial · Informes · Pedidos · Obras · Hallazgos · Notas internas | Todo lo del local |
-| 7 | **Ficha de elemento** | Unidad actual, controles, historial con la foto de cada tarjeta, unidades anteriores | Reemplazar unidad, dar de baja, imprimir QR |
+| 7 | **Ficha de elemento** | Unidad actual y **todos los controles del elemento en la misma pantalla** (por ejemplo, el matafuego muestra recarga, prueba hidráulica y vida útil, cada uno con su semáforo y su próximo vencimiento), historial con la foto de cada tarjeta, unidades anteriores | Registrar cualquiera de sus controles, reemplazar unidad, dar de baja, imprimir QR |
 | 8 | **Modo visita** (la pantalla central) | Check-in → lista de lo planificado con botones grandes → por cada ítem: resultado, foto con la cámara, n.º de tarjeta, **nuevo vencimiento propuesto** (ajustable con motivo) → trabajos libres → horas y materiales → firma del encargado → borrador del informe | Escanear QR, agregar ítems, **marcar visita fallida** con foto y motivo. Borrador automático en el celular y subida de fotos con reintento si no hay señal |
 | 9 | **Revisión del informe** | Vista previa tal como la verá el cliente | Ocultar fotos (personas, cajas), editar el resumen, agregar recomendaciones, **Publicar** |
 | 10 | **Bandeja de pedidos** | Por estado, con colores según el SLA | Clasificar (dentro o fuera del abono), vincular a una visita u obra, responder, **cargar pedidos que llegaron por WhatsApp o teléfono** |
 | 11 | **Obras** | Obras en curso con su avance | Crear, cargar avance y fotos por etapa, finalizar (crea los controles de garantía) |
 | 12 | **Hallazgos** | Abiertos por severidad | Convertir en correctivo o presupuesto |
 | 13 | **Alta y relevamiento** | Plantilla por rubro, **importación desde Excel** con validación por fila y vista previa | Generar las etiquetas QR en PDF |
-| 14 | **Catálogos, proveedores, usuarios, auditoría** (admin) | Mayormente con el Django Admin | — |
+| 14 | **Catálogos, proveedores, usuarios, auditoría** (admin) | Pantallas simples de tabla y formulario | Invitar o desactivar usuarios, editar periodicidades |
 | 15 | **Reportes** (admin) | Cumplimiento a término, SLA, carga por supervisor, trabajos fuera de abono, *(fase 3)* rentabilidad por local | Exportar |
 
 ## 5. Pantallas del cliente
@@ -307,7 +310,7 @@ Si la tarjeta de la recargadora dice otra fecha, **vale la tarjeta**, y la difer
 1. Nace como borrador al cerrar la visita (o al cerrar una etapa de una obra), armado solo con lo cargado: controles y nuevos vencimientos, trabajos, hallazgos, fotos y firma.
 2. El supervisor ajusta los epígrafes, oculta fotos y agrega recomendaciones.
 3. Al **publicar**: número correlativo, PDF generado en segundo plano con las mismas plantillas HTML, hash y QR de verificación. Desde ese momento es **inmutable**.
-4. Una corrección emite la **versión 2** con motivo, y la anterior queda visible como "reemplazada".
+4. Un informe publicado **no se edita**: si hay un error, se **subsana** agregando una subsanación (motivo, corrección y adjuntos) debajo del original. El PDF se regenera con la subsanación al pie, y el original queda tal cual.
 
 ### F4. Alta de un cliente nuevo (el flujo crítico)
 
@@ -350,28 +353,38 @@ Si la tarjeta de la recargadora dice otra fecha, **vale la tarjeta**, y la difer
 
 ## 8. Stack técnico
 
-| Pieza | Elección | Por qué |
+> **Actualizado en v1.1** con el stack que eligió el dueño. El detalle de usuarios y permisos está en [`autenticacion.md`](autenticacion.md).
+
+| Pieza | Elección | Notas |
 |---|---|---|
-| Backend y web | **Django 5.2 LTS**, un monolito | Auth, formularios, migraciones y **Django Admin** (los catálogos y el backoffice salen casi gratis). Soporte LTS hasta 2028. Hay muchos desarrolladores Python en Argentina |
-| Frontend | HTML del servidor + **HTMX** + Tailwind; **PWA** instalable | Sin SPA ni API aparte: una sola base de código. Anda bien en celulares de gama media |
-| Base de datos | **PostgreSQL 16/17** gestionado | Restricciones reales (índices únicos parciales, checks), JSONB para atributos |
-| Tareas en segundo plano | **Procrastinate** (cola sobre Postgres) + cron diario | Sin Redis ni Celery: una pieza menos que operar |
-| Fotos y archivos | **Cloudflare R2**, subida directa con URL prefirmada, bucket privado | Compatible con S3 y **sin costo de descarga**. El servidor no toca los archivos |
-| Compresión | En el celular, antes de subir (~1600 px, ~300 KB) | Ahorra datos móviles y almacenamiento |
-| Sin señal | Borrador de la visita en IndexedDB y cola de subida con reintentos | Lo cargado en un sótano no se pierde. El offline completo, solo si la práctica lo pide |
-| PDF | **WeasyPrint** (HTML a PDF), en segundo plano | Usa las mismas plantillas que la vista web |
-| Email | **Postmark** o Amazon SES, con SPF, DKIM y DMARC | Buena entrega a bajo costo |
-| WhatsApp | MVP: links `wa.me` con el texto armado. Fase 3: **Cloud API de Meta** con plantillas "utility" | Costo cero al principio |
-| Hosting | **Render o Railway** (web, worker, cron, Postgres con backup) | Sin servidor que administrar. Si se busca bajar costos: VPS en Hetzner con Docker Compose y Caddy |
-| Backups | Backup del PaaS + `pg_dump` nocturno cifrado a otro bucket, **restauración de prueba mensual** | Un backup que nunca se restauró no es un backup |
-| Observabilidad | Sentry, logs estructurados, healthcheck, alerta si el job diario no corrió | Enterarse antes que el cliente |
-| Tests | Foco en el **servicio de recálculo** (fin de mes, bisiestos, anulaciones, `satisface_a`) y en el **aislamiento entre clientes** | Son los dos lugares donde un error cuesta caro |
+| Frontend y backend | **Next.js** (App Router, TypeScript) | Server Components para leer, **Server Actions** para escribir. Una sola base de código |
+| Hosting | **Vercel** | Ver la nota sobre el plan Hobby más abajo |
+| Base de datos | **Supabase (PostgreSQL)** | Restricciones reales (índices únicos parciales, checks), JSONB para atributos |
+| Usuarios | **Supabase Auth** con `@supabase/ssr` (sesión en cookies) | Detalle en `autenticacion.md` |
+| Permisos | **Row Level Security (RLS)** en todas las tablas | La base es la última barrera: aunque falle el código, nadie ve datos de otro cliente |
+| Lógica crítica | **Funciones de Postgres** llamadas por RPC: `registrar_ejecucion`, `anular_ejecucion`, `publicar_informe`, `subsanar_informe` | El recálculo de vencimientos corre en **una sola transacción** dentro de la base |
+| Fotos y archivos | **Supabase Storage**, bucket privado, subida directa desde el celular con URL firmada | Compresión en el celular (`browser-image-compression`, ~1600 px, ~250 KB) |
+| Sin señal | Borrador de la visita en IndexedDB y cola de subida con reintentos | Lo cargado en un sótano no se pierde |
+| PDF | **`@react-pdf/renderer`** en una ruta del servidor | No necesita Chrome, así que funciona dentro de las funciones de Vercel |
+| QR | Librería `qrcode` → PDF de etiquetas para imprimir | El QR apunta a `/e/{token}`, que pide login |
+| Tareas diarias | **Vercel Cron** (1 vez por día, alcanza) → ruta protegida con `CRON_SECRET` | Recalcula avisos y manda el resumen de las 07:00. De paso, evita que Supabase Free pause el proyecto por inactividad |
+| Email | **Resend** (tiene plan gratuito) con SPF, DKIM y DMARC en el dominio | Integración directa con Next.js |
+| WhatsApp | Links `wa.me` con el texto armado (costo cero) | Cloud API más adelante, si hace falta |
+| Backups | Supabase Free no trae backups automáticos → **GitHub Action nocturna con `pg_dump`**, cifrado, a un almacenamiento privado; restauración de prueba mensual | Gratis. Con Supabase Pro vienen backups diarios incluidos |
+| Migraciones | **Supabase CLI** (`supabase/migrations/*.sql`) versionadas en el repo | Toda la base se puede recrear desde el repo |
+| Tests | Recálculo de vencimientos (fin de mes, bisiestos, anulación, `satisface_a`) y **políticas RLS** (`supabase test db` con pgTAP) | Los dos lugares donde un error cuesta caro |
+| Monitoreo | Sentry (plan gratuito) + logs de Vercel | Alerta si el cron diario no corrió |
 
-**Descartado:** microservicios, Kubernetes y app nativa (sobran para este volumen); SPA con API aparte (dos bases de código para 1 o 2 personas); Firebase, Supabase o no-code (los permisos entre clientes quedan en reglas difíciles de testear, y hay lock-in).
+### Costos
 
-**Alternativa equivalente:** si el equipo ya domina PHP, **Laravel + Filament** con la misma arquitectura. **[Decisión a tomar antes de arrancar]**
+| Etapa | Vercel | Supabase | Total aprox. |
+|---|---|---|---|
+| **Desarrollo y prueba interna** | Hobby, gratis | Free, gratis | **USD 0** + dominio |
+| **En uso con clientes que pagan** | **Pro, USD 20/mes** (ver nota) | Free mientras alcance; **Pro USD 25/mes** cuando hagan falta más fotos o backups automáticos | **USD 20–45/mes** |
 
-**Costo estimado:** USD 30 a 60 por mes de infraestructura. Fotos: 400 locales × 2 visitas × 15 fotos × 300 KB ≈ 3,6 GB por mes, menos de USD 1 en R2.
+**Nota sobre Vercel Hobby:** las condiciones de Vercel reservan el plan gratuito para uso personal y no comercial, y cuentan como comercial cualquier sitio de un negocio que vende servicios. Para desarrollar y probar está bien; cuando SCP lo use con clientes corresponde el plan Pro. Conviene confirmarlo en la página de Vercel antes de salir.
+
+**Límites de Supabase Free a tener en cuenta:** 500 MB de base de datos (sobra por años para este sistema), alrededor de 1 GB de archivos (unas 4.000 fotos comprimidas: es lo primero que se llena), pausa del proyecto tras 1 semana sin actividad (el cron diario lo evita) y sin backups automáticos (lo cubre la GitHub Action).
 
 ## 9. Riesgos, casos borde y decisiones abiertas
 
@@ -382,7 +395,7 @@ Si la tarjeta de la recargadora dice otra fecha, **vale la tarjeta**, y la difer
 | **Adopción:** si cargar una visita lleva más de 5 minutos, el supervisor vuelve al WhatsApp y al papel, y el sistema muestra datos falsos | QR, "Armar visita", botones grandes, borrador automático. **Piloto con un supervisor real desde la semana 1** |
 | **Datos iniciales malos:** el semáforo muestra verde cuando no lo es | `SIN_DATOS` cuenta como rojo; relevamiento obligatorio con foto de cada tarjeta |
 | **Responsabilidad legal:** el sistema refleja, no certifica | El certificado del tercero siempre adjunto; aviso legal revisado por un abogado |
-| **Fuga de datos entre clientes** | Filtro único + tests por endpoint + URLs firmadas |
+| **Fuga de datos entre clientes** | **RLS de Supabase en todas las tablas** + tests de políticas + URLs firmadas (ver `autenticacion.md`) |
 | **Abono que no cierra:** locales que consumen más de lo que pagan | Horas y materiales por visita desde el MVP; reporte de rentabilidad en fase 3 |
 | **Ley 25.326** (fotos con personas, patentes, cajas, códigos de alarma) | Bucket privado, ocultar fotos, pauta de encuadre, política de retención |
 | **Supervisor único como cuello de botella** | Medir la carga por supervisor; adelantar el rol de técnico si hace falta |
@@ -396,34 +409,37 @@ Si la tarjeta de la recargadora dice otra fecha, **vale la tarjeta**, y la difer
 - Baja de un cliente: vencimientos suspendidos, exportación completa y 90 días de acceso de solo lectura.
 - Fechas: 29/02, días 31, feriados (los avisos salen en días hábiles; los vencimientos se cuentan en días corridos).
 - Doble carga simultánea: bloqueo de la fila más índice único.
-- Corrección de algo publicado: versión nueva, nunca se edita.
+- Corrección de algo publicado: se subsana, nunca se edita.
 
 ### Preguntas para el dueño (ordenadas por impacto en el diseño de la base de datos)
 
 | # | Pregunta | Por qué importa |
 |---|---|---|
-| **P1** | Los **6 meses del matafuego**, ¿son la recarga o un control propio de SCP? ¿Registran prueba hidráulica y vida útil? | Define el catálogo base |
-| **P2** | ¿El nuevo vencimiento se cuenta **desde el día del trabajo o desde el vencimiento anterior**? ¿Igual para todo? | Define el valor por defecto de `base` |
-| **P3** | ¿El cliente **ve los vencidos** tal cual? (Recomiendo que sí, como "vencido – en gestión": la transparencia vende el abono) | Visibilidad y textos del portal |
+| ~~P1~~ | ✅ **Resuelta:** las vigencias son las de la norma de cada control (matafuego: recarga anual, prueba hidráulica cada 5 años, vida útil 20 años) | — |
+| ~~P2~~ | ✅ **Resuelta:** el matafuego se cuenta **desde el día trabajado**. Queda configurable por tipo de control para los estacionales | — |
+| ~~P3~~ | ✅ **Resuelta:** el cliente ve **todo, siempre**, incluso lo vencido | — |
 | P4 | ¿Qué hace SCP y qué terceriza? ¿Quién firma cada certificado? | Proveedores y evidencia |
 | P5 | ¿Qué **incluye el abono** y qué es extra? ¿Las obras entran? ¿El cliente ve montos? | Abono, obras, presupuestos |
 | P6 | ¿Qué **SLA** se compromete? ¿Hay guardia 24 h? | Pedidos y alertas |
-| P7 | ¿Cargan también los **técnicos**, o solo los supervisores? | Roles del MVP |
+| ~~P7~~ | ✅ **Resuelta:** por ahora **solo el supervisor**; la vista del cliente viene después | — |
 | P8 | ¿La **firma del encargado** es obligatoria en cada visita? | Cierre de visita |
 | P9 | ¿Cuántos clientes, locales y supervisores hay hoy y a 12 meses? ¿En qué jurisdicciones trabajan? | Dimensionamiento y normativa |
 | P10 | ¿Dónde están hoy los datos (Excel, Drive, papel)? ¿Hay un formato de informe actual para replicar? | Migración y plantilla del PDF |
 | P11 | ¿El canal real con los clientes es WhatsApp? ¿Desde qué número? | Notificaciones |
 | P12 | ¿Alguna cadena exige cargar datos en su propio portal de proveedores? | Integraciones futuras |
-| P13 | ¿El equipo de desarrollo sabe Python o PHP? | Django o Laravel |
+| ~~P13~~ | ✅ **Resuelta:** Next.js + Vercel + Supabase | — |
 
 ## 10. Roadmap
 
-| Fase | Duración | Alcance | Criterio de éxito |
-|---|---|---|---|
-| **0. Relevamiento** | 1–2 sem | Respuestas P1–P13, catálogo validado, plantilla Excel, maqueta navegable del **Modo visita**, 2 clientes piloto | Catálogo firmado por el dueño |
-| **1. MVP** | 6–8 sem (1–2 devs) | Roles y aislamiento entre clientes; clientes, locales, abonos; elementos y unidades con plantillas por rubro e **importación Excel**; **QR**; catálogo; **motor de vencimientos** (recálculo, ajuste, anulación, `satisface_a`); tablero "Hoy / Semana", agenda y "Armar visita"; **Modo visita** con fotos, evidencia obligatoria, horas y materiales, visita fallida, borrador sin señal; **informe inmutable con PDF**; portal del cliente (inicio, mi local, informes); **pedido básico**; emails clave + links `wa.me`; backups y monitoreo | Los pilotos trabajan **un mes solo con el sistema** y **no se pasa ningún vencimiento** |
-| **2. Servicio** | 4–6 sem | SLA con escalamiento; firma de conformidad; hallazgos → correctivos; **carpeta de inspección**; **resumen mensual**; calendario y requisitos de acceso; **obras** con avance y garantías; proveedores con habilitación; push de la PWA | Ningún cliente se va porque "no ve lo que hacen" |
-| **3. Escala** | continuo | Presupuestos fuera del abono con aprobación del cliente; WhatsApp Cloud API; rol de técnico; **rentabilidad por local**; reportes de SLA y cumplimiento para renovar contratos; QR público opcional; offline completo si hace falta | Se suma un supervisor sin cambiar el proceso |
+> **Actualizado en v1.1:** primero todo lo del supervisor; la vista del cliente después.
+
+| Fase | Alcance | Criterio de éxito |
+|---|---|---|
+| **0. Base** | Proyecto Next.js + Supabase, migraciones, **usuarios y permisos (RLS)**, login del supervisor, catálogo inicial según norma, plantilla Excel | El supervisor entra con su usuario y no puede leer nada sin sesión |
+| **1. Supervisor** | Clientes, locales y abonos; elementos y unidades con plantillas por rubro e **importación Excel**; **QR**; **motor de vencimientos** (recálculo, ajuste, anulación, `satisface_a`); **ficha de elemento con todos sus controles**; tablero "Hoy / Semana", agenda y "Armar visita"; **Modo visita** con fotos, evidencia obligatoria, horas y materiales, visita fallida y borrador sin señal; **informe inmutable con PDF y subsanaciones**; resumen diario por email | SCP trabaja **un mes solo con el sistema** con 2 clientes piloto y **no se pasa ningún vencimiento** |
+| **2. Cliente** | Login del cliente (link mágico), inicio con semáforo, mi local, **todo visible, incluso lo vencido**, informes, **carpeta de inspección con QR**, **resumen mensual**, pedidos básicos | Los clientes piloto dejan de pedir informes por WhatsApp |
+| **3. Servicio** | SLA con escalamiento, firma de conformidad, hallazgos → correctivos, obras con avance y garantías, proveedores con habilitación, calendario y requisitos de acceso | Ningún cliente se va porque "no ve lo que hacen" |
+| **4. Escala** | Presupuestos fuera del abono, WhatsApp Cloud API, rol de técnico, rentabilidad por local, reportes para renovar contratos | Se suma un supervisor sin cambiar el proceso |
 
 **Métricas de éxito permanentes:**
 
@@ -450,7 +466,8 @@ Con las respuestas a **P1, P2, P3, P5 y P7** se puede cerrar el esquema. Este es
 | `control` | Check: **exactamente uno** de `elemento_id` / `local_id`; único (`elemento_id`, `tipo_control_id`) y único (`local_id`, `tipo_control_id`) |
 | `vencimiento` | **Índice único parcial (`control_id`) `WHERE estado = 'ABIERTO'`**; índice por (`estado`, `fecha`) para el job diario |
 | `ejecucion` | Sin `UPDATE` salvo los campos de anulación; FK al vencimiento que cierra |
-| `informe` | Único (`numero`, `version`); `sha256` obligatorio si está publicado |
+| `informe` | `numero` único; `sha256` obligatorio si está publicado; trigger que bloquea `UPDATE` una vez publicado |
+| `subsanacion` | FK a `informe` publicado; solo `INSERT` |
 | `notificacion` | `clave_idempotencia` única |
 | `adjunto` | Check: exactamente un dueño (visita, ejecución, pedido, obra, hallazgo o elemento) |
 | Todas | `created_at` y `created_by`; ningún `DELETE` físico en datos de negocio (se anula con motivo) |
