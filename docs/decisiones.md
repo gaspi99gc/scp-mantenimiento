@@ -14,7 +14,13 @@
 | D8 | 12/10/2026 | **Periodicidades** | Son **las de la norma** de cada control. El catálogo guarda la referencia normativa |
 | D9 | 12/10/2026 | **Transparencia** | El cliente ve **todo, siempre**, incluso lo vencido. El objetivo es que no pase: para eso pagan el abono |
 | D10 | 12/10/2026 | **Orden de construcción** | Primero **solo el supervisor**. La vista del cliente viene después |
-| D11 | 12/10/2026 | **Resto de la propuesta** | Aprobado como estaba: puesto vs. unidad, "Armar visita" / "ya que vas", visita fallida, evidencia obligatoria, obras con garantía, estacionales, horas y materiales por visita |
+| D11 | 12/10/2026 | **Resto de la propuesta** | Aprobado como estaba: puesto vs. unidad, evidencia obligatoria, obras con garantía, estacionales. *"Armar visita", "ya que vas", visita fallida y horas por visita quedan reemplazados por D12* |
+| D12 | 20/10/2026 | **Sin visitas** | El supervisor va, hace el trabajo y lo registra suelto en la ficha del equipo o del local. No se planifican ni se inician visitas en la app |
+| D13 | 20/10/2026 | **Informe por período** | El informe junta lo registrado en un local entre dos fechas que elige el supervisor. Puede haber varios informes que cubran los mismos días |
+| D14 | 20/10/2026 | **Publicar** | Congela el informe, le asigna número y genera un PDF que el supervisor descarga o comparte. Cuando exista la app del cliente, también aparece ahí |
+| D15 | 20/10/2026 | **Controles por local** | Todos los locales llevan todo: se crean todos los controles que aplican y lo que no aplica se marca "no aplica" con motivo |
+| D16 | 20/10/2026 | **Usuarios** | Por ahora solo SCP (admin y supervisores), creados por el admin. Ingreso rápido de admin solo en desarrollo. La base queda lista para usuarios de cliente |
+| D17 | 20/10/2026 | **Alcance de la base** | Primera versión con solo lo que usan las pantallas. Ver [`superpowers/specs/2026-10-20-base-datos-y-usuarios-design.md`](superpowers/specs/2026-10-20-base-datos-y-usuarios-design.md) |
 
 ## Interpretaciones a confirmar
 
