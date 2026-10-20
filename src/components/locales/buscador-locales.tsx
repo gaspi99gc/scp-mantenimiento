@@ -60,7 +60,7 @@ export function BuscadorLocales({ grupos }: { grupos: GrupoCliente[] }) {
           onChange={(e) => setBusqueda(e.target.value)}
           placeholder="Buscar por local, cliente o barrio"
           autoComplete="off"
-          className="min-h-12 w-full appearance-none rounded-[var(--radius-boton)] border border-junta bg-papel pl-11 pr-12 placeholder:text-cemento focus:border-tinta [&::-webkit-search-cancel-button]:hidden"
+          className="min-h-12 w-full appearance-none rounded-[var(--radius-boton)] border border-borde bg-papel pl-11 pr-12 placeholder:text-cemento focus:border-tinta [&::-webkit-search-cancel-button]:hidden"
         />
         {busqueda && (
           <button

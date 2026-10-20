@@ -8,7 +8,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { IconoCerrar, IconoCheck, IconoHerramienta } from "@/components/iconos";
 import { RegistrarEjecucion, type Registro } from "@/components/registrar-ejecucion";
 import { Colgadero, Tarjeta } from "@/components/tarjeta";
-import { Boton, Cifra, cx, Fila, Planilla, Vacio } from "@/components/ui";
+import { Boton, Cifra, CLASE_PLANILLA, cx, Fila, Planilla, Vacio } from "@/components/ui";
 import { estadoDe, fechaMedia, hoy, proponerVencimiento } from "@/lib/fechas";
 import type { Elemento, FechaISO, Unidad } from "@/lib/tipos";
 import type { ControlDeFicha, ItemHistorial } from "./consultas";
@@ -211,7 +211,7 @@ export function FichaElemento({
   return (
     <>
       {enTaller && (
-        <div className="mb-6 flex gap-3 rounded-[var(--radius-planilla)] border border-tinta/30 bg-papel p-4">
+        <div className="mb-6 flex gap-3 rounded-[var(--radius-planilla)] border border-tinta bg-papel p-4">
           <IconoHerramienta className="mt-0.5 shrink-0" tamano={22} />
           <p>
             <span className="font-semibold">
@@ -255,12 +255,12 @@ export function FichaElemento({
       <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_288px] lg:grid-rows-[auto_1fr] lg:items-start lg:gap-x-10">
         {tieneUnidad && (
           <section aria-labelledby="titulo-unidad" className="mb-7 lg:col-start-2 lg:row-start-1">
-            <h2 id="titulo-unidad" className="mb-2 px-0.5 text-lg font-[650] leading-tight">
+            <h2 id="titulo-unidad" className="rotulo mb-2 text-xl">
               Unidad instalada
             </h2>
 
             {unidad ? (
-              <div className="overflow-hidden rounded-[var(--radius-planilla)] border border-junta bg-papel">
+              <div className="overflow-hidden rounded-[var(--radius-planilla)] border border-junta border-t-2 border-t-tinta bg-papel">
                 <div className="px-4 py-3">
                   <div className="text-sm text-cemento">Número de serie</div>
                   <Cifra className="mt-0.5 block text-[34px] leading-none">{unidad.serie}</Cifra>
@@ -290,7 +290,7 @@ export function FichaElemento({
               </div>
             ) : (
               unidadPendienteDesde && (
-                <div className="overflow-hidden rounded-[var(--radius-planilla)] border border-junta bg-papel">
+                <div className="overflow-hidden rounded-[var(--radius-planilla)] border border-junta border-t-2 border-t-tinta bg-papel">
                   <div aria-hidden className="rayado-suave h-3 border-b border-junta" />
                   <div className="p-4">
                     <p className="font-semibold">Falta cargar la unidad nueva</p>
@@ -309,7 +309,7 @@ export function FichaElemento({
             {anteriores.length > 0 && (
               <>
                 <h3 className="mb-2 mt-5 px-0.5 font-semibold">Unidades anteriores</h3>
-                <ul className="divide-y divide-junta overflow-hidden rounded-[var(--radius-planilla)] border border-junta bg-papel">
+                <ul className={CLASE_PLANILLA}>
                   {anteriores.map((u) => (
                     <Fila
                       key={`${u.serie}-${u.retiradaEn}`}
@@ -338,7 +338,7 @@ export function FichaElemento({
         <div className="lg:col-start-1 lg:row-span-2 lg:row-start-1">
           {historial.length === 0 ? (
             <section className="mb-7">
-              <h2 className="mb-2 px-0.5 text-lg font-[650] leading-tight">Historial</h2>
+              <h2 className="rotulo mb-2 text-xl">Historial</h2>
               <Vacio>Todavía no hay trabajos cargados para este equipo. Lo que registres en las tarjetas va a quedar acá.</Vacio>
             </section>
           ) : (
@@ -431,7 +431,7 @@ export function FichaElemento({
             </div>
             <button
               onClick={() => setAviso(null)}
-              className="inline-flex size-11 shrink-0 items-center justify-center rounded-md hover:bg-papel/15"
+              className="inline-flex size-11 shrink-0 items-center justify-center rounded-[2px] hover:bg-papel/15"
               aria-label="Cerrar aviso"
             >
               <IconoCerrar tamano={20} />

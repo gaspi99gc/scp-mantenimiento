@@ -279,7 +279,7 @@ function Revision({
   return (
     <>
       <section className="mb-7">
-        <label htmlFor="resumen" className="mb-2 block px-0.5 text-lg font-[650] leading-tight">
+        <label htmlFor="resumen" className="mb-2 block rotulo text-xl">
           Resumen
         </label>
         <textarea
@@ -288,7 +288,7 @@ function Revision({
           onChange={(e) => setResumen(e.target.value)}
           rows={7}
           aria-describedby="ayuda-resumen"
-          className="w-full rounded-[var(--radius-planilla)] border border-junta bg-papel px-4 py-3 leading-[1.45]"
+          className="w-full rounded-[var(--radius-planilla)] border border-borde bg-papel px-4 py-3 leading-[1.45]"
         />
         <p id="ayuda-resumen" className="mt-1.5 px-0.5 text-sm text-cemento">
           Lo armamos con lo que cargaste en la visita. Corregilo o completalo antes de publicar.
@@ -352,7 +352,7 @@ function Revision({
         </Planilla>
       ) : (
         <section className="mb-7">
-          <h2 className="mb-2 px-0.5 text-lg font-[650]">Trabajos extra</h2>
+          <h2 className="rotulo mb-2 text-xl">Trabajos extra</h2>
           <Vacio>No cargaste trabajos fuera de los controles. Si hiciste algo más, sumalo desde la visita.</Vacio>
         </section>
       )}
@@ -387,7 +387,7 @@ function Revision({
                   ? "Otra recomendación. Ej.: Conviene cambiar el burlete de la cámara de frío."
                   : "Si viste algo para arreglar, anotalo acá. Ej.: Conviene cambiar el burlete de la cámara de frío."
               }
-              className="min-h-12 w-full flex-1 rounded-[var(--radius-boton)] border border-junta bg-papel px-3 py-2.5 leading-snug"
+              className="min-h-12 w-full flex-1 rounded-[var(--radius-boton)] border border-borde bg-papel px-3 py-2.5 leading-snug"
             />
             <Boton type="submit" variante="secundario" disabled={!nuevaRec.trim()} className="shrink-0">
               Agregar recomendación
@@ -454,13 +454,13 @@ function FilaFoto({
           value={foto.epigrafe}
           onChange={(e) => alCambiar({ epigrafe: e.target.value })}
           rows={2}
-          className="w-full resize-none rounded-[var(--radius-boton)] border border-junta bg-papel px-3 py-2 leading-snug"
+          className="w-full resize-none rounded-[var(--radius-boton)] border border-borde bg-papel px-3 py-2 leading-snug"
         />
       </label>
       <div className="col-span-2 flex flex-col gap-3 sm:col-span-1 sm:col-start-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-6 sm:gap-y-2">
         <fieldset>
           <legend className="sr-only">Etapa de la foto {numero}</legend>
-          <div className="inline-flex rounded-[var(--radius-boton)] border border-junta bg-papel p-0.5">
+          <div className="inline-flex rounded-[var(--radius-boton)] border border-borde bg-papel p-0.5">
             {ETAPAS.map((e) => {
               const elegida = foto.etapa === e.valor;
               return (

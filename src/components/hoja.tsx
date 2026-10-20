@@ -36,21 +36,21 @@ export function Hoja({
       onClick={(e) => {
         if (e.target === ref.current) alCerrar();
       }}
-      className="m-0 mt-auto max-h-[92dvh] w-full max-w-none overflow-hidden rounded-t-[14px] bg-papel p-0 text-tinta shadow-[0_-8px_30px_rgb(29_41_64/0.18)] backdrop:bg-tinta/40 open:animate-subir lg:m-auto lg:max-w-[560px] lg:rounded-[14px]"
+      className="m-0 mt-auto max-h-[92dvh] w-full max-w-none overflow-hidden rounded-t-[6px] bg-papel p-0 text-tinta shadow-[0_-12px_40px_rgb(22_24_27/0.3)] backdrop:bg-tinta/55 open:animate-subir lg:m-auto lg:max-w-[560px] lg:rounded-[4px]"
     >
       <div className="flex max-h-[92dvh] flex-col">
-        <div className="flex items-start justify-between gap-3 border-b border-junta px-4 pb-3 pt-4">
-          <h2 className="titulo text-xl">{titulo}</h2>
+        <div className="flex items-center justify-between gap-3 border-b-2 border-tinta py-2 pl-4 pr-2">
+          <h2 className="titulo py-1.5 text-[24px]">{titulo}</h2>
           <button
             onClick={alCerrar}
-            className="-mr-2 -mt-1 inline-flex size-11 shrink-0 items-center justify-center rounded-md text-cemento hover:bg-yeso hover:text-tinta"
+            className="inline-flex size-12 shrink-0 items-center justify-center rounded-[2px] text-cemento hover:bg-yeso hover:text-tinta"
             aria-label="Cerrar"
           >
             <IconoCerrar />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto px-4 py-4">{children}</div>
-        {pie && <div className="border-t border-junta px-4 py-3 pb-[calc(12px+env(safe-area-inset-bottom))]">{pie}</div>}
+        <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4">{children}</div>
+        {pie && <div className="border-t border-junta bg-papel px-4 py-3 pb-[calc(12px+env(safe-area-inset-bottom))]">{pie}</div>}
       </div>
     </dialog>
   );

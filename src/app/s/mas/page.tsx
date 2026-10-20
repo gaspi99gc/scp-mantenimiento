@@ -34,7 +34,7 @@ export default function Mas() {
           {iniciales(usuario.nombre)}
         </span>
         <div className="min-w-0">
-          <p className="text-lg font-[650] leading-tight">{usuario.nombre}</p>
+          <p className="rotulo text-xl">{usuario.nombre}</p>
           <p className="mt-0.5">{usuario.rol}</p>
           <p className="text-sm text-cemento">Ve y carga todos los locales.</p>
         </div>

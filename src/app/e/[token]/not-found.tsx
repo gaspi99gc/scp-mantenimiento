@@ -6,7 +6,7 @@ import { BotonLink, Cifra } from "@/components/ui";
 export default function CodigoDesconocido() {
   return (
     <main className="mx-auto max-w-[640px] px-4 pb-16 pt-8 lg:pt-16">
-      <span className="titulo block text-2xl [font-stretch:62%]">SCP</span>
+      <span className="titulo block text-2xl font-cond">SCP</span>
       <h1 className="titulo mt-8 text-2xl text-balance lg:text-3xl">Este código no corresponde a ningún equipo cargado</h1>
       <p className="mt-3 max-w-prose">
         Puede ser una etiqueta vieja, de un equipo que se dio de baja, o un QR que no es de SCP.

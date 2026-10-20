@@ -16,7 +16,7 @@ const fechaCompleta = (iso: FechaISO) => `${fechaLarga(iso)} de ${iso.slice(0, 4
 function Seccion({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
     <section className="mt-9">
-      <h2 className="text-lg font-[650] leading-tight">{titulo}</h2>
+      <h2 className="rotulo text-xl">{titulo}</h2>
       <div className="mt-3">{children}</div>
     </section>
   );
@@ -60,11 +60,11 @@ export function DocumentoInforme({
       {/* Membrete */}
       <header className="flex items-end justify-between gap-4 border-b-2 border-tinta pb-4 sm:gap-8">
         <div>
-          <div className="titulo text-4xl leading-[0.9] [font-stretch:62%]">SCP</div>
+          <div className="titulo text-4xl leading-[0.9] font-cond">SCP</div>
           <div className="mt-1 text-sm text-cemento">Mantenimiento integral</div>
         </div>
         <div className="text-right">
-          <div className="font-[650]">Informe de visita</div>
+          <div className="font-semibold">Informe de visita</div>
           {publicado ? (
             <Cifra className="block text-xl leading-tight">{d.numero}</Cifra>
           ) : (
@@ -219,7 +219,7 @@ export function DocumentoInforme({
             <>
               <TrazoFirma className="mt-1 h-14 w-44 text-tinta" />
               <div className="max-w-64 border-t border-tinta pt-1.5">
-                <div className="font-[650]">{d.firma.nombre}</div>
+                <div className="font-semibold">{d.firma.nombre}</div>
                 <div className="text-sm text-cemento">
                   DNI <Cifra className="text-base text-tinta">{d.firma.dni}</Cifra>
                 </div>
@@ -239,7 +239,7 @@ export function DocumentoInforme({
           <div className="min-w-0 text-sm">
             {publicado ? (
               <>
-                <p className="font-[650]">Verificá este informe en</p>
+                <p className="font-semibold">Verificá este informe en</p>
                 <p className="break-all font-medium">{d.verificacion.url}</p>
                 <p className="mt-2 text-cemento">Huella SHA-256</p>
                 <Cifra className="text-base">
@@ -256,7 +256,7 @@ export function DocumentoInforme({
       {/* Subsanaciones: agregados posteriores, numerados en orden */}
       {d.subsanaciones.length > 0 && (
         <section aria-labelledby="titulo-subsanaciones" className="mt-10 border-t-2 border-tinta pt-6">
-          <h2 id="titulo-subsanaciones" className="text-lg font-[650] leading-tight">
+          <h2 id="titulo-subsanaciones" className="rotulo text-xl">
             Subsanaciones
           </h2>
           <p className="mt-1 max-w-[62ch] text-sm text-cemento">

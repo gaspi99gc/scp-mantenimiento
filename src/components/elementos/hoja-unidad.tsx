@@ -17,7 +17,7 @@ export interface DatosUnidad {
   ultimaPrueba: FechaISO;
 }
 
-const CAMPO = "min-h-12 w-full rounded-[var(--radius-boton)] border border-junta bg-papel px-3";
+const CAMPO = "min-h-12 w-full rounded-[var(--radius-boton)] border border-borde bg-papel px-3";
 
 export function HojaUnidad({
   abierta,
@@ -83,7 +83,7 @@ export function HojaUnidad({
       </p>
 
       <label className="mb-5 block">
-        <span className="mb-1.5 block font-semibold">Número de serie</span>
+        <span className="rotulo mb-1.5 block text-lg">Número de serie</span>
         <input
           value={serie}
           onChange={(e) => setSerie(e.target.value)}
@@ -95,7 +95,7 @@ export function HojaUnidad({
       </label>
 
       <label className="mb-5 block">
-        <span className="mb-1.5 block font-semibold">Fecha de fabricación</span>
+        <span className="rotulo mb-1.5 block text-lg">Fecha de fabricación</span>
         <input
           type="date"
           value={fabricacion}
@@ -106,7 +106,7 @@ export function HojaUnidad({
       </label>
 
       <label className="mb-5 block">
-        <span className="mb-1.5 block font-semibold">Fecha de la última prueba hidráulica</span>
+        <span className="rotulo mb-1.5 block text-lg">Fecha de la última prueba hidráulica</span>
         <input
           type="date"
           value={ultimaPrueba}

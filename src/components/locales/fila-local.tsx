@@ -27,10 +27,11 @@ export function FilaLocal({ local }: { local: DatosFilaLocal }) {
     <li>
       <Link
         href={`/s/locales/${local.id}`}
-        className="block transition-colors hover:bg-yeso/60 active:bg-yeso"
+        className="block transition-colors hover:bg-yeso/45 active:bg-yeso"
       >
-        <div className="flex min-h-14 items-stretch gap-3 px-3 py-3">
+        <div className="flex min-h-14 items-stretch">
           <Cinta estado={local.peor} />
+          <div className="flex min-w-0 flex-1 items-stretch gap-3 py-3 pl-3.5 pr-4">
           <div className="min-w-0 flex-1">
             <div className="font-semibold leading-snug">{local.nombre}</div>
             <div className="mt-0.5 text-sm text-cemento">
@@ -48,6 +49,7 @@ export function FilaLocal({ local }: { local: DatosFilaLocal }) {
               </span>
               <span className="block text-xs text-cemento">{local.texto.secundario}</span>
             </span>
+          </div>
           </div>
         </div>
       </Link>

@@ -108,7 +108,7 @@ export function PadFirma({
   const vacia = trazos.length === 0;
 
   return (
-    <div className="relative h-44 overflow-hidden rounded-[var(--radius-boton)] border border-junta bg-papel">
+    <div className="relative h-44 overflow-hidden rounded-[var(--radius-boton)] border border-borde bg-papel">
       {/* Renglón de la firma */}
       <span aria-hidden className="pointer-events-none absolute inset-x-5 bottom-10 border-b border-junta" />
       <span

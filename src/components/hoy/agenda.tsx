@@ -114,7 +114,7 @@ export function Agenda({
             value={q}
             onChange={(e) => buscar(e.target.value)}
             placeholder="Buscar local o elemento"
-            className="h-12 w-full rounded-[var(--radius-boton)] border border-junta bg-papel pl-11 pr-12 text-base text-tinta placeholder:text-cemento hover:border-tinta/40 focus-visible:border-tinta"
+            className="h-12 w-full rounded-[var(--radius-boton)] border border-borde bg-papel pl-11 pr-12 text-base text-tinta placeholder:text-cemento hover:border-tinta focus-visible:border-tinta"
           />
           {q && (
             <button
@@ -142,7 +142,7 @@ export function Agenda({
                   <span
                     aria-hidden
                     className={cx(
-                      "inline-block size-2.5 rounded-[3px]",
+                      "inline-block size-3 rounded-[1px]",
                       ESTADO[clave as EstadoControl].cinta,
                       clave === "sin_datos" && "bg-papel",
                     )}
@@ -176,8 +176,8 @@ export function Agenda({
         grupos.map(([clave, g]) => (
           <Planilla key={clave} titulo={g.titulo} aparte={cantidad(g.filas.length, "control", "controles")}>
             {clave === "9-sin-datos" && (
-              <li className="rayado-suave px-3 py-2.5 lg:px-4">
-                <span className="rounded-[3px] bg-papel px-1.5 py-0.5 text-sm font-medium">Cuentan como vencidos.</span>
+              <li className="rayado-suave px-4 py-2.5">
+                <span className="rounded-[2px] bg-papel px-1.5 py-0.5 text-sm font-semibold">Cuentan como vencidos.</span>
               </li>
             )}
             {g.filas.map((f) => (

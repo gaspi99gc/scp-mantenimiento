@@ -178,10 +178,10 @@ export default async function FichaLocal({
 function Acceso({ local }: { local: Local }) {
   return (
     <section className="mb-8" aria-labelledby="acceso">
-      <h2 id="acceso" className="mb-2 px-0.5 text-lg font-[650] leading-tight">
+      <h2 id="acceso" className="rotulo mb-2 text-xl">
         Acceso al local
       </h2>
-      <div className="rounded-[var(--radius-planilla)] border border-junta bg-papel">
+      <div className="rounded-[var(--radius-planilla)] border border-junta border-t-2 border-t-tinta bg-papel">
         {local.requisitosAcceso && (
           <div className="m-2 mb-0 flex gap-3 rounded-[var(--radius-boton)] border-2 border-tinta px-3 py-3">
             <IconoAlerta className="mt-0.5 shrink-0" tamano={22} />

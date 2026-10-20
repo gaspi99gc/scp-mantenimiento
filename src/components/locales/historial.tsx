@@ -78,7 +78,7 @@ function Evento({ ev }: { ev: EventoHistorial }) {
 
 export function LineaDeTiempo({ dias }: { dias: DiaHistorial[] }) {
   return (
-    <div className="mb-7 rounded-[var(--radius-planilla)] border border-junta bg-papel px-4 py-5">
+    <div className="mb-7 rounded-[var(--radius-planilla)] border border-junta border-t-2 border-t-tinta bg-papel px-4 py-5">
       <ol>
         {dias.map((dia, i) => (
           <li key={dia.fecha} className="relative pb-7 pl-8 last:pb-0">

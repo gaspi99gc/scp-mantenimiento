@@ -27,7 +27,7 @@ export interface Trabajo {
 
 export const nombreRubro = (r: RubroTrabajo) => RUBROS.find((x) => x.valor === r)?.texto ?? "Otro";
 
-const CAMPO = "w-full rounded-[var(--radius-boton)] border border-junta bg-papel px-3";
+const CAMPO = "w-full rounded-[var(--radius-boton)] border border-borde bg-papel px-3";
 
 export function HojaTrabajo({
   abierta,

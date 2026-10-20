@@ -106,7 +106,7 @@ export function HojaSubsanar({
             onChange={(e) => setOtro(e.target.value)}
             aria-label="Cuál es el motivo"
             placeholder="Ej.: El cliente pidió aclarar un trabajo"
-            className="mt-2 min-h-12 w-full rounded-[var(--radius-boton)] border border-junta bg-papel px-3"
+            className="mt-2 min-h-12 w-full rounded-[var(--radius-boton)] border border-borde bg-papel px-3"
           />
         )}
       </fieldset>
@@ -118,7 +118,7 @@ export function HojaSubsanar({
           onChange={(e) => setTexto(e.target.value)}
           rows={4}
           placeholder="Ej.: Se cambiaron 3 filtros metálicos, no 2 como dice el resumen."
-          className="w-full rounded-[var(--radius-boton)] border border-junta bg-papel px-3 py-2"
+          className="w-full rounded-[var(--radius-boton)] border border-borde bg-papel px-3 py-2"
         />
         <span className="mt-1 block text-sm text-cemento">Escribila como querés que la lea el cliente.</span>
       </label>

@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { IconoCerrar, IconoCheck, IconoDocumento, IconoReloj, IconoSumar } from "@/components/iconos";
 import { RegistrarEjecucion, type Registro } from "@/components/registrar-ejecucion";
-import { BarraAccion, Boton, BotonLink, cx, Encabezado, Planilla } from "@/components/ui";
+import { BarraAccion, Boton, BotonLink, CLASE_PLANILLA, cx, Encabezado, Planilla } from "@/components/ui";
 import { fechaLarga, fechaMedia } from "@/lib/fechas";
 import type { FechaISO, Visita } from "@/lib/tipos";
 import type { ControlVisita } from "./consultas";
@@ -28,15 +28,15 @@ const TIPO_VISITA: Record<Visita["tipo"], string> = {
 
 type Punto = { x: number; y: number };
 
-const CAMPO = "min-h-12 w-full rounded-[var(--radius-boton)] border border-junta bg-papel px-3";
+const CAMPO = "min-h-12 w-full rounded-[var(--radius-boton)] border border-borde bg-papel px-3";
 
 function Aviso({ children, tono = "neutro" }: { children: ReactNode; tono?: "neutro" | "confirmacion" }) {
   return (
     <div
       role="status"
       className={cx(
-        "mb-6 flex gap-3 rounded-[var(--radius-planilla)] border px-4 py-3 font-medium",
-        tono === "confirmacion" ? "border-verde/50 bg-verde/5" : "border-tinta/30 bg-papel",
+        "mb-6 flex gap-3 rounded-[var(--radius-planilla)] border-2 px-4 py-3 font-medium",
+        tono === "confirmacion" ? "border-verde bg-papel" : "border-tinta bg-papel",
       )}
     >
       <IconoCheck className={cx("mt-px shrink-0", tono === "confirmacion" ? "text-verde" : "text-cemento")} tamano={22} />
@@ -46,7 +46,7 @@ function Aviso({ children, tono = "neutro" }: { children: ReactNode; tono?: "neu
 }
 
 function TituloSeccion({ children }: { children: ReactNode }) {
-  return <h2 className="mb-2 px-0.5 text-lg font-[650] leading-tight">{children}</h2>;
+  return <h2 className="rotulo mb-2 text-xl">{children}</h2>;
 }
 
 export function ModoVisita({
@@ -168,21 +168,22 @@ export function ModoVisita({
             <p className="mt-2 text-sm text-cemento">Queda guardada la hora de llegada.</p>
           </div>
         )}
+        {/* El estado de la visita, como el rótulo que se cuelga en la puerta del tablero. */}
         {estado === "en_curso" && (
-          <p className="mt-3 flex items-center gap-2 font-medium">
-            <IconoReloj tamano={20} className="text-cemento" />
+          <p className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-[2px] bg-tinta px-3 font-semibold text-papel">
+            <IconoReloj tamano={20} />
             {checkIn ? `En curso ${desdeLaHora(checkIn)}` : "En curso"}
           </p>
         )}
         {estado === "fallida" && (
-          <p className="mt-3 flex items-center gap-2 font-medium">
-            <IconoCerrar tamano={20} className="text-cemento" />
+          <p className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-[2px] border-2 border-tinta px-3 font-semibold">
+            <IconoCerrar tamano={20} />
             {fallida ? `Fallida a las ${fallida.hora}: ${nombreMotivo(fallida.motivo).toLowerCase()}` : "Visita fallida"}
           </p>
         )}
         {estado === "cerrada" && (
-          <p className="mt-3 flex items-center gap-2 font-medium">
-            <IconoCheck tamano={20} className="text-verde" />
+          <p className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-[2px] bg-verde px-3 font-semibold text-papel">
+            <IconoCheck tamano={20} />
             Visita cerrada
           </p>
         )}
@@ -206,7 +207,7 @@ export function ModoVisita({
       )}
 
       {visita.nota && (
-        <div className="mb-6 flex gap-3 rounded-[var(--radius-planilla)] border border-junta bg-papel px-4 py-3">
+        <div className="mb-6 flex gap-3 rounded-[var(--radius-planilla)] border border-junta border-l-[6px] border-l-tinta bg-papel px-4 py-3">
           <IconoDocumento tamano={20} className="mt-0.5 shrink-0 text-cemento" />
           <p>{visita.nota}</p>
         </div>
@@ -233,7 +234,7 @@ export function ModoVisita({
             <TituloSeccion>Otros trabajos</TituloSeccion>
             {trabajos.length > 0 ? (
               <>
-                <ul className="divide-y divide-junta overflow-hidden rounded-[var(--radius-planilla)] border border-junta bg-papel">
+                <ul className={CLASE_PLANILLA}>
                   {trabajos.map((t) => (
                     <li key={t.id} className="flex items-start gap-3 py-3 pl-4 pr-2">
                       <div className="min-w-0 flex-1">
@@ -276,7 +277,7 @@ export function ModoVisita({
 
           <section className="mb-7">
             <TituloSeccion>Horas y materiales</TituloSeccion>
-            <ul className="divide-y divide-junta rounded-[var(--radius-planilla)] border border-junta bg-papel lg:max-w-md">
+            <ul className={cx(CLASE_PLANILLA, "lg:max-w-md")}>
               <li className="py-2.5 pl-4 pr-2.5">
                 <Contador etiqueta="Personas" valor={personas} alCambiar={setPersonas} min={1} max={20} />
               </li>
@@ -289,7 +290,7 @@ export function ModoVisita({
 
           <section className="mb-7">
             <TituloSeccion>Firma del encargado</TituloSeccion>
-            <div className="rounded-[var(--radius-planilla)] border border-junta bg-papel p-4">
+            <div className="rounded-[var(--radius-planilla)] border border-junta border-t-2 border-t-tinta bg-papel p-4">
               {/* TODO(supabase): guardar la firma como imagen en Storage junto con nombre y DNI. */}
               <PadFirma trazos={trazos} alCambiar={setTrazos} etiqueta="Firma del encargado" />
               <div className="mt-1 flex justify-end">

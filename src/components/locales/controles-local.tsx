@@ -96,9 +96,9 @@ export function ControlesLocal({ items }: { items: ItemControl[] }) {
           const registro = registros[control.id];
           return (
             <li key={control.id}>
-              <div className="flex min-h-14 items-stretch gap-3 px-3 py-3">
+              <div className="flex min-h-14 items-stretch">
                 <Cinta estado={estado} />
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1 py-3 pl-3.5 pr-4">
                   <div className="flex items-start gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="font-semibold leading-snug">{tipo.nombre}</div>

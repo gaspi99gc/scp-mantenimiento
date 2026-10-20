@@ -70,7 +70,7 @@ export default async function Escanear({
 
         <div>
           <section aria-labelledby="titulo-codigo" className="mb-7">
-            <h2 id="titulo-codigo" className="mb-2 px-0.5 text-lg font-[650] leading-tight">
+            <h2 id="titulo-codigo" className="rotulo mb-2 text-xl">
               Escribir el código
             </h2>
             <Form action="/s/escanear" className="flex gap-2">
@@ -88,7 +88,7 @@ export default async function Escanear({
                 enterKeyHint="search"
                 aria-describedby="ayuda-codigo"
                 aria-invalid={texto ? true : undefined}
-                className="cifra min-h-12 min-w-0 flex-1 rounded-[var(--radius-boton)] border border-junta bg-papel px-3 text-xl uppercase placeholder:text-cemento/70"
+                className="cifra min-h-12 min-w-0 flex-1 rounded-[var(--radius-boton)] border border-borde bg-papel px-3 text-xl uppercase placeholder:text-cemento/70"
               />
               <Boton type="submit" variante="secundario">
                 Buscar

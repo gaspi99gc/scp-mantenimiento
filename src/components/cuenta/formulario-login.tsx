@@ -21,7 +21,7 @@ const ERROR_CREDENCIALES = "El email o la contraseña no coinciden.";
 const EMAIL_VALIDO = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const CLASE_CAMPO =
-  "min-h-12 w-full rounded-[var(--radius-boton)] border bg-papel px-3 text-base text-tinta placeholder:text-cemento/70";
+  "min-h-12 w-full rounded-[var(--radius-boton)] border bg-papel px-3 text-base text-tinta placeholder:text-cemento";
 
 function Campo({
   id,
@@ -39,7 +39,7 @@ function Campo({
   return (
     <div>
       <div className="mb-1.5 flex items-end justify-between gap-3">
-        <label htmlFor={id} className="font-semibold">
+        <label htmlFor={id} className="rotulo text-lg">
           {rotulo}
         </label>
         {extra}
@@ -56,7 +56,7 @@ function Campo({
 
 function ErrorGeneral({ children }: { children: ReactNode }) {
   return (
-    <div role="alert" className="flex gap-3 rounded-[var(--radius-boton)] border border-rojo/50 bg-rojo/5 p-3">
+    <div role="alert" className="flex gap-3 rounded-[var(--radius-planilla)] border-2 border-rojo bg-papel p-3">
       <IconoAlerta className="mt-0.5 shrink-0 text-rojo" tamano={20} />
       <div className="text-sm">{children}</div>
     </div>
@@ -206,7 +206,7 @@ export function FormularioLogin({
         aria-invalid={!!errores.email}
         aria-describedby={errores.email ? "email-error" : undefined}
         placeholder="nombre@scp.com.ar"
-        className={cx(CLASE_CAMPO, errores.email ? "border-rojo" : "border-junta")}
+        className={cx(CLASE_CAMPO, errores.email ? "border-rojo" : "border-borde")}
       />
     </Campo>
   );
@@ -215,7 +215,7 @@ export function FormularioLogin({
   if (paso === "codigo") {
     return (
       <form onSubmit={verificar} noValidate>
-        <h1 ref={titulo} tabIndex={-1} className="titulo text-2xl outline-none">
+        <h1 ref={titulo} tabIndex={-1} className="titulo text-[28px] outline-none">
           Código de la app de autenticación
         </h1>
         <p className="mt-2 text-cemento">
@@ -247,7 +247,7 @@ export function FormularioLogin({
                 className={cx(
                   "cifra size-12 rounded-[var(--radius-boton)] border bg-papel text-center text-2xl sm:size-14",
                   i === 3 && "ml-2",
-                  errores.codigo ? "border-rojo" : n ? "border-tinta" : "border-junta",
+                  errores.codigo ? "border-rojo" : n ? "border-tinta" : "border-borde",
                 )}
               />
             ))}
@@ -283,7 +283,7 @@ export function FormularioLogin({
   if (paso === "recuperar") {
     return (
       <form onSubmit={recuperar} noValidate>
-        <h1 ref={titulo} tabIndex={-1} className="titulo text-2xl outline-none">
+        <h1 ref={titulo} tabIndex={-1} className="titulo text-[28px] outline-none">
           Olvidé mi contraseña
         </h1>
         <p className="mt-2 text-cemento">Escribí tu email y te mandamos un link para crear una contraseña nueva.</p>
@@ -301,7 +301,7 @@ export function FormularioLogin({
   if (paso === "recuperado") {
     return (
       <div>
-        <h1 ref={titulo} tabIndex={-1} className="titulo text-2xl outline-none">
+        <h1 ref={titulo} tabIndex={-1} className="titulo text-[28px] outline-none">
           Revisá tu email
         </h1>
         <p className="mt-2" role="status">
@@ -318,7 +318,7 @@ export function FormularioLogin({
   // ——— Email y contraseña ———
   return (
     <form onSubmit={entrar} noValidate>
-      <h1 ref={titulo} tabIndex={-1} className="titulo text-2xl outline-none">
+      <h1 ref={titulo} tabIndex={-1} className="titulo text-[28px] outline-none">
         Entrá con tu cuenta
       </h1>
 
@@ -345,13 +345,13 @@ export function FormularioLogin({
               onChange={(e) => setClave(e.target.value)}
               aria-invalid={!!errores.clave}
               aria-describedby={errores.clave ? "clave-error" : undefined}
-              className={cx(CLASE_CAMPO, "pr-24", errores.clave ? "border-rojo" : "border-junta")}
+              className={cx(CLASE_CAMPO, "pr-24", errores.clave ? "border-rojo" : "border-borde")}
             />
             <button
               type="button"
               onClick={() => setVerClave(!verClave)}
               aria-controls="clave"
-              className="absolute inset-y-1 right-1 rounded-[6px] px-3 text-sm font-medium text-cemento hover:bg-yeso hover:text-tinta"
+              className="absolute inset-y-1 right-1 rounded-[2px] px-3 text-sm font-medium text-cemento hover:bg-yeso hover:text-tinta"
             >
               {verClave ? "Ocultar" : "Mostrar"}
             </button>

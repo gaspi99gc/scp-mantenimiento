@@ -114,15 +114,16 @@ export function RegistrarEjecucion({
       <p className="-mt-1 mb-4 text-cemento">{sobre}</p>
 
       {bloqueo && (
-        <div className="mb-5 flex gap-3 rounded-[var(--radius-boton)] border border-rojo/50 bg-rojo/5 p-3 text-sm">
+        <div className="mb-5 flex gap-3 rounded-[var(--radius-planilla)] border-2 border-rojo bg-papel p-3 text-[15px] font-medium">
           <IconoAlerta className="mt-0.5 shrink-0 text-rojo" tamano={20} />
           <p>{bloqueo.texto}</p>
         </div>
       )}
 
-      <fieldset className="mb-5">
-        <legend className="mb-2 font-semibold">¿Cómo quedó?</legend>
-        <div className="grid gap-2">
+      {/* Las opciones son los renglones de la planilla: se marca uno, como con la birome. */}
+      <fieldset className="mb-6">
+        <legend className="rotulo mb-2 text-lg">¿Cómo quedó?</legend>
+        <div className="overflow-hidden rounded-[var(--radius-planilla)] border border-borde divide-y divide-junta">
           {OPCIONES.filter((o) => o.valor !== "reemplazo" || elemento?.unidad).map((o) => {
             const deshabilitada = !!bloqueo && (o.valor === "ok" || o.valor === "observado");
             const elegida = resultado === o.valor;
@@ -130,22 +131,23 @@ export function RegistrarEjecucion({
               <label
                 key={o.valor}
                 className={cx(
-                  "flex min-h-12 cursor-pointer items-start gap-3 rounded-[var(--radius-boton)] border px-3 py-2.5",
-                  elegida ? "border-tinta bg-tinta/[0.04]" : "border-junta",
-                  deshabilitada && "cursor-not-allowed opacity-45",
+                  "relative flex min-h-14 cursor-pointer items-start gap-3 px-3 py-3 transition-colors",
+                  elegida ? "bg-yeso/70" : "hover:bg-yeso/35",
+                  deshabilitada && "rayado-suave cursor-not-allowed text-cemento hover:bg-transparent",
                 )}
               >
+                {elegida && <span aria-hidden className="absolute inset-y-0 left-0 w-1.5 bg-tinta" />}
                 <input
                   type="radio"
                   name="resultado"
-                  className="mt-1 size-4 accent-[var(--color-tinta)]"
+                  className="mt-0.5 size-5 shrink-0 accent-[var(--color-tinta)]"
                   checked={elegida}
                   disabled={deshabilitada}
                   onChange={() => setResultado(o.valor)}
                 />
                 <span>
-                  <span className="block font-medium">{o.texto}</span>
-                  <span className="block text-sm text-cemento">{o.ayuda}</span>
+                  <span className="block font-semibold">{o.texto}</span>
+                  <span className="block text-[15px] leading-snug text-cemento">{o.ayuda}</span>
                 </span>
               </label>
             );
@@ -154,32 +156,32 @@ export function RegistrarEjecucion({
       </fieldset>
 
       <label className="mb-5 block">
-        <span className="mb-1.5 block font-semibold">Fecha del trabajo</span>
+        <span className="rotulo mb-1.5 block text-lg">Fecha del trabajo</span>
         <input
           type="date"
           value={fecha}
           max={hoy()}
           onChange={(e) => setFecha(e.target.value)}
-          className="cifra min-h-12 w-full rounded-[var(--radius-boton)] border border-junta bg-papel px-3 text-xl"
+          className="cifra min-h-12 w-full rounded-[var(--radius-boton)] border border-borde bg-papel px-3 text-xl"
         />
         <span className="mt-1 block text-sm text-cemento">La del día en que se hizo, aunque lo cargues después.</span>
       </label>
 
       {resultado === "reemplazo" && elemento?.unidad && (
         <label className="mb-5 block">
-          <span className="mb-1.5 block font-semibold">Número de serie de la unidad nueva</span>
+          <span className="rotulo mb-1.5 block text-lg">Número de serie de la unidad nueva</span>
           <input
             value={serieNueva}
             onChange={(e) => setSerieNueva(e.target.value)}
             placeholder={`La anterior era ${elemento.unidad.serie}`}
-            className="cifra min-h-12 w-full rounded-[var(--radius-boton)] border border-junta bg-papel px-3 text-xl"
+            className="cifra min-h-12 w-full rounded-[var(--radius-boton)] border border-borde bg-papel px-3 text-xl"
           />
         </label>
       )}
 
       {renueva && tipo.evidencia.length > 0 && (
         <fieldset className="mb-5">
-          <legend className="mb-2 font-semibold">Evidencia</legend>
+          <legend className="rotulo mb-2 text-lg">Evidencia</legend>
           <div className="grid gap-2">
             {tipo.evidencia.map((ev) =>
               esNumero(ev) ? (
@@ -189,7 +191,7 @@ export function RegistrarEjecucion({
                     inputMode="numeric"
                     value={evidencia[ev] ?? ""}
                     onChange={(e) => setEvidencia({ ...evidencia, [ev]: e.target.value })}
-                    className="cifra min-h-12 w-full rounded-[var(--radius-boton)] border border-junta bg-papel px-3 text-xl"
+                    className="cifra min-h-12 w-full rounded-[var(--radius-boton)] border border-borde bg-papel px-3 text-xl"
                   />
                 </label>
               ) : esFoto(ev) || esArchivo(ev) ? (
@@ -235,12 +237,13 @@ export function RegistrarEjecucion({
       )}
 
       {renueva ? (
-        <section className="rounded-[var(--radius-planilla)] border border-junta bg-yeso/60 p-4" aria-live="polite">
-          <div className="text-sm text-cemento">Nuevo vencimiento</div>
-          <Cifra key={vencimientoFinal} className="block text-[40px] leading-none">
+        // El sello que va a quedar en la tarjeta: recuadro grueso, como el del sello fechador.
+        <section className="rounded-[var(--radius-planilla)] border-2 border-tinta bg-papel p-4" aria-live="polite">
+          <div className="text-sm font-medium text-cemento">Nuevo vencimiento</div>
+          <Cifra key={vencimientoFinal} className="mt-0.5 block text-[46px] leading-[0.95]">
             {fechaMedia(vencimientoFinal)}
           </Cifra>
-          <p className="mt-1 text-sm text-cemento">
+          <p className="mt-1.5 text-sm text-cemento">
             {otraFecha && fechaTarjeta
               ? "Según la tarjeta o el certificado."
               : `${textoPeriodo(tipo).replace(/^./, (c) => c.toUpperCase())} ${
@@ -264,14 +267,14 @@ export function RegistrarEjecucion({
                 value={fechaTarjeta}
                 onChange={(e) => setFechaTarjeta(e.target.value)}
                 aria-label="Fecha que dice la tarjeta"
-                className="cifra min-h-12 w-full rounded-[var(--radius-boton)] border border-junta bg-papel px-3 text-xl"
+                className="cifra min-h-12 w-full rounded-[var(--radius-boton)] border border-borde bg-papel px-3 text-xl"
               />
               <textarea
                 value={motivo}
                 onChange={(e) => setMotivo(e.target.value)}
                 placeholder="Por qué es otra fecha. Ej.: la recargadora fechó la tarjeta el día que retiró el equipo."
                 rows={2}
-                className="w-full rounded-[var(--radius-boton)] border border-junta bg-papel px-3 py-2"
+                className="w-full rounded-[var(--radius-boton)] border border-borde bg-papel px-3 py-2"
               />
             </div>
           )}
@@ -279,13 +282,13 @@ export function RegistrarEjecucion({
       ) : (
         resultado && (
           <label className="block">
-            <span className="mb-1.5 block font-semibold">¿Por qué no se pudo hacer?</span>
+            <span className="rotulo mb-1.5 block text-lg">¿Por qué no se pudo hacer?</span>
             <textarea
               value={motivo}
               onChange={(e) => setMotivo(e.target.value)}
               rows={3}
               placeholder="Ej.: el local estaba cerrado; el equipo no está en el lugar."
-              className="w-full rounded-[var(--radius-boton)] border border-junta bg-papel px-3 py-2"
+              className="w-full rounded-[var(--radius-boton)] border border-borde bg-papel px-3 py-2"
             />
             <span className="mt-1 block text-sm text-cemento">
               El vencimiento sigue abierto y queda anotado como observación del local.

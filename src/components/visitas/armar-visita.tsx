@@ -19,10 +19,10 @@ import {
 } from "./textos";
 
 const FRANJAS = ["8 a 10 h", "10 a 12 h", "14 a 16 h", "16 a 18 h"];
-const CAMPO = "min-h-12 rounded-[var(--radius-boton)] border border-junta bg-papel px-3";
+const CAMPO = "min-h-12 rounded-[var(--radius-boton)] border border-borde bg-papel px-3";
 
 function TituloSeccion({ children }: { children: ReactNode }) {
-  return <h2 className="mb-2 px-0.5 text-lg font-[650] leading-tight">{children}</h2>;
+  return <h2 className="rotulo mb-2 text-xl">{children}</h2>;
 }
 
 const capital = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -55,6 +55,7 @@ function FilaElegible({
   const contenido = (
     <>
       <Cinta estado={cv.estado} />
+      <div className="flex min-w-0 flex-1 items-stretch gap-3 py-3 pl-3.5 pr-4">
       {alCambiar && (
         <input
           type="checkbox"
@@ -80,16 +81,17 @@ function FilaElegible({
         )}
         {cv.visita && <span className="mt-1 text-xs font-medium">Visita el {fechaCorta(cv.visita.fecha)}</span>}
       </div>
+      </div>
     </>
   );
   return (
     <li>
       {alCambiar ? (
-        <label className="flex min-h-14 cursor-pointer items-stretch gap-3 px-3 py-3 transition-colors hover:bg-yeso/60">
+        <label className="flex min-h-14 cursor-pointer items-stretch transition-colors hover:bg-yeso/45">
           {contenido}
         </label>
       ) : (
-        <div className="flex min-h-14 items-stretch gap-3 px-3 py-3">{contenido}</div>
+        <div className="flex min-h-14 items-stretch">{contenido}</div>
       )}
     </li>
   );
@@ -299,7 +301,7 @@ export function ArmarVisita({
             <span className="text-sm text-cemento group-open:hidden">Ver</span>
             <span className="hidden text-sm text-cemento group-open:inline">Ocultar</span>
           </summary>
-          <ul className="mt-2 divide-y divide-junta overflow-hidden rounded-[var(--radius-planilla)] border border-junta bg-papel">
+          <ul className="mt-2 divide-y divide-junta overflow-hidden rounded-[var(--radius-planilla)] border border-junta border-t-2 border-t-tinta bg-papel">
             {resto.map((c) => (
               <FilaElegible
                 key={c.control.id}
@@ -315,7 +317,7 @@ export function ArmarVisita({
 
       <section className="mb-7">
         <TituloSeccion>Cuándo</TituloSeccion>
-        <div className="rounded-[var(--radius-planilla)] border border-junta bg-papel p-4">
+        <div className="rounded-[var(--radius-planilla)] border border-junta border-t-2 border-t-tinta bg-papel p-4">
           <label className="block">
             <span className="mb-1.5 block text-sm text-cemento">Fecha</span>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">

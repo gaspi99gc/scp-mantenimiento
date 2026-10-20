@@ -11,9 +11,10 @@ export function FilaDeAgenda({ fila }: { fila: FilaAgenda }) {
     <li>
       <Link
         href={fila.href}
-        className="flex min-h-14 items-stretch gap-3 px-3 py-3 transition-colors hover:bg-yeso/60 active:bg-yeso lg:gap-4 lg:px-4"
+        className="flex min-h-14 items-stretch transition-colors hover:bg-yeso/45 active:bg-yeso"
       >
         <Cinta estado={fila.estado} />
+        <div className="flex min-w-0 flex-1 items-stretch gap-3 py-3 pl-3.5 pr-4 lg:gap-4">
         <div className="min-w-0 flex-1 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,15rem)] lg:gap-6">
           <div className="min-w-0">
             <div className="font-semibold leading-snug">{fila.que}</div>
@@ -36,6 +37,7 @@ export function FilaDeAgenda({ fila }: { fila: FilaAgenda }) {
               {fila.relativo}
             </span>
           )}
+        </div>
         </div>
       </Link>
     </li>

@@ -1,5 +1,6 @@
 // Hoy: la pantalla de inicio del supervisor.
 // Contesta en un vistazo qué hay que hacer hoy y qué se está por pasar.
+// En la computadora: lo que vence a la izquierda, ancho; visitas y pedidos en una columna a la derecha.
 
 import {
   BloqueVisitaEnCurso, FilaPedido, FilaVisita, GrupoDeLocal, PlanillaSimple, Seccion,
@@ -32,6 +33,7 @@ export default function Hoy() {
   const referencia = hoy();
   const d = datosHoy(referencia);
   const sinUrgencias = d.vencidas.length === 0 && d.enSieteDias.length === 0;
+  const hayCostado = d.proximasVisitas.length > 0 || d.pedidosAbiertos.length > 0;
 
   return (
     <>
@@ -41,55 +43,67 @@ export default function Hoy() {
         <BloqueVisitaEnCurso key={v.id} visita={v} />
       ))}
 
-      {d.gruposVencidos.length > 0 && (
-        <Seccion id="vencidos" titulo="Vencidos">
-          <div className="space-y-3">
-            {d.gruposVencidos.map((g) => (
-              <GrupoDeLocal key={g.local.id} grupo={g} />
-            ))}
-          </div>
-        </Seccion>
-      )}
+      <div className={hayCostado ? "lg:grid lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start lg:gap-x-10" : undefined}>
+        <div className="min-w-0">
+          {d.gruposVencidos.length > 0 && (
+            <Seccion id="vencidos" titulo="Vencidos" aparte={cantidad(d.vencidas.length, "control", "controles")}>
+              <div className="space-y-4">
+                {d.gruposVencidos.map((g) => (
+                  <GrupoDeLocal key={g.local.id} grupo={g} />
+                ))}
+              </div>
+            </Seccion>
+          )}
 
-      {d.gruposSemana.length > 0 && (
-        <Seccion id="semana" titulo="Vencen en los próximos 7 días">
-          <div className="space-y-3">
-            {d.gruposSemana.map((g) => (
-              <GrupoDeLocal key={g.local.id} grupo={g} />
-            ))}
-          </div>
-        </Seccion>
-      )}
+          {d.gruposSemana.length > 0 && (
+            <Seccion
+              id="semana"
+              titulo="Vencen en los próximos 7 días"
+              aparte={cantidad(d.enSieteDias.length, "control", "controles")}
+            >
+              <div className="space-y-4">
+                {d.gruposSemana.map((g) => (
+                  <GrupoDeLocal key={g.local.id} grupo={g} />
+                ))}
+              </div>
+            </Seccion>
+          )}
 
-      {sinUrgencias && (
-        <div className="mb-9">
-          <Vacio accion={<BotonLink href="/s/agenda" variante="secundario">Ver la agenda</BotonLink>}>
-            No hay nada vencido ni por vencer en los próximos 7 días.{" "}
-            {d.siguiente ? describirSiguiente(d.siguiente) : "Todavía no hay vencimientos cargados."}
-          </Vacio>
+          {sinUrgencias && (
+            <div className="mb-10">
+              <Vacio accion={<BotonLink href="/s/agenda" variante="secundario">Ver la agenda</BotonLink>}>
+                No hay nada vencido ni por vencer en los próximos 7 días.{" "}
+                {d.siguiente ? describirSiguiente(d.siguiente) : "Todavía no hay vencimientos cargados."}
+              </Vacio>
+            </div>
+          )}
         </div>
-      )}
 
-      {d.proximasVisitas.length > 0 && (
-        <Seccion id="visitas" titulo="Próximas visitas">
-          <PlanillaSimple>
-            {d.proximasVisitas.map((v) => (
-              <FilaVisita key={v.id} visita={v} referencia={referencia} />
-            ))}
-          </PlanillaSimple>
-        </Seccion>
-      )}
+        {hayCostado && (
+          <div className="min-w-0">
+            {d.proximasVisitas.length > 0 && (
+              <Seccion id="visitas" titulo="Próximas visitas">
+                <PlanillaSimple>
+                  {d.proximasVisitas.map((v) => (
+                    <FilaVisita key={v.id} visita={v} referencia={referencia} />
+                  ))}
+                </PlanillaSimple>
+              </Seccion>
+            )}
 
-      {d.pedidosAbiertos.length > 0 && (
-        <Seccion id="pedidos" titulo="Pedidos abiertos">
-          <PlanillaSimple>
-            {d.pedidosAbiertos.map((p) => (
-              // TODO: llevar a la bandeja de pedidos cuando exista; por ahora, a la ficha del local.
-              <FilaPedido key={p.id} pedido={p} href={`/s/locales/${p.localId}`} />
-            ))}
-          </PlanillaSimple>
-        </Seccion>
-      )}
+            {d.pedidosAbiertos.length > 0 && (
+              <Seccion id="pedidos" titulo="Pedidos abiertos">
+                <PlanillaSimple>
+                  {d.pedidosAbiertos.map((p) => (
+                    // TODO: llevar a la bandeja de pedidos cuando exista; por ahora, a la ficha del local.
+                    <FilaPedido key={p.id} pedido={p} href={`/s/locales/${p.localId}`} />
+                  ))}
+                </PlanillaSimple>
+              </Seccion>
+            )}
+          </div>
+        )}
+      </div>
     </>
   );
 }

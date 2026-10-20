@@ -12,8 +12,8 @@ const IconoRestar = ({ tamano = 24 }: { tamano?: number }) => (
 );
 
 const BOTON =
-  "inline-flex size-12 items-center justify-center rounded-[var(--radius-boton)] border border-tinta/25 bg-papel text-tinta " +
-  "hover:border-tinta/60 active:bg-yeso disabled:pointer-events-none disabled:opacity-45";
+  "inline-flex size-12 items-center justify-center rounded-[var(--radius-boton)] border border-tinta bg-papel text-tinta " +
+  "hover:bg-yeso/70 active:bg-yeso disabled:pointer-events-none disabled:border-dashed disabled:border-borde disabled:text-cemento";
 
 export function Contador({
   etiqueta,
@@ -51,7 +51,7 @@ export function Contador({
           <IconoRestar />
         </button>
         <output aria-live="polite" className="min-w-20 text-center">
-          <span className={valor === 0 && vacio ? "text-sm text-cemento" : "cifra text-[28px] leading-none"}>{texto}</span>
+          <span className={valor === 0 && vacio ? "text-sm text-cemento" : "cifra text-[30px] font-bold leading-none"}>{texto}</span>
         </output>
         <button
           type="button"

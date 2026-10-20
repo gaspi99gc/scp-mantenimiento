@@ -64,7 +64,7 @@ export default function Muestras() {
       </Planilla>
 
       <section className="mb-7 space-y-4">
-        <h2 className="text-lg font-[650]">Botones, chips y estados</h2>
+        <h2 className="rotulo text-xl">Botones, chips y estados</h2>
         <div className="flex flex-wrap gap-2">
           <Boton>Armar visita</Boton>
           <Boton variante="secundario">Ver ficha</Boton>

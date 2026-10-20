@@ -28,7 +28,7 @@ export default function Catalogo() {
       </p>
 
       {/* Celular: una ficha por control */}
-      <ul className="mb-7 divide-y divide-junta overflow-hidden rounded-[var(--radius-planilla)] border border-junta bg-papel lg:hidden">
+      <ul className="mb-7 divide-y divide-junta overflow-hidden rounded-[var(--radius-planilla)] border border-junta border-t-2 border-t-tinta bg-papel lg:hidden">
         {fichas.map((f) => (
           <li key={f.id} className="px-4 py-4">
             <div className="flex items-start justify-between gap-3">
@@ -58,7 +58,7 @@ export default function Catalogo() {
       </ul>
 
       {/* Computadora: planilla de referencia */}
-      <div className="mb-7 hidden overflow-hidden rounded-[var(--radius-planilla)] border border-junta bg-papel lg:block">
+      <div className="mb-7 hidden overflow-hidden rounded-[var(--radius-planilla)] border border-junta border-t-2 border-t-tinta bg-papel lg:block">
         <table className="w-full border-collapse text-left text-sm">
           <thead>
             <tr className="whitespace-nowrap border-b border-junta text-cemento">

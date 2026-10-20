@@ -147,7 +147,7 @@ export function HojaFallida({
           onChange={(e) => setNota(e.target.value)}
           rows={3}
           placeholder="Ej.: Llamé a la encargada a las 9:20 y no atendió."
-          className="w-full rounded-[var(--radius-boton)] border border-junta bg-papel px-3 py-2"
+          className="w-full rounded-[var(--radius-boton)] border border-borde bg-papel px-3 py-2"
         />
       </label>
     </Hoja>

@@ -4,6 +4,7 @@
 import type { Metadata } from "next";
 import { FormularioLogin, type PasoLogin } from "@/components/cuenta/formulario-login";
 import { TarjetaPared, TiraMeses } from "@/components/cuenta/tarjeta-pared";
+import { MarcaSCP } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Entrar" };
 
@@ -22,8 +23,10 @@ export default async function PaginaLogin({
     <div className="min-h-dvh bg-papel lg:grid lg:grid-cols-[minmax(480px,5fr)_7fr] lg:bg-yeso">
       <div className="flex min-h-dvh flex-col bg-papel px-4 pb-8 pt-12 sm:px-12 lg:border-r lg:border-junta lg:px-16 lg:pb-12 lg:pt-14">
         <header>
-          <p className="titulo text-[88px] leading-[0.8] [font-stretch:62%] lg:text-[112px]">SCP</p>
-          <p className="mt-3 text-lg">Mantenimiento integral</p>
+          <p>
+            <MarcaSCP className="text-[80px] lg:text-[104px]" />
+          </p>
+          <p className="rotulo mt-3 text-[22px]">Mantenimiento integral</p>
           <TiraMeses className="mt-5 lg:hidden" />
         </header>
 

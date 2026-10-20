@@ -194,7 +194,7 @@ export function Escaner() {
         problema && (
           <div className="relative px-5" role="alert">
             <IconoAlerta tamano={28} />
-            <h2 className="mt-3 text-lg font-[650] leading-tight">{problema.titulo}</h2>
+            <h2 className="mt-3 rotulo text-xl">{problema.titulo}</h2>
             <p className="mt-1.5 max-w-[46ch] text-papel/85">{problema.texto}</p>
             {problema.reintentar && (
               <div className="mt-5">
