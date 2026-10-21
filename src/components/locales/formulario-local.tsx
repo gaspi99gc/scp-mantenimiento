@@ -148,8 +148,14 @@ export function FormularioLocal({
         <Campo id="horario" rotulo="Horario para trabajar">
           <input id="horario" name="horario" defaultValue={v.horario} autoComplete="off" placeholder="Lunes a sábado de 6 a 21 h" className={CAMPO} />
         </Campo>
-        <Campo id="requisitos" rotulo="Requisitos para entrar (opcional)" ayuda="Permisos, ART, horario del shopping…">
-          <input id="requisitos" name="requisitos" defaultValue={v.requisitos} autoComplete="off" className={CAMPO} />
+        <Campo id="observaciones" rotulo="Observaciones (opcional)" ayuda="Lo que convenga saber: llaves, permisos, horarios especiales…">
+          <textarea
+            id="observaciones"
+            name="observaciones"
+            rows={3}
+            defaultValue={v.observaciones}
+            className={cx(CAMPO, "min-h-24 py-2.5")}
+          />
         </Campo>
         <Campo id="encargadoNombre" rotulo="Encargado">
           <input id="encargadoNombre" name="encargadoNombre" defaultValue={v.encargadoNombre} autoComplete="off" className={CAMPO} />

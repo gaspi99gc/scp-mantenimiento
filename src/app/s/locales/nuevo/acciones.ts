@@ -11,8 +11,10 @@ import { clienteServidor } from "@/lib/supabase/servidor";
 
 export type EstadoAlta = { error?: string; valores?: Record<string, string> };
 
-const texto = (max: number) => z.string().trim().max(max);
-const obligatorio = (max: number, mensaje: string) => texto(max).min(1, mensaje);
+// Lo opcional que no llega cuenta como vacío; lo obligatorio que no llega pide el dato en castellano.
+const texto = (max: number) => z.string().trim().max(max, "Hay un dato demasiado largo.").default("");
+const obligatorio = (max: number, mensaje: string) =>
+  z.string({ message: mensaje }).trim().min(1, mensaje).max(max, "Hay un dato demasiado largo.");
 
 /** "30712345678", "30-71234567-8" o "30 71234567 8" → "30-71234567-8". */
 function normalizarCuit(cuit: string): string | undefined {
@@ -26,16 +28,16 @@ const Local = z.object({
   barrio: obligatorio(80, "Falta el barrio o la localidad."),
   rubro: z.enum(["gastronomico", "retail", "farmacia", "oficina", "otro"], { message: "Elegí el rubro." }),
   horario: texto(200),
-  requisitos: texto(300),
+  observaciones: texto(1000),
   encargadoNombre: texto(120),
   encargadoTelefono: texto(40),
-  supervisorId: z.union([z.literal(""), z.string().uuid()]),
+  supervisorId: z.union([z.literal(""), z.string().uuid()]).default(""),
 });
 
 const ClienteNuevo = z.object({
   clienteNombre: obligatorio(120, "Falta el nombre del cliente."),
   razonSocial: obligatorio(160, "Falta la razón social."),
-  cuit: z.string(),
+  cuit: z.string({ message: "Falta el CUIT." }),
 });
 
 export async function crearLocal(_previo: EstadoAlta, datos: FormData): Promise<EstadoAlta> {
@@ -82,7 +84,7 @@ export async function crearLocal(_previo: EstadoAlta, datos: FormData): Promise<
       barrio: l.barrio,
       rubro: l.rubro,
       horario_acceso: l.horario,
-      requisitos_acceso: l.requisitos || null,
+      observaciones: l.observaciones || null,
       encargado_nombre: l.encargadoNombre,
       encargado_telefono: l.encargadoTelefono,
       supervisor_id: l.supervisorId || null,

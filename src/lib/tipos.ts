@@ -29,7 +29,7 @@ export interface Local {
   barrio: string;
   rubro: Rubro;
   horarioAcceso: string;
-  requisitosAcceso?: string;
+  observaciones?: string;
   encargado: { nombre: string; telefono: string };
   supervisorId: string;
 }

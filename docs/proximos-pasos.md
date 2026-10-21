@@ -4,8 +4,8 @@
 
 ## Ahora, en este orden
 
-1. [ ] **Alta de clientes y locales.** El botón "Agregar local" crea el cliente (o elige uno existente) y el local; el local recibe solo sus controles.
-2. [ ] **Alta de equipos con su QR.** "Agregar elemento" en la ficha del local; el equipo recibe solo sus controles; etiqueta QR para imprimir.
+1. [x] **Alta de clientes y locales.** El botón "Agregar local" crea el cliente (o elige uno existente) y el local; el local recibe solo sus controles.
+2. [x] **Alta de equipos con su QR.** "Agregar elemento" en la ficha del local; el equipo recibe solo sus controles; etiqueta QR para imprimir.
 3. [ ] **Cargar la fecha actual de cada control** (relevamiento): la que dice la tarjeta o el certificado, para que deje de estar "sin datos".
 4. [ ] **Marcar "no aplica"** un control, con motivo.
 5. [ ] **Deshacer un registro equivocado.**

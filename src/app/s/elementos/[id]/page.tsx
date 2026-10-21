@@ -17,8 +17,15 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return { title: elemento ? `${elemento.tipo}, ${elemento.codigo}` : "Equipo" };
 }
 
-export default async function FichaDeElemento({ params }: { params: Promise<{ id: string }> }) {
+export default async function FichaDeElemento({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [clave: string]: string | string[] | undefined }>;
+}) {
   const { id } = await params;
+  const { aviso } = await searchParams;
   await cargarDatos();
   const usuario = await exigirStaff();
   const elemento = elementoDe(id);
@@ -42,6 +49,16 @@ export default async function FichaDeElemento({ params }: { params: Promise<{ id
         }
       />
 
+      {aviso === "nuevo" && (
+        <p role="status" className="mb-6 rounded-[var(--radius-planilla)] border-2 border-verde bg-papel p-3 font-medium">
+          Equipo creado con sus controles. Imprimí su etiqueta QR (abajo) y pegala en el equipo.
+        </p>
+      )}
+      {aviso === "sin-unidad" && (
+        <p role="alert" className="mb-6 rounded-[var(--radius-planilla)] border-2 border-rojo bg-papel p-3 font-medium">
+          El equipo se creó, pero no se pudo guardar el cilindro. Cargalo con “Reemplazar unidad”.
+        </p>
+      )}
       <FichaElemento
         elemento={elemento}
         controles={controlesDeFicha(elemento.id)}

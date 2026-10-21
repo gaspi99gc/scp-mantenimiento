@@ -74,7 +74,7 @@ const locales = [
     horario_acceso: "Martes a domingo de 11 a 1 h. Cocina desde las 9 h", encargado_nombre: "Ernesto Vidal", encargado_telefono: "+54 9 11 4444-7710" },
   { id: LOC(4), cliente_id: CLI(3), nombre: "Visión Sur Shopping Caballito", direccion: "Ferrari 250, local 214", barrio: "Caballito", rubro: "retail",
     horario_acceso: "Trabajos solo de 8 a 10 h, antes de que abra el shopping",
-    requisitos_acceso: "Permiso de trabajo con 48 h de anticipación y nómina con ART",
+    observaciones: "Para trabajar piden permiso con 48 h de anticipación y nómina con ART.",
     encargado_nombre: "Paula Herrera", encargado_telefono: "+54 9 11 4444-2045" },
   { id: LOC(5), cliente_id: CLI(3), nombre: "Visión Sur Belgrano", direccion: "Av. Cabildo 2140", barrio: "Belgrano", rubro: "retail",
     horario_acceso: "Lunes a sábado de 10 a 20 h", encargado_nombre: "Tomás Rey", encargado_telefono: "+54 9 11 4444-9932" },

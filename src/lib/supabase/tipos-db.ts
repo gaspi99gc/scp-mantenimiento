@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -180,7 +180,7 @@ export type Database = {
           horario_acceso: string
           id: string
           nombre: string
-          requisitos_acceso: string | null
+          observaciones: string | null
           rubro: Database["public"]["Enums"]["rubro"]
           supervisor_id: string | null
         }
@@ -195,7 +195,7 @@ export type Database = {
           horario_acceso?: string
           id?: string
           nombre: string
-          requisitos_acceso?: string | null
+          observaciones?: string | null
           rubro: Database["public"]["Enums"]["rubro"]
           supervisor_id?: string | null
         }
@@ -210,7 +210,7 @@ export type Database = {
           horario_acceso?: string
           id?: string
           nombre?: string
-          requisitos_acceso?: string | null
+          observaciones?: string | null
           rubro?: Database["public"]["Enums"]["rubro"]
           supervisor_id?: string | null
         }

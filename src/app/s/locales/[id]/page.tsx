@@ -25,6 +25,7 @@ import {
 } from "@/components/iconos";
 import {
   Boton,
+  BotonLink,
   Cifra,
   Dato,
   Encabezado,
@@ -127,7 +128,7 @@ export default async function FichaLocal({
         activa={seccion}
         pestanas={[
           { clave: "controles", texto: "Controles", cantidad: resumen.total },
-          { clave: "elementos", texto: "Elementos", cantidad: elementos.length },
+          { clave: "elementos", texto: "Equipos", cantidad: elementos.length },
           { clave: "historial", texto: "Historial" },
           { clave: "pedidos", texto: "Pedidos", cantidad: pedidosAbiertos.length },
         ]}
@@ -153,16 +154,6 @@ function Acceso({ local }: { local: Local }) {
         Acceso al local
       </h2>
       <div className="rounded-[var(--radius-planilla)] border border-junta border-t-2 border-t-tinta bg-papel">
-        {local.requisitosAcceso && (
-          <div className="m-2 mb-0 flex gap-3 rounded-[var(--radius-boton)] border-2 border-tinta px-3 py-3">
-            <IconoAlerta className="mt-0.5 shrink-0" tamano={22} />
-            <div className="min-w-0">
-              <p className="text-sm text-cemento">Para entrar hace falta</p>
-              <p className="mt-0.5 font-semibold">{local.requisitosAcceso}.</p>
-              <p className="mt-1 text-sm">Sin esto no te dejan pasar. Pedilo antes de ir.</p>
-            </div>
-          </div>
-        )}
         <div className="divide-y divide-junta px-4 sm:grid sm:grid-cols-2 sm:gap-6 sm:divide-y-0">
           <Dato rotulo="Horario de acceso" icono={<IconoReloj tamano={22} />}>
             {local.horarioAcceso || <span className="text-cemento">Sin cargar</span>}
@@ -181,6 +172,13 @@ function Acceso({ local }: { local: Local }) {
               </>
             )}
           </Dato>
+          {local.observaciones && (
+            <div className="sm:col-span-2">
+              <Dato rotulo="Observaciones" icono={<IconoAlerta tamano={22} />}>
+                <span className="whitespace-pre-line">{local.observaciones}</span>
+              </Dato>
+            </div>
+          )}
         </div>
       </div>
     </section>
@@ -215,7 +213,7 @@ function SeccionControles({ localId }: { localId: string }) {
       </h2>
       <Bajada>
         Del peor estado al mejor.
-        {delLocal > 0 && ` ${delLocal === 1 ? "El control del local se registra" : "Los controles del local se registran"} desde acá; los demás, en la ficha de cada elemento.`}
+        {delLocal > 0 && ` ${delLocal === 1 ? "El control del local se registra" : "Los controles del local se registran"} desde acá; los demás, en la ficha de cada equipo.`}
       </Bajada>
       <ControlesLocal items={items} />
     </section>
@@ -233,15 +231,15 @@ function SeccionElementos({ localId }: { localId: string }) {
   return (
     <section aria-labelledby="titulo-seccion">
       <h2 id="titulo-seccion" className="sr-only">
-        Elementos
+        Equipos
       </h2>
       {filas.length === 0 ? (
         <div className="mb-7">
-          <Vacio>Este local todavía no tiene elementos cargados. Agregá los matafuegos, el tanque y los equipos que haya.</Vacio>
+          <Vacio>Este local todavía no tiene equipos cargados. Agregá los matafuegos, el tanque, la campana y lo que haya.</Vacio>
         </div>
       ) : (
         <>
-          <Bajada>{filas.length === 1 ? "1 elemento" : `${filas.length} elementos`}, del peor estado al mejor.</Bajada>
+          <Bajada>{filas.length === 1 ? "1 equipo" : `${filas.length} equipos`}, del peor estado al mejor.</Bajada>
           <Planilla>
             {filas.map(({ e, peor, estado }) => (
               <Fila
@@ -275,11 +273,10 @@ function SeccionElementos({ localId }: { localId: string }) {
           </Planilla>
         </>
       )}
-      {/* TODO(supabase): alta de elemento (tipo, código, ubicación) y su etiqueta QR. */}
-      <Boton variante="secundario" className="mb-7">
+      <BotonLink href={`/s/locales/${localId}/equipos/nuevo`} variante="secundario" className="mb-7">
         <IconoSumar tamano={20} />
-        Agregar elemento
-      </Boton>
+        Agregar equipo
+      </BotonLink>
     </section>
   );
 }

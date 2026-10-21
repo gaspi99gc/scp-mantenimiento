@@ -72,7 +72,7 @@ async function leer(): Promise<Foto> {
       barrio: l.barrio,
       rubro: l.rubro,
       horarioAcceso: l.horario_acceso,
-      requisitosAcceso: l.requisitos_acceso ?? undefined,
+      observaciones: l.observaciones ?? undefined,
       encargado: { nombre: l.encargado_nombre, telefono: l.encargado_telefono },
       supervisorId: l.supervisor_id ?? "",
     })),
