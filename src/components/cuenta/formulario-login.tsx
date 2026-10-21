@@ -1,6 +1,6 @@
 "use client";
 
-// Formulario de entrada: email y contraseña contra Supabase Auth (Server Action iniciarSesion).
+// Formulario de entrada: usuario (o email) y contraseña contra Supabase Auth (Server Action iniciarSesion).
 // En la compu (npm run dev) aparece además el botón de ingreso rápido como admin.
 // No hay recupero por email todavía: la contraseña nueva la pone el admin.
 
@@ -34,18 +34,18 @@ export function FormularioLogin({ siguiente, ingresoRapido }: { siguiente?: stri
         <input type="hidden" name="siguiente" value={siguiente ?? ""} />
 
         <div className="mt-6 grid gap-5">
-          <Campo id="email" rotulo="Email">
+          <Campo id="usuario" rotulo="Usuario o email">
             <input
-              id="email"
-              name="email"
-              type="email"
-              inputMode="email"
+              id="usuario"
+              name="usuario"
+              type="text"
               autoComplete="username"
               autoCapitalize="none"
+              autoCorrect="off"
               spellCheck={false}
               required
-              defaultValue={estado.email}
-              placeholder="nombre@scp.com.ar"
+              defaultValue={estado.usuario}
+              placeholder="admin o nombre@scp.com.ar"
               className={cx(CLASE_CAMPO, "border-borde")}
             />
           </Campo>

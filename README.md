@@ -31,7 +31,7 @@ Next.js (App Router, TypeScript) · Supabase (Postgres, Auth, Storage, RLS) · V
    npm run dev
    ```
 
-3. Abrí <http://localhost:3000/login> y tocá **Entrar como admin (solo en esta compu)**. Ese botón existe solo con `npm run dev` y abriendo la app desde la misma compu (localhost).
+3. Abrí <http://localhost:3000/login> y tocá **Entrar como admin (solo en esta compu)**. Ese botón existe solo con `npm run dev` y abriendo la app desde la misma compu (localhost). En Vercel se entra con usuario y contraseña (el usuario del admin es `admin`); se cambian en *Más → Usuarios*.
 
 Los datos viven en Supabase: lo que registrás queda guardado. Con los datos de ejemplo cargados:
 

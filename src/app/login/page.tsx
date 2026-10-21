@@ -16,7 +16,7 @@ export default async function PaginaLogin({
 }: {
   searchParams: Promise<{ [clave: string]: string | string[] | undefined }>;
 }) {
-  const { siguiente } = await searchParams;
+  const { siguiente, cambio } = await searchParams;
   const usuario = await usuarioActual();
   if (usuario?.activo) redirect(usuario.debeCambiarClave ? "/cuenta/clave" : destinoSeguro(siguiente));
 
@@ -39,6 +39,11 @@ export default async function PaginaLogin({
         </header>
 
         <main className="mt-12 w-full max-w-[400px] lg:my-auto lg:py-12">
+          {cambio === "1" && (
+            <p role="status" className="mb-6 rounded-[var(--radius-planilla)] border-2 border-verde bg-papel p-3 text-sm font-medium">
+              Cambiaste tu contraseña. Entrá de nuevo con la nueva.
+            </p>
+          )}
           <FormularioLogin
             siguiente={typeof siguiente === "string" ? siguiente : undefined}
             ingresoRapido={ingresoRapido}

@@ -3,10 +3,13 @@
 // Gestión de usuarios: solo el admin. Cada acción vuelve a verificar el rol en el servidor
 // antes de usar la clave secreta (que saltea las reglas de la base).
 
+import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { exigirAdmin } from "@/lib/sesion";
 import { clienteAdmin } from "@/lib/supabase/admin";
+import { clienteServidor } from "@/lib/supabase/servidor";
 
 export type EstadoUsuarios = { error?: string; ok?: string };
 
@@ -19,6 +22,12 @@ const Nuevo = z.object({
   email: z.string().trim().toLowerCase().email("A ese email le falta algo. Ej.: nombre@scp.com.ar"),
   rol: z.enum(["admin", "supervisor"]),
   clave: ClaveProvisoria,
+  usuario: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .regex(/^([a-z0-9._-]{3,30})?$/, "El usuario va en minúsculas, sin espacios, de 3 a 30 caracteres.")
+    .optional(),
 });
 
 // Bloqueo en Auth para que un usuario desactivado no pueda renovar su sesión (100 años).
@@ -30,6 +39,7 @@ export async function crearUsuario(_previo: EstadoUsuarios, datos: FormData): Pr
   const leidos = Nuevo.safeParse(Object.fromEntries(datos));
   if (!leidos.success) return { error: leidos.error.issues[0].message };
   const { nombre, email, rol, clave } = leidos.data;
+  const usuario = leidos.data.usuario || null;
 
   const admin = clienteAdmin();
   const { data, error } = await admin.auth.admin.createUser({ email, password: clave, email_confirm: true });
@@ -44,16 +54,21 @@ export async function crearUsuario(_previo: EstadoUsuarios, datos: FormData): Pr
 
   const { error: errorPerfil } = await admin
     .from("perfil")
-    .insert({ id: data.user.id, nombre, email, rol, debe_cambiar_clave: true });
+    .insert({ id: data.user.id, nombre, email, usuario, rol, debe_cambiar_clave: true });
   if (errorPerfil) {
     // Sin perfil el usuario no sirve: se deshace el alta en Auth.
     await admin.auth.admin.deleteUser(data.user.id);
-    return { error: "No se pudo crear el usuario. Probá de nuevo en un rato." };
+    return {
+      error:
+        errorPerfil.code === "23505" && usuario
+          ? "Ese usuario ya lo tiene otra persona."
+          : "No se pudo crear el usuario. Probá de nuevo en un rato.",
+    };
   }
 
   revalidatePath("/s/mas/usuarios");
   return {
-    ok: `Listo. Pasale a ${nombre.split(" ")[0]} su email y la contraseña provisoria: al entrar, la app le pide que elija una nueva.`,
+    ok: `Listo. Pasale a ${nombre.split(" ")[0]} ${usuario ? `su usuario (${usuario})` : "su email"} y la contraseña provisoria: al entrar, la app le pide que elija una nueva.`,
   };
 }
 
@@ -108,4 +123,51 @@ export async function ponerClaveProvisoria(_previo: EstadoUsuarios, datos: FormD
 
   revalidatePath("/s/mas/usuarios");
   return { ok: "Contraseña provisoria puesta. Al entrar con ella, le va a pedir que elija una nueva." };
+}
+
+const ReglaUsuario = "El usuario va en minúsculas, sin espacios, de 3 a 30 caracteres (letras, números, punto o guion).";
+const NombreUsuario = z.string().trim().toLowerCase().regex(/^[a-z0-9._-]{3,30}$/, ReglaUsuario);
+const ReglaNueva = "La contraseña nueva necesita al menos 10 caracteres, con letras y números.";
+const ClaveNueva = z.string().min(10, ReglaNueva).max(72, ReglaNueva).regex(/[a-zA-ZñÑ]/, ReglaNueva).regex(/\d/, ReglaNueva);
+
+/**
+ * El admin cambia su propio usuario y, si quiere, su contraseña. Para cualquier cambio pide la contraseña
+ * actual. Si cambia la contraseña, se cierran todas sus sesiones y vuelve a entrar con la nueva.
+ */
+export async function cambiarMisDatos(_previo: EstadoUsuarios, datos: FormData): Promise<EstadoUsuarios> {
+  const yo = await exigirAdmin();
+  const usuario = NombreUsuario.safeParse(datos.get("usuario"));
+  if (!usuario.success) return { error: usuario.error.issues[0].message };
+  const actual = String(datos.get("actual") ?? "");
+  if (!actual) return { error: "Escribí tu contraseña actual." };
+  const nuevaTexto = String(datos.get("nueva") ?? "");
+  const nueva = nuevaTexto ? ClaveNueva.safeParse(nuevaTexto) : undefined;
+  if (nueva && !nueva.success) return { error: nueva.error.issues[0].message };
+  if (nueva && nuevaTexto !== datos.get("repetida")) return { error: "Las dos contraseñas nuevas no son iguales." };
+
+  // Verificar la contraseña actual con un cliente aparte (no toca la sesión del navegador) y cerrar esa prueba.
+  const prueba = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { error: errorActual } = await prueba.auth.signInWithPassword({ email: yo.email, password: actual });
+  if (errorActual) return { error: "Tu contraseña actual no coincide." };
+  await prueba.auth.signOut();
+
+  const admin = clienteAdmin();
+  if (usuario.data !== yo.usuario) {
+    const { error } = await admin.from("perfil").update({ usuario: usuario.data }).eq("id", yo.id);
+    if (error) return { error: error.code === "23505" ? "Ese usuario ya lo tiene otra persona." : ERROR_GENERICO };
+  }
+
+  if (nueva?.success) {
+    const { error } = await admin.auth.admin.updateUserById(yo.id, { password: nueva.data });
+    if (error) return { error: "No se pudo cambiar la contraseña. Probá de nuevo." };
+    await admin.rpc("cerrar_sesiones", { p_usuario: yo.id });
+    const sesion = await clienteServidor();
+    await sesion.auth.signOut({ scope: "local" });
+    redirect("/login?cambio=1");
+  }
+
+  revalidatePath("/s/mas/usuarios");
+  return { ok: `Listo. Tu usuario para entrar es "${usuario.data}".` };
 }

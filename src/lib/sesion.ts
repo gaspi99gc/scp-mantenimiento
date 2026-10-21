@@ -14,6 +14,7 @@ export interface Usuario {
   id: string;
   nombre: string;
   email: string;
+  usuario?: string;
   rol: Rol;
   activo: boolean;
   debeCambiarClave: boolean;
@@ -26,11 +27,11 @@ export const usuarioActual = cache(async (): Promise<Usuario | null> => {
   if (!id) return null;
   const { data: p } = await supabase
     .from("perfil")
-    .select("id, nombre, email, rol, activo, debe_cambiar_clave")
+    .select("id, nombre, email, usuario, rol, activo, debe_cambiar_clave")
     .eq("id", id)
     .maybeSingle();
   if (!p) return null;
-  return { id: p.id, nombre: p.nombre, email: p.email, rol: p.rol, activo: p.activo, debeCambiarClave: p.debe_cambiar_clave };
+  return { id: p.id, nombre: p.nombre, email: p.email, usuario: p.usuario ?? undefined, rol: p.rol, activo: p.activo, debeCambiarClave: p.debe_cambiar_clave };
 });
 
 /** Hay sesión y el usuario está activo (puede que todavía tenga que elegir su contraseña). */

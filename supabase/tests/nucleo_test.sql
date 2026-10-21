@@ -194,6 +194,20 @@ select pg_temp.como('44444444-4444-4444-8444-444444444444');
 select is((select count(*)::int from public.local where id = 'aaaaaaaa-0000-4000-8000-000000000002'), 1, 'después de elegir la contraseña ya ve los locales');
 reset role;
 
+-- ——— Usuario para entrar ———
+update public.perfil set usuario = 'sup.prueba' where id = '22222222-2222-4222-8222-222222222222';
+select throws_ok(
+  $$update public.perfil set usuario = 'sup.prueba' where id = '33333333-3333-4333-8333-333333333333'$$,
+  '23505', null, 'dos personas no pueden tener el mismo usuario');
+select throws_ok(
+  $$update public.perfil set usuario = 'Con Espacios' where id = '33333333-3333-4333-8333-333333333333'$$,
+  '23514', null, 'el usuario va en minúsculas y sin espacios');
+select pg_temp.como('22222222-2222-4222-8222-222222222222');
+select throws_ok(
+  $$update public.perfil set usuario = 'otro' where id = '22222222-2222-4222-8222-222222222222'$$,
+  '42501', null, 'nadie cambia su usuario por la API (solo el servidor)');
+reset role;
+
 -- ——— Sesiones y funciones internas ———
 select ok(not has_function_privilege('authenticated', 'public.cerrar_sesiones(uuid)', 'execute'),
   'un usuario no puede cerrar sesiones ajenas');

@@ -12,12 +12,15 @@ export function ClaveVisible({
   autoComplete,
   invalida,
   describedBy,
+  opcional,
 }: {
   id: string;
   name: string;
   autoComplete: "current-password" | "new-password";
   invalida?: boolean;
   describedBy?: string;
+  /** Si es true, el campo se puede dejar vacío. */
+  opcional?: boolean;
 }) {
   const [ver, setVer] = useState(false);
   return (
@@ -27,7 +30,7 @@ export function ClaveVisible({
         name={name}
         type={ver ? "text" : "password"}
         autoComplete={autoComplete}
-        required
+        required={!opcional}
         aria-invalid={invalida || undefined}
         aria-describedby={describedBy}
         className={cx(CLASE_CAMPO, "pr-24", invalida ? "border-rojo" : "border-borde")}

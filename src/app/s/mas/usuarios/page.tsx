@@ -14,7 +14,7 @@ export default async function Usuarios() {
   const supabase = await clienteServidor();
   const { data: perfiles, error } = await supabase
     .from("perfil")
-    .select("id, nombre, email, rol, activo, debe_cambiar_clave")
+    .select("id, nombre, email, usuario, rol, activo, debe_cambiar_clave")
     .order("activo", { ascending: false })
     .order("nombre");
 
@@ -22,6 +22,7 @@ export default async function Usuarios() {
     id: p.id,
     nombre: p.nombre,
     email: p.email,
+    usuario: p.usuario ?? undefined,
     rol: ROL_TEXTO[p.rol],
     activo: p.activo,
     debeCambiarClave: p.debe_cambiar_clave,

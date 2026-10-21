@@ -20,9 +20,12 @@ if (faltan.length) {
   console.error(`Faltan en .env.local: ${faltan.join(", ")}.`);
   process.exit(1);
 }
-if (clave.length < 10 || !/[a-zA-Z]/.test(clave) || !/\d/.test(clave)) {
-  console.error("DEV_ADMIN_PASSWORD necesita al menos 10 caracteres, con letras y números.");
+if (clave.length < 6) {
+  console.error("DEV_ADMIN_PASSWORD necesita al menos 6 caracteres (el mínimo de Supabase).");
   process.exit(1);
+}
+if (clave.length < 10 || !/[a-zA-Z]/.test(clave) || !/\d/.test(clave)) {
+  console.warn("Ojo: la contraseña es débil. Cambiala desde Más → Usuarios antes de cargar datos reales.");
 }
 
 const nombre =
@@ -59,6 +62,8 @@ if (usuario) {
 const { error: errorPerfil } = await admin
   .from("perfil")
   .upsert({ id: usuario.id, nombre, email, rol: "admin", activo: true, debe_cambiar_clave: false });
+// Usuario corto para entrar ("admin"), si nadie más lo tiene.
+await admin.from("perfil").update({ usuario: "admin" }).eq("id", usuario.id).is("usuario", null);
 if (errorPerfil) throw errorPerfil;
 
 console.log(`Listo: ${nombre} es admin. Entrá con "Entrar como admin" en http://localhost:3000/login.`);

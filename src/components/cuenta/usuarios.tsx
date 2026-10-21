@@ -5,12 +5,14 @@
 import { useActionState, useState, useTransition } from "react";
 import {
   cambiarActivo,
+  cambiarMisDatos,
   crearUsuario,
   ponerClaveProvisoria,
   type EstadoUsuarios,
 } from "@/app/s/mas/usuarios/acciones";
 import { Boton, cx } from "@/components/ui";
 import { AvisoError, Campo, CLASE_CAMPO } from "./campos";
+import { ClaveVisible } from "./clave-visible";
 
 // Sin letras ni números que se confundan al dictarla por teléfono (0/O, 1/l/I).
 const LETRAS = "abcdefghijkmnpqrstuvwxyz";
@@ -108,6 +110,18 @@ export function NuevoUsuario() {
           className={cx(CLASE_CAMPO, "border-borde")}
         />
       </Campo>
+      <Campo id="usuario-nuevo" rotulo="Usuario para entrar (opcional)" ayuda="Corto y en minúsculas, por ejemplo lorena.paz. Si no ponés uno, entra con el email.">
+        <input
+          id="usuario-nuevo"
+          name="usuario"
+          autoComplete="off"
+          autoCapitalize="none"
+          spellCheck={false}
+          pattern="[a-z0-9._-]{3,30}"
+          aria-describedby="usuario-nuevo-ayuda"
+          className={cx(CLASE_CAMPO, "border-borde")}
+        />
+      </Campo>
       <fieldset>
         <legend className="rotulo mb-1.5 text-lg">Rol</legend>
         <div className="grid grid-cols-2 gap-2">
@@ -150,6 +164,7 @@ export interface DatosUsuario {
   id: string;
   nombre: string;
   email: string;
+  usuario?: string;
   rol: string;
   activo: boolean;
   debeCambiarClave: boolean;
@@ -180,9 +195,21 @@ export function FilaUsuario({ usuario }: { usuario: DatosUsuario }) {
             {usuario.soyYo && <span className="text-sm text-cemento">(vos)</span>}
             <span className="text-sm font-medium">{usuario.rol}</span>
           </p>
-          <p className="mt-0.5 text-sm text-cemento [overflow-wrap:anywhere]">{usuario.email}</p>
+          <p className="mt-0.5 text-sm text-cemento [overflow-wrap:anywhere]">
+            {usuario.usuario && (
+              <>
+                Usuario <span className="font-semibold text-tinta">{usuario.usuario}</span>,{" "}
+              </>
+            )}
+            {usuario.email}
+          </p>
           <p className={cx("mt-0.5 text-sm font-medium", !usuario.activo ? "text-rojo" : "text-tinta")}>{estado}</p>
         </div>
+        {usuario.soyYo && (
+          <Boton type="button" variante="secundario" onClick={() => setAbierta(!abierta)} aria-expanded={abierta}>
+            Cambiar mi usuario o contraseña
+          </Boton>
+        )}
         {!usuario.soyYo && (
           <div className="flex flex-wrap gap-2">
             {usuario.activo && (
@@ -199,7 +226,8 @@ export function FilaUsuario({ usuario }: { usuario: DatosUsuario }) {
       <div aria-live="polite" className="empty:hidden mt-3">
         {(estadoActivo.error || estadoActivo.ok) && <Aviso estado={estadoActivo} />}
       </div>
-      {abierta && usuario.activo && (
+      {abierta && usuario.soyYo && <MisDatos usuario={usuario.usuario ?? ""} />}
+      {abierta && usuario.activo && !usuario.soyYo && (
         <form action={ponerClave} className="mt-3 grid gap-3 rounded-[var(--radius-planilla)] bg-yeso/60 p-3">
           <input type="hidden" name="id" value={usuario.id} />
           <Aviso estado={estadoClave} />
@@ -212,5 +240,45 @@ export function FilaUsuario({ usuario }: { usuario: DatosUsuario }) {
         </form>
       )}
     </li>
+  );
+}
+
+/** Cambiar el propio usuario y, si se quiere, la contraseña. Pide la contraseña actual. */
+function MisDatos({ usuario }: { usuario: string }) {
+  const [estado, guardar, guardando] = useActionState<EstadoUsuarios, FormData>(cambiarMisDatos, {});
+  return (
+    <form action={guardar} className="mt-3 grid gap-4 rounded-[var(--radius-planilla)] bg-yeso/60 p-3 sm:grid-cols-2">
+      <div className="sm:col-span-2" aria-live="polite">
+        <Aviso estado={estado} />
+      </div>
+      <Campo id="mi-usuario" rotulo="Usuario para entrar" ayuda="En minúsculas, sin espacios.">
+        <input
+          id="mi-usuario"
+          name="usuario"
+          required
+          defaultValue={usuario}
+          autoComplete="username"
+          autoCapitalize="none"
+          spellCheck={false}
+          aria-describedby="mi-usuario-ayuda"
+          className={cx(CLASE_CAMPO, "border-borde")}
+        />
+      </Campo>
+      <Campo id="mi-actual" rotulo="Contraseña actual">
+        <ClaveVisible id="mi-actual" name="actual" autoComplete="current-password" />
+      </Campo>
+      <Campo id="mi-nueva" rotulo="Contraseña nueva (opcional)" ayuda="Al menos 10 caracteres, con letras y números. Dejala vacía para no cambiarla.">
+        <ClaveVisible id="mi-nueva" name="nueva" autoComplete="new-password" describedBy="mi-nueva-ayuda" opcional />
+      </Campo>
+      <Campo id="mi-repetida" rotulo="Repetí la nueva">
+        <ClaveVisible id="mi-repetida" name="repetida" autoComplete="new-password" opcional />
+      </Campo>
+      <div className="sm:col-span-2">
+        <Boton type="submit" disabled={guardando} className="max-sm:w-full">
+          {guardando ? "Guardando…" : "Guardar cambios"}
+        </Boton>
+        <p className="mt-2 text-sm text-cemento">Si cambiás la contraseña, se cierra la sesión y entrás de nuevo con la nueva.</p>
+      </div>
+    </form>
   );
 }

@@ -1,21 +1,31 @@
 "use server";
 
-// Entrar y salir. Los mensajes de error nunca dicen si un email tiene cuenta.
+// Entrar y salir, con el usuario ("admin") o con el email. Los mensajes de error nunca dicen si una cuenta existe.
 
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
 import { destinoSeguro } from "@/lib/sesion";
+import { clienteAdmin } from "@/lib/supabase/admin";
 import { clienteServidor } from "@/lib/supabase/servidor";
 
-export type EstadoLogin = { error?: string; email?: string };
+export type EstadoLogin = { error?: string; usuario?: string };
 
-const ERROR_CREDENCIALES = "El email o la contraseña no coinciden.";
+const ERROR_CREDENCIALES = "El usuario o la contraseña no coinciden.";
 
 const Credenciales = z.object({
-  email: z.string().trim().toLowerCase().email(),
-  clave: z.string().min(1),
+  usuario: z.string().trim().toLowerCase().min(1).max(254),
+  clave: z.string().min(1).max(200),
 });
+
+/** El email con el que Supabase Auth conoce a esa persona: el que escribió, o el de su nombre de usuario. */
+async function emailDe(usuario: string): Promise<string | undefined> {
+  if (usuario.includes("@")) return usuario;
+  if (!/^[a-z0-9._-]{3,30}$/.test(usuario)) return undefined;
+  // Nadie sin sesión puede leer perfiles: la búsqueda la hace el servidor y solo devuelve el email.
+  const { data } = await clienteAdmin().from("perfil").select("email").eq("usuario", usuario).maybeSingle();
+  return data?.email;
+}
 
 async function entrarCon(email: string, clave: string): Promise<string | undefined> {
   const supabase = await clienteServidor();
@@ -31,12 +41,13 @@ async function entrarCon(email: string, clave: string): Promise<string | undefin
 }
 
 export async function iniciarSesion(_previo: EstadoLogin, datos: FormData): Promise<EstadoLogin> {
-  const email = String(datos.get("email") ?? "");
-  const leidos = Credenciales.safeParse({ email, clave: datos.get("clave") });
-  if (!leidos.success) return { error: ERROR_CREDENCIALES, email };
+  const usuario = String(datos.get("usuario") ?? "");
+  const leidos = Credenciales.safeParse({ usuario, clave: datos.get("clave") });
+  if (!leidos.success) return { error: ERROR_CREDENCIALES, usuario };
 
-  const error = await entrarCon(leidos.data.email, leidos.data.clave);
-  if (error) return { error, email };
+  const email = await emailDe(leidos.data.usuario);
+  const error = email ? await entrarCon(email, leidos.data.clave) : ERROR_CREDENCIALES;
+  if (error) return { error, usuario };
   redirect(destinoSeguro(datos.get("siguiente")));
 }
 
