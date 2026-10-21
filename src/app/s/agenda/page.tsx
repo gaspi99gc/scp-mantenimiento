@@ -1,8 +1,8 @@
-// Agenda: todos los controles con su vencimiento, para planificar las visitas.
+// Agenda: todos los controles con su vencimiento, del más urgente al más lejano. Es la pantalla de inicio.
 
-import { Agenda, type FiltroAgenda } from "@/components/hoy/agenda";
-import { datosAgenda } from "@/components/hoy/consultas";
-import { cantidad } from "@/components/hoy/texto";
+import { Agenda, type FiltroAgenda } from "@/components/agenda/agenda";
+import { datosAgenda } from "@/components/agenda/consultas";
+import { cantidad } from "@/components/agenda/texto";
 import { Boton, Encabezado } from "@/components/ui";
 import { hoy } from "@/lib/fechas";
 

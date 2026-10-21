@@ -2,7 +2,7 @@
 
 Plataforma web para SCP, una empresa de mantenimiento integral de comercios y locales (obras, electricidad, plomería, gas, impermeabilizaciones, pintura, durlock) que trabaja con un abono mensual "todo incluido".
 
-- **Supervisor (SCP):** carga elementos, vencimientos, visitas e informes desde el celular.
+- **Supervisor (SCP):** ve qué vence y registra cada control desde el celular; la app calcula la próxima fecha.
 - **Cliente:** ve el estado de cumplimiento de sus locales, los informes, los certificados y la carpeta de inspección, y hace pedidos.
 
 ## Stack
@@ -16,18 +16,14 @@ npm install
 npm run dev
 ```
 
-Abrí <http://localhost:3000/s> (la app del supervisor) o <http://localhost:3000/login>. Por ahora funciona con **datos de ejemplo** (`src/lib/datos.ts`), con fechas relativas a hoy, y nada se guarda: Supabase viene en el paso siguiente.
+Abrí <http://localhost:3000/s> (la app del supervisor; arranca en la Agenda) o <http://localhost:3000/login>. Por ahora funciona con **datos de ejemplo** (`src/lib/datos.ts`), con fechas relativas a hoy, y nada se guarda: Supabase viene en el paso siguiente.
 
 | Pantalla | Ruta |
 |---|---|
-| Hoy | `/s` |
-| Agenda de vencimientos | `/s/agenda` |
+| Agenda de vencimientos (inicio) | `/s/agenda` |
 | Locales y ficha de local | `/s/locales`, `/s/locales/loc-1` |
 | Ficha de elemento (tarjetas de control y QR) | `/s/elementos/el-1`, `/s/elementos/el-9` |
 | Escanear QR | `/s/escanear` |
-| Modo visita | `/s/visitas/vi-1` |
-| Armar visita | `/s/visitas/nueva?local=loc-4` |
-| Informe (publicado con subsanación / borrador) | `/s/informes/inf-1`, `/s/informes/inf-2` |
 | Catálogo de controles | `/s/mas/catalogo` |
 | Muestras del sistema de diseño | `/s/muestras` |
 | Login | `/login` |
@@ -44,4 +40,4 @@ Abrí <http://localhost:3000/s> (la app del supervisor) o <http://localhost:3000
 
 ## Estado
 
-Etapa de diseño. Se construye primero la parte del supervisor y después la del cliente. Próximos pasos: subir a Vercel, la base de datos en Supabase, conectar las pantallas, el catálogo de controles editable y el alta de locales (ver [`docs/proximos-pasos.md`](docs/proximos-pasos.md)).
+Núcleo simple (decisión D18): Agenda, locales, equipos con sus tarjetas de control, registrar, escanear QR, cambio de cilindro, pedidos y catálogo. Visitas, informes con PDF y fotos quedan para más adelante. Próximo paso: base de datos en Supabase con login y usuarios.

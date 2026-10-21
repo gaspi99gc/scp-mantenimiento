@@ -4,13 +4,13 @@
 
 import { estadoDe, hoy, sumarDias, sumarMeses } from "./fechas";
 import type {
-  Cliente, Control, Ejecucion, Elemento, EstadoControl, Informe, Local, Pedido, Supervisor, TipoControl, Visita,
+  Cliente, Control, Ejecucion, Elemento, EstadoControl, Local, Pedido, Supervisor, TipoControl,
 } from "./tipos";
 
 const H = hoy();
 const d = (n: number) => sumarDias(H, n);
 const m = (n: number) => sumarMeses(H, n);
-// Última limpieza de la campana de La Espiga Caballito: visita vi-4, ejecución ej-1 e informe inf-1 son del mismo día.
+// Última limpieza de la campana de La Espiga Caballito (ejecución ej-1).
 const ultimaCampana = sumarMeses(d(21), -3);
 
 export const supervisorActual: Supervisor = { id: "sup-1", nombre: "Matías Ferreyra", telefono: "+54 9 11 5555-0142" };
@@ -194,64 +194,11 @@ export const controles: Control[] = [
   { id: "co-28", localId: "loc-5", elementoId: "el-17", tipoControlId: "tc-recarga", vencimiento: d(183), ultimaEjecucion: sumarMeses(d(183), -12), ultimoEjecutor: "Recargas Norte" },
 ];
 
-export const visitas: Visita[] = [
-  {
-    id: "vi-1", localId: "loc-3", fecha: H, franja: "9 a 11 h", tipo: "preventiva", estado: "en_curso",
-    controlIds: ["co-17", "co-18", "co-21", "co-22", "co-24"], supervisorId: "sup-1",
-    nota: "El matafuego de cocina está en el taller; dejamos el sustituto C-700112.",
-  },
-  {
-    id: "vi-2", localId: "loc-1", fecha: d(2), franja: "8 a 10 h", tipo: "preventiva", estado: "programada",
-    controlIds: ["co-1", "co-4", "co-7", "co-12"], supervisorId: "sup-1",
-  },
-  {
-    id: "vi-3", localId: "loc-4", fecha: d(4), franja: "8 a 10 h", tipo: "preventiva", estado: "programada",
-    controlIds: ["co-26"], supervisorId: "sup-1", nota: "Permiso de trabajo pedido al shopping.",
-  },
-  {
-    id: "vi-4", localId: "loc-1", fecha: ultimaCampana, franja: "8 a 10 h", tipo: "preventiva", estado: "cerrada",
-    controlIds: ["co-10"], supervisorId: "sup-1",
-  },
-  {
-    id: "vi-5", localId: "loc-2", fecha: d(-6), franja: "15 a 17 h", tipo: "correctiva", estado: "fallida",
-    controlIds: ["co-15"], supervisorId: "sup-1", nota: "Local cerrado por inventario. Foto de la persiana tomada a las 15:20.",
-  },
-];
-
 export const ejecuciones: Ejecucion[] = [
-  { id: "ej-1", controlId: "co-10", visitaId: "vi-4", fecha: ultimaCampana, resultado: "ok", vencimientoAnterior: sumarDias(ultimaCampana, 2), vencimientoNuevo: d(21), origen: "calculado", ejecutor: "SCP" },
+  { id: "ej-1", controlId: "co-10", fecha: ultimaCampana, resultado: "ok", vencimientoAnterior: sumarDias(ultimaCampana, 2), vencimientoNuevo: d(21), origen: "calculado", ejecutor: "SCP" },
   { id: "ej-2", controlId: "co-1", fecha: sumarMeses(d(6), -12), resultado: "reemplazo", vencimientoAnterior: sumarMeses(d(6), -12), vencimientoNuevo: d(6), origen: "certificado", oblea: "0045821", ejecutor: "Recargas Norte", nota: "Se reemplazó la unidad C-301877 por C-448120." },
   { id: "ej-3", controlId: "co-1", fecha: sumarMeses(d(6), -24), resultado: "ok", vencimientoAnterior: sumarMeses(d(6), -24), vencimientoNuevo: sumarMeses(d(6), -12), origen: "calculado", oblea: "0031177", ejecutor: "Recargas Norte" },
   { id: "ej-4", controlId: "co-2", fecha: "2024-03-10", resultado: "ok", vencimientoNuevo: "2029-03-10", origen: "certificado", ejecutor: "Recargas Norte" },
-];
-
-export const informes: Informe[] = [
-  {
-    id: "inf-1", numero: "SCP-2026-000118", visitaId: "vi-4", localId: "loc-1", fecha: ultimaCampana, estado: "publicado",
-    resumen: "Limpieza completa de la campana de la cuadra y del primer tramo de conducto. Se cambiaron los filtros metálicos.",
-    trabajos: ["Limpieza de campana y filtros", "Cambio de 3 filtros metálicos", "Ajuste de la tapa de inspección del conducto"],
-    recomendaciones: ["El motor del extractor hace ruido en los rulemanes. Conviene cambiarlos en los próximos 2 meses."],
-    fotos: [
-      { id: "f1", epigrafe: "Campana antes de la limpieza", etapa: "antes", visibleCliente: true },
-      { id: "f2", epigrafe: "Campana después de la limpieza", etapa: "despues", visibleCliente: true },
-      { id: "f3", epigrafe: "Filtros nuevos colocados", etapa: "despues", visibleCliente: true },
-    ],
-    firma: { nombre: "Sandra Gómez", dni: "28.441.903" },
-    subsanaciones: [
-      {
-        id: "sub-1", fecha: sumarDias(ultimaCampana, 2), motivo: "Dato mal cargado",
-        texto: "Se cambiaron 3 filtros metálicos, no 2 como decía el resumen original.", autor: "Matías Ferreyra",
-      },
-    ],
-  },
-  {
-    id: "inf-2", numero: "SCP-2026-000131", visitaId: "vi-1", localId: "loc-3", fecha: H, estado: "borrador",
-    resumen: "",
-    trabajos: [],
-    recomendaciones: [],
-    fotos: [],
-    subsanaciones: [],
-  },
 ];
 
 export const pedidos: Pedido[] = [
@@ -271,21 +218,13 @@ export const tipoDe = (control: Control): TipoControl => tiposControl.find((t) =
 export const localDe = (id: string) => locales.find((l) => l.id === id);
 export const clienteDe = (id: string) => clientes.find((c) => c.id === id);
 export const elementoDe = (id: string) => elementos.find((e) => e.id === id);
-export const visitaDe = (id: string) => visitas.find((v) => v.id === id);
-export const informeDe = (id: string) => informes.find((i) => i.id === id);
 
 export const elementosDeLocal = (localId: string) => elementos.filter((e) => e.localId === localId);
 export const controlesDeLocal = (localId: string) => controles.filter((c) => c.localId === localId);
 export const controlesDeElemento = (elementoId: string) => controles.filter((c) => c.elementoId === elementoId);
 export const ejecucionesDeControl = (controlId: string) =>
   ejecuciones.filter((e) => e.controlId === controlId).sort((a, b) => (a.fecha < b.fecha ? 1 : -1));
-export const visitasDeLocal = (localId: string) => visitas.filter((v) => v.localId === localId);
-export const informesDeLocal = (localId: string) => informes.filter((i) => i.localId === localId);
 export const pedidosDeLocal = (localId: string) => pedidos.filter((p) => p.localId === localId);
-
-/** La visita abierta (programada o en curso) que incluye este control, si hay. */
-export const visitaProgramadaDe = (controlId: string) =>
-  visitas.find((v) => (v.estado === "programada" || v.estado === "en_curso") && v.controlIds.includes(controlId));
 
 export const estadoControl = (c: Control): EstadoControl => estadoDe(c, tipoDe(c));
 

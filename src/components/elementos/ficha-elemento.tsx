@@ -110,7 +110,6 @@ export function FichaElemento({
           i.control.id === r.controlId
             ? {
                 ...i,
-                programada: undefined,
                 control: { ...i.control, vencimiento: nuevo, ultimaEjecucion: r.fecha, ultimoEjecutor: ejecutor },
               }
             : i,
@@ -195,7 +194,6 @@ export function FichaElemento({
         return r
           ? {
               ...i,
-              programada: undefined,
               control: { ...i.control, vencimiento: r.vence, ultimaEjecucion: r.base, ultimoEjecutor: undefined },
             }
           : i;
@@ -239,7 +237,6 @@ export function FichaElemento({
                   control={i.control}
                   tipo={i.tipo}
                   estado={estado}
-                  programada={i.programada}
                   sellada={selladas.includes(i.control.id)}
                 >
                   <Boton ancho variante={urgente ? "primario" : "secundario"} onClick={() => abrirRegistro(i.control.id)}>

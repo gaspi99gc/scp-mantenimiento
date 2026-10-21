@@ -83,7 +83,6 @@ export type ResultadoEjecucion = "ok" | "reemplazo" | "observado" | "no_apto" | 
 export interface Ejecucion {
   id: string;
   controlId: string;
-  visitaId?: string;
   fecha: FechaISO;
   resultado: ResultadoEjecucion;
   vencimientoAnterior?: FechaISO;
@@ -92,41 +91,6 @@ export interface Ejecucion {
   oblea?: string;
   ejecutor: string;
   nota?: string;
-}
-
-export interface Visita {
-  id: string;
-  localId: string;
-  fecha: FechaISO;
-  franja: string; // "8 a 10 h"
-  tipo: "preventiva" | "correctiva" | "relevamiento" | "obra";
-  estado: "programada" | "en_curso" | "cerrada" | "fallida";
-  controlIds: string[];
-  supervisorId: string;
-  nota?: string;
-}
-
-export interface Subsanacion {
-  id: string;
-  fecha: FechaISO;
-  motivo: string;
-  texto: string;
-  autor: string;
-}
-
-export interface Informe {
-  id: string;
-  numero: string; // "SCP-2026-000123"
-  visitaId: string;
-  localId: string;
-  fecha: FechaISO;
-  estado: "borrador" | "publicado";
-  resumen: string;
-  trabajos: string[];
-  recomendaciones: string[];
-  fotos: { id: string; epigrafe: string; etapa: "antes" | "despues" | "certificado"; visibleCliente: boolean }[];
-  firma?: { nombre: string; dni: string };
-  subsanaciones: Subsanacion[];
 }
 
 export interface Pedido {

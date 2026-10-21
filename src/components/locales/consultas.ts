@@ -8,14 +8,12 @@ import {
   describirControl,
   ejecuciones,
   estadoControl,
-  informes,
   ORDEN_ESTADO,
   resumenLocal,
   supervisorActual,
-  visitasDeLocal,
 } from "@/lib/datos";
 import { diasEntre, fechaConDia, hoy } from "@/lib/fechas";
-import type { EstadoControl, FechaISO, Local, Pedido, ResultadoEjecucion, Visita } from "@/lib/tipos";
+import type { EstadoControl, FechaISO, Local, Pedido, ResultadoEjecucion } from "@/lib/tipos";
 
 export type Resumen = ReturnType<typeof resumenLocal>;
 
@@ -72,38 +70,6 @@ export function fraseResumen(r: Resumen): string {
   return `${texto}.`;
 }
 
-// ——— Visitas ———
-
-/** La visita abierta más próxima del local (en curso o programada, de hoy en adelante). */
-export function proximaVisita(localId: string): Visita | undefined {
-  const H = hoy();
-  return visitasDeLocal(localId)
-    .filter((v) => (v.estado === "en_curso" || v.estado === "programada") && v.fecha >= H)
-    .sort((a, b) => (a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : a.estado === "en_curso" ? -1 : 1))[0];
-}
-
-/** "Visita en curso, hoy de 9 a 11 h" o "Visita el mié 14 oct". */
-export function textoVisita(v: Visita, conFranja = false): string {
-  // Espacio duro antes de la "h" para que no quede sola en otra línea.
-  const franja = v.franja.replace(/ h$/, "\u00a0h");
-  if (v.estado === "en_curso") return `Visita en curso, hoy de ${franja}`;
-  const dia = v.fecha === hoy() ? "hoy" : `el ${fechaConDia(v.fecha)}`;
-  return `Visita ${dia}${conFranja ? `, de ${franja}` : ""}`;
-}
-
-const TIPO_VISITA: Record<Visita["tipo"], string> = {
-  preventiva: "preventiva",
-  correctiva: "correctiva",
-  relevamiento: "de relevamiento",
-  obra: "de obra",
-};
-const ESTADO_VISITA: Record<Visita["estado"], string> = {
-  programada: "programada",
-  en_curso: "en curso",
-  cerrada: "cerrada",
-  fallida: "fallida",
-};
-
 // ——— Historial ———
 
 export const RESULTADO: Record<ResultadoEjecucion, string> = {
@@ -114,41 +80,24 @@ export const RESULTADO: Record<ResultadoEjecucion, string> = {
   no_realizado: "No se pudo hacer",
 };
 
-export type EventoHistorial =
-  | {
-      clase: "visita";
-      id: string;
-      fecha: FechaISO;
-      titulo: string;
-      estado: Visita["estado"];
-      franja: string;
-      que: string; // "Recarga, limpieza de campana y control de plagas"
-      nota?: string;
-      informe?: { id: string; numero: string };
-    }
-  | {
-      clase: "ejecucion";
-      id: string;
-      fecha: FechaISO;
-      titulo: string; // "Recarga"
-      sobre: string; // "Matafuego ABC 5 kg, salón, junto a la caja"
-      elementoId?: string;
-      codigo?: string;
-      resultado?: ResultadoEjecucion;
-      ejecutor?: string;
-      oblea?: string;
-      vencimientoNuevo?: FechaISO;
-      nota?: string;
-    };
+export interface EventoHistorial {
+  clase: "ejecucion";
+  id: string;
+  fecha: FechaISO;
+  titulo: string; // "Recarga"
+  sobre: string; // "Matafuego ABC 5 kg, salón, junto a la caja"
+  elementoId?: string;
+  codigo?: string;
+  resultado?: ResultadoEjecucion;
+  ejecutor?: string;
+  oblea?: string;
+  vencimientoNuevo?: FechaISO;
+  nota?: string;
+}
 
 export interface DiaHistorial {
   fecha: FechaISO;
   eventos: EventoHistorial[];
-}
-
-function enumerar(cosas: string[]): string {
-  if (cosas.length <= 1) return cosas[0] ?? "";
-  return `${cosas.slice(0, -1).join(", ")} y ${cosas.at(-1)}`;
 }
 
 const minuscula = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
@@ -164,31 +113,9 @@ function sobreDe(controlId: string) {
   };
 }
 
-/**
- * Visitas (las que ya pasaron o están en curso) y trabajos registrados, del más nuevo al más viejo,
- * agrupados por día. Las visitas programadas a futuro no son historia: van arriba, en "próxima visita".
- */
+/** Trabajos registrados en el local, del más nuevo al más viejo, agrupados por día. */
 export function historialDeLocal(localId: string): DiaHistorial[] {
-  const H = hoy();
   const eventos: EventoHistorial[] = [];
-
-  for (const v of visitasDeLocal(localId)) {
-    if (v.estado === "programada" && v.fecha >= H) continue;
-    const informe = informes.find((i) => i.visitaId === v.id);
-    const que = v.controlIds.map((id) => sobreDe(id).titulo);
-    const sinRepetir = [...new Set(que)].map((t, i) => (i === 0 ? t : minuscula(t)));
-    eventos.push({
-      clase: "visita",
-      id: v.id,
-      fecha: v.fecha,
-      titulo: `Visita ${TIPO_VISITA[v.tipo]} ${ESTADO_VISITA[v.estado]}`,
-      estado: v.estado,
-      franja: v.franja,
-      que: enumerar(sinRepetir),
-      nota: v.nota,
-      informe: informe && { id: informe.id, numero: informe.numero },
-    });
-  }
 
   const delLocal = controlesDeLocal(localId);
   const conRegistro = new Set<string>();
@@ -224,8 +151,8 @@ export function historialDeLocal(localId: string): DiaHistorial[] {
     });
   }
 
-  // Más nuevo primero; dentro del mismo día, la visita antes que sus trabajos.
-  eventos.sort((a, b) => (a.fecha !== b.fecha ? (a.fecha < b.fecha ? 1 : -1) : a.clase === "visita" ? -1 : 1));
+  // Más nuevo primero.
+  eventos.sort((a, b) => (a.fecha < b.fecha ? 1 : a.fecha > b.fecha ? -1 : 0));
 
   const dias: DiaHistorial[] = [];
   for (const ev of eventos) {

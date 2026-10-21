@@ -6,14 +6,12 @@
 import type { ReactNode } from "react";
 import { fechaMedia, fechaNumerica, grillaPeriodo, hoy, textoPeriodo, textoRelativo } from "@/lib/fechas";
 import type { Control, EstadoControl, TipoControl } from "@/lib/tipos";
-import { IconoHoy } from "./iconos";
 import { Cifra, cx, ESTADO } from "./ui";
 
 export function Tarjeta({
   control,
   tipo,
   estado,
-  programada,
   sellada,
   referencia = hoy(),
   children,
@@ -22,8 +20,6 @@ export function Tarjeta({
   control: Control;
   tipo: TipoControl;
   estado: EstadoControl;
-  /** Texto si hay visita armada: "Visita el vie 14 nov" */
-  programada?: string;
   /** Recién registrada: la fecha aparece con el golpe de sello. */
   sellada?: boolean;
   referencia?: string;
@@ -119,20 +115,12 @@ export function Tarjeta({
           </ol>
         )}
 
-        {(control.ultimaEjecucion || programada) && (
+        {control.ultimaEjecucion && (
           <div className="mt-3 space-y-1 text-sm">
-            {control.ultimaEjecucion && (
-              <p className="text-cemento">
-                Último: <Cifra className="text-[15px] text-tinta">{fechaNumerica(control.ultimaEjecucion)}</Cifra>
-                {control.ultimoEjecutor ? `, ${control.ultimoEjecutor}` : ""}
-              </p>
-            )}
-            {programada && (
-              <p className="flex items-center gap-1.5 font-semibold text-tinta">
-                <IconoHoy tamano={17} className="shrink-0" />
-                {programada}
-              </p>
-            )}
+            <p className="text-cemento">
+              Último: <Cifra className="text-[15px] text-tinta">{fechaNumerica(control.ultimaEjecucion)}</Cifra>
+              {control.ultimoEjecutor ? `, ${control.ultimoEjecutor}` : ""}
+            </p>
           </div>
         )}
 

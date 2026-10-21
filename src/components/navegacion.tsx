@@ -6,19 +6,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { IconoAgenda, IconoEscanear, IconoHoy, IconoLocales, IconoMas } from "./iconos";
+import { IconoAgenda, IconoEscanear, IconoLocales, IconoMas } from "./iconos";
 import { cx, MarcaSCP } from "./ui";
 
 const ITEMS = [
-  { href: "/s", texto: "Hoy", Icono: IconoHoy, exacto: true },
   { href: "/s/agenda", texto: "Agenda", Icono: IconoAgenda },
   { href: "/s/escanear", texto: "Escanear", Icono: IconoEscanear, central: true },
   { href: "/s/locales", texto: "Locales", Icono: IconoLocales },
   { href: "/s/mas", texto: "Más", Icono: IconoMas },
 ];
 
-function activo(path: string, href: string, exacto?: boolean) {
-  return exacto ? path === href : path === href || path.startsWith(href + "/");
+function activo(path: string, href: string) {
+  return path === href || path.startsWith(href + "/");
 }
 
 export function Navegacion({ nombre }: { nombre: string }) {
@@ -31,9 +30,9 @@ export function Navegacion({ nombre }: { nombre: string }) {
         aria-label="Principal"
         className="fixed inset-x-0 bottom-0 z-30 bg-tinta pb-[env(safe-area-inset-bottom)] text-hierro lg:hidden"
       >
-        <ul className="mx-auto grid h-16 max-w-[640px] grid-cols-5">
-          {ITEMS.map(({ href, texto, Icono, exacto, central }) => {
-            const a = activo(path, href, exacto);
+        <ul className="mx-auto grid h-16 max-w-[640px] grid-cols-4">
+          {ITEMS.map(({ href, texto, Icono, central }) => {
+            const a = activo(path, href);
             return (
               <li key={href} className="flex">
                 <Link
@@ -77,9 +76,9 @@ export function Navegacion({ nombre }: { nombre: string }) {
         className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col bg-tinta px-4 pb-6 pt-7 text-hierro lg:flex"
       >
         <Link
-          href="/s"
+          href="/s/agenda"
           className="mb-9 flex items-center gap-3 rounded-[2px] px-2 focus-visible:outline-papel"
-          aria-label="SCP Mantenimiento integral, ir a Hoy"
+          aria-label="SCP Mantenimiento integral, ir a la Agenda"
         >
           <MarcaSCP clara className="text-[30px]" />
           <span className="text-[14px] leading-tight">
@@ -97,8 +96,8 @@ export function Navegacion({ nombre }: { nombre: string }) {
           Escanear QR
         </Link>
         <ul className="space-y-0.5">
-          {ITEMS.filter((i) => !i.central).map(({ href, texto, Icono, exacto }) => {
-            const a = activo(path, href, exacto);
+          {ITEMS.filter((i) => !i.central).map(({ href, texto, Icono }) => {
+            const a = activo(path, href);
             return (
               <li key={href}>
                 <Link

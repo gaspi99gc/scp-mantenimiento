@@ -1,6 +1,6 @@
 "use client";
 
-// Formulario para registrar un trabajo sobre un control. Lo usan la ficha del elemento y el modo visita.
+// Formulario para registrar un trabajo sobre un control. Lo usan la ficha del elemento y la de controles del local.
 // Es la interacción más importante de la app: tiene que poder hacerse en menos de un minuto, parado en el local.
 // Por ahora no guarda nada: devuelve el resultado con `alRegistrar` y la pantalla que lo usa actualiza su estado.
 
@@ -8,7 +8,7 @@ import { useMemo, useState } from "react";
 import { fechaMedia, hoy, proponerVencimiento, textoPeriodo } from "@/lib/fechas";
 import type { Control, Elemento, FechaISO, ResultadoEjecucion, TipoControl } from "@/lib/tipos";
 import { Hoja } from "./hoja";
-import { IconoAlerta, IconoCamara, IconoCheck, IconoDocumento } from "./iconos";
+import { IconoAlerta } from "./iconos";
 import { Boton, Cifra, cx } from "./ui";
 
 export interface Registro {
@@ -31,8 +31,7 @@ const OPCIONES: Opcion[] = [
   { valor: "no_realizado", texto: "No se pudo hacer", ayuda: "El vencimiento sigue abierto." },
 ];
 
-const esFoto = (ev: string) => ev.toLowerCase().startsWith("foto");
-const esArchivo = (ev: string) => /certificado|protocolo|análisis/i.test(ev);
+// Las fotos y los certificados quedan para más adelante; por ahora solo se pide el número de oblea, y es opcional.
 const esNumero = (ev: string) => /número|oblea|precinto/i.test(ev);
 
 export function RegistrarEjecucion({
@@ -54,7 +53,7 @@ export function RegistrarEjecucion({
 }) {
   const [resultado, setResultado] = useState<ResultadoEjecucion | null>(bloqueo ? "reemplazo" : "ok");
   const [fecha, setFecha] = useState<FechaISO>(hoy());
-  const [evidencia, setEvidencia] = useState<Record<string, string>>({});
+  const [oblea, setOblea] = useState("");
   const [otraFecha, setOtraFecha] = useState(false);
   const [fechaTarjeta, setFechaTarjeta] = useState<FechaISO>("");
   const [motivo, setMotivo] = useState("");
@@ -70,7 +69,6 @@ export function RegistrarEjecucion({
   const faltan: string[] = [];
   if (!resultado) faltan.push("elegir el resultado");
   if (!fecha) faltan.push("la fecha del trabajo");
-  if (renueva) for (const ev of tipo.evidencia) if (!evidencia[ev]) faltan.push(ev.toLowerCase());
   if (resultado === "reemplazo" && elemento?.unidad && !serieNueva) faltan.push("el número de serie de la unidad nueva");
   if (renueva && otraFecha && !fechaTarjeta) faltan.push("la fecha que dice la tarjeta");
   if (renueva && otraFecha && !motivo.trim()) faltan.push("el motivo del cambio de fecha");
@@ -88,7 +86,7 @@ export function RegistrarEjecucion({
       vencimientoNuevo: renueva ? vencimientoFinal : undefined,
       origen: otraFecha ? "certificado" : "calculado",
       motivo: motivo.trim() || undefined,
-      oblea: Object.entries(evidencia).find(([k]) => esNumero(k))?.[1],
+      oblea: oblea.trim() || undefined,
       serieNueva: resultado === "reemplazo" ? serieNueva.trim() || undefined : undefined,
     });
   }
@@ -179,61 +177,17 @@ export function RegistrarEjecucion({
         </label>
       )}
 
-      {renueva && tipo.evidencia.length > 0 && (
-        <fieldset className="mb-5">
-          <legend className="rotulo mb-2 text-lg">Evidencia</legend>
-          <div className="grid gap-2">
-            {tipo.evidencia.map((ev) =>
-              esNumero(ev) ? (
-                <label key={ev} className="block">
-                  <span className="mb-1 block text-sm text-cemento">{ev}</span>
-                  <input
-                    inputMode="numeric"
-                    value={evidencia[ev] ?? ""}
-                    onChange={(e) => setEvidencia({ ...evidencia, [ev]: e.target.value })}
-                    className="cifra min-h-12 w-full rounded-[var(--radius-boton)] border border-borde bg-papel px-3 text-xl"
-                  />
-                </label>
-              ) : esFoto(ev) || esArchivo(ev) ? (
-                <label
-                  key={ev}
-                  className={cx(
-                    "flex min-h-12 cursor-pointer items-center gap-3 rounded-[var(--radius-boton)] border px-3",
-                    evidencia[ev] ? "border-verde/60" : "border-dashed border-cemento/50",
-                  )}
-                >
-                  <span className={evidencia[ev] ? "text-verde" : "text-cemento"}>
-                    {evidencia[ev] ? <IconoCheck /> : esFoto(ev) ? <IconoCamara /> : <IconoDocumento />}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block font-medium">{evidencia[ev] ? ev : `Agregar ${ev.toLowerCase()}`}</span>
-                    {evidencia[ev] && <span className="block truncate text-sm text-cemento">{evidencia[ev]}</span>}
-                  </span>
-                  <input
-                    type="file"
-                    accept={esFoto(ev) ? "image/*" : "image/*,application/pdf"}
-                    capture={esFoto(ev) ? "environment" : undefined}
-                    className="sr-only"
-                    onChange={(e) => {
-                      const f = e.target.files?.[0];
-                      if (f) setEvidencia({ ...evidencia, [ev]: f.name });
-                    }}
-                  />
-                </label>
-              ) : (
-                <label key={ev} className="flex min-h-12 cursor-pointer items-center gap-3 rounded-[var(--radius-boton)] border border-junta px-3">
-                  <input
-                    type="checkbox"
-                    className="size-5 accent-[var(--color-tinta)]"
-                    checked={!!evidencia[ev]}
-                    onChange={(e) => setEvidencia({ ...evidencia, [ev]: e.target.checked ? "completo" : "" })}
-                  />
-                  <span className="font-medium">{ev} completo</span>
-                </label>
-              ),
-            )}
-          </div>
-        </fieldset>
+      {renueva && tipo.evidencia.some(esNumero) && (
+        <label className="mb-5 block">
+          <span className="rotulo mb-1.5 block text-lg">Número de oblea</span>
+          <input
+            inputMode="numeric"
+            value={oblea}
+            onChange={(e) => setOblea(e.target.value)}
+            className="cifra min-h-12 w-full rounded-[var(--radius-boton)] border border-borde bg-papel px-3 text-xl"
+          />
+          <span className="mt-1 block text-sm text-cemento">Opcional. Es el número de la oblea que dejó la recargadora.</span>
+        </label>
       )}
 
       {renueva ? (

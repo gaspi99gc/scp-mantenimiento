@@ -6,9 +6,7 @@ import {
   estadosDeLocal,
   fraseResumen,
   peorDe,
-  proximaVisita,
   textoRegla,
-  textoVisita,
   type Resumen,
 } from "@/components/locales/consultas";
 import type { DatosFilaLocal } from "@/components/locales/fila-local";
@@ -25,7 +23,6 @@ export default function Locales() {
     const cliente = clientes.find((c) => c.id === l.clienteId)!;
     const resumen = resumenLocal(l.id);
     const estados = estadosDeLocal(l.id);
-    const visita = proximaVisita(l.id);
     const fila: DatosFilaLocal = {
       id: l.id,
       nombre: l.nombre,
@@ -37,7 +34,6 @@ export default function Locales() {
       peor: peorDe(estados),
       texto: textoRegla(resumen),
       frase: fraseResumen(resumen),
-      visita: visita && textoVisita(visita),
     };
     return { ...fila, clienteId: l.clienteId, resumen };
   });

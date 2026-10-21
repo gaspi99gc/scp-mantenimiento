@@ -1,4 +1,4 @@
-// Ficha del local: estado, contacto y acceso arriba; controles, elementos, historial, informes y pedidos en pestañas.
+// Ficha del local: estado, contacto y acceso arriba; controles, elementos, historial y pedidos en pestañas.
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -8,12 +8,9 @@ import {
   detallePedido,
   estadosDeLocal,
   fraseResumen,
-  haceCuanto,
   historialDeLocal,
   peorDe,
   plazoPedido,
-  proximaVisita,
-  textoVisita,
 } from "@/components/locales/consultas";
 import { ControlesLocal, type ItemControl } from "@/components/locales/controles-local";
 import { LineaDeTiempo } from "@/components/locales/historial";
@@ -21,17 +18,13 @@ import { Pestanas } from "@/components/locales/pestanas";
 import { Regla } from "@/components/locales/regla";
 import {
   IconoAlerta,
-  IconoCheck,
-  IconoDocumento,
   IconoHerramienta,
   IconoReloj,
   IconoSumar,
   IconoTelefono,
 } from "@/components/iconos";
 import {
-  BarraAccion,
   Boton,
-  BotonLink,
   Cifra,
   Dato,
   Encabezado,
@@ -47,19 +40,16 @@ import {
   describirControl,
   elementosDeLocal,
   estadoControl,
-  informesDeLocal,
   localDe,
   ORDEN_ESTADO,
   pedidosDeLocal,
   resumenLocal,
   tipoDe,
-  visitaProgramadaDe,
-  visitaDe,
 } from "@/lib/datos";
-import { fechaConDia, fechaCorta, textoRelativo } from "@/lib/fechas";
+import { textoRelativo } from "@/lib/fechas";
 import type { Control, Local } from "@/lib/tipos";
 
-const SECCIONES = ["controles", "elementos", "historial", "informes", "pedidos"] as const;
+const SECCIONES = ["controles", "elementos", "historial", "pedidos"] as const;
 type Seccion = (typeof SECCIONES)[number];
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -93,9 +83,7 @@ export default async function FichaLocal({
   const cliente = clienteDeLocal(local);
   const resumen = resumenLocal(local.id);
   const estados = estadosDeLocal(local.id);
-  const visita = proximaVisita(local.id);
   const elementos = elementosDeLocal(local.id);
-  const informes = informesDeLocal(local.id);
   const pedidos = pedidosDeLocal(local.id);
   const pedidosAbiertos = pedidos.filter((p) => p.estado !== "resuelto");
 
@@ -105,25 +93,12 @@ export default async function FichaLocal({
         volver={{ href: "/s/locales", texto: "Locales" }}
         titulo={local.nombre}
         bajada={`${cliente.nombre}, ${local.direccion}, ${local.barrio}`}
-        acciones={
-          // En la computadora la acción principal va arriba; en el celular, en la barra de abajo.
-          <BotonLink href={`/s/visitas/nueva?local=${local.id}`} className="max-lg:hidden">
-            Armar visita
-          </BotonLink>
-        }
       >
         <div className="mt-5">
           <Regla estados={estados} etiqueta={fraseResumen(resumen)} className="max-w-md" />
           <p className="mt-2 font-medium" aria-hidden>
             {fraseResumen(resumen)}
           </p>
-          {visita && (
-            <p className="mt-1 text-cemento">
-              <span className="font-medium text-tinta">{textoVisita(visita, true)}</span>
-              {visita.estado === "programada" && `, con ${visita.controlIds.length === 1 ? "1 control" : `${visita.controlIds.length} controles`}`}.
-              {visita.nota && ` ${visita.nota}`}
-            </p>
-          )}
           {pedidosAbiertos.length > 0 && seccion !== "pedidos" && (
             <p className="mt-1">
               <Link
@@ -149,7 +124,6 @@ export default async function FichaLocal({
           { clave: "controles", texto: "Controles", cantidad: resumen.total },
           { clave: "elementos", texto: "Elementos", cantidad: elementos.length },
           { clave: "historial", texto: "Historial" },
-          { clave: "informes", texto: "Informes", cantidad: informes.length },
           { clave: "pedidos", texto: "Pedidos", cantidad: pedidosAbiertos.length },
         ]}
       />
@@ -158,17 +132,9 @@ export default async function FichaLocal({
         {seccion === "controles" && <SeccionControles localId={local.id} />}
         {seccion === "elementos" && <SeccionElementos localId={local.id} />}
         {seccion === "historial" && <SeccionHistorial localId={local.id} />}
-        {seccion === "informes" && <SeccionInformes localId={local.id} />}
         {seccion === "pedidos" && <SeccionPedidos localId={local.id} />}
       </div>
 
-      <div className="lg:hidden">
-        <BarraAccion>
-          <BotonLink href={`/s/visitas/nueva?local=${local.id}`} ancho>
-            Armar visita
-          </BotonLink>
-        </BarraAccion>
-      </div>
     </>
   );
 }
@@ -188,7 +154,7 @@ function Acceso({ local }: { local: Local }) {
             <div className="min-w-0">
               <p className="text-sm text-cemento">Para entrar hace falta</p>
               <p className="mt-0.5 font-semibold">{local.requisitosAcceso}.</p>
-              <p className="mt-1 text-sm">Sin esto no te dejan pasar. Pedilo antes de cada visita.</p>
+              <p className="mt-1 text-sm">Sin esto no te dejan pasar. Pedilo antes de ir.</p>
             </div>
           </div>
         )}
@@ -222,20 +188,12 @@ function SeccionControles({ localId }: { localId: string }) {
     .sort(compararControles)
     .map((c) => {
       const { tipo, elemento } = describirControl(c);
-      const v = visitaProgramadaDe(c.id);
-      return {
-        control: c,
-        tipo,
-        elemento,
-        programada: v && (v.estado === "en_curso" ? "En la visita de hoy" : `Visita el ${fechaConDia(v.fecha)}`),
-      };
+      return { control: c, tipo, elemento };
     });
 
   if (items.length === 0) {
     return (
-      <Vacio accion={<BotonLink href={`/s/visitas/nueva?local=${localId}`} variante="secundario">Armar visita</BotonLink>}>
-        Todavía no hay controles cargados. Armá una visita de relevamiento para cargar los elementos y sus fechas.
-      </Vacio>
+      <Vacio>Todavía no hay controles cargados. Agregá los elementos del local y sus fechas.</Vacio>
     );
   }
 
@@ -325,68 +283,12 @@ function SeccionHistorial({ localId }: { localId: string }) {
       </h2>
       {dias.length === 0 ? (
         <div className="mb-7">
-          <Vacio>Todavía no hay visitas ni trabajos registrados en este local. Lo que registres va a quedar acá.</Vacio>
+          <Vacio>Todavía no hay trabajos registrados en este local. Lo que registres va a quedar acá.</Vacio>
         </div>
       ) : (
         <>
-          <Bajada>Visitas y trabajos, del más nuevo al más viejo.</Bajada>
+          <Bajada>Trabajos registrados, del más nuevo al más viejo.</Bajada>
           <LineaDeTiempo dias={dias} />
-        </>
-      )}
-    </section>
-  );
-}
-
-function SeccionInformes({ localId }: { localId: string }) {
-  const lista = informesDeLocal(localId).sort((a, b) => (a.fecha < b.fecha ? 1 : -1));
-  return (
-    <section aria-labelledby="titulo-seccion">
-      <h2 id="titulo-seccion" className="sr-only">
-        Informes
-      </h2>
-      {lista.length === 0 ? (
-        <div className="mb-7">
-          <Vacio>Todavía no hay informes. Se arman solos al cerrar una visita.</Vacio>
-        </div>
-      ) : (
-        <>
-          <Bajada>Del más nuevo al más viejo. Un informe publicado no se edita: se subsana.</Bajada>
-          <Planilla>
-            {lista.map((inf) => {
-              const visita = visitaDe(inf.visitaId);
-              const subs = inf.subsanaciones.length;
-              return (
-                <Fila
-                  key={inf.id}
-                  href={`/s/informes/${inf.id}`}
-                  titulo={<Cifra className="text-lg">{inf.numero}</Cifra>}
-                  detalle={
-                    inf.resumen ? (
-                      <span className="line-clamp-2">{inf.resumen}</span>
-                    ) : visita ? (
-                      `Visita ${visita.tipo}, ${visita.estado === "en_curso" ? "en curso" : visita.estado}. Todavía sin resumen.`
-                    ) : (
-                      "Todavía sin resumen."
-                    )
-                  }
-                  derecha={<FechaFila fecha={fechaCorta(inf.fecha)} relativo={haceCuanto(inf.fecha)} />}
-                  debajo={
-                    <p className="text-sm font-medium">
-                      <span className="inline-flex items-center gap-1.5 align-top">
-                        {inf.estado === "publicado" ? <IconoCheck tamano={18} /> : <IconoDocumento tamano={18} />}
-                        {inf.estado === "publicado" ? "Publicado" : "Borrador, falta publicar"}
-                      </span>
-                      {subs > 0 && (
-                        <span className="font-normal text-cemento">
-                          , con {subs === 1 ? "1 subsanación" : `${subs} subsanaciones`}
-                        </span>
-                      )}
-                    </p>
-                  }
-                />
-              );
-            })}
-          </Planilla>
         </>
       )}
     </section>

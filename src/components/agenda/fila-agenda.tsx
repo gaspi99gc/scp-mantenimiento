@@ -22,7 +22,7 @@ export function FilaDeAgenda({ fila }: { fila: FilaAgenda }) {
               <span className="lg:hidden">{fila.elemento ? `${fila.elemento}, ${fila.local}` : fila.local}</span>
               <span className="hidden lg:inline">{fila.sobre}</span>
             </div>
-            {fila.visita && <div className="mt-1 text-sm font-medium">{fila.visita.texto}</div>}
+
           </div>
           <div className="hidden min-w-0 lg:block">
             <div className="leading-snug">{fila.local}</div>

@@ -18,8 +18,6 @@ export interface DatosFilaLocal {
   texto: { principal: string; secundario: string };
   /** "2 vencidos, 1 vence pronto y 10 al día." */
   frase: string;
-  /** "Visita el mié 14 oct" */
-  visita?: string;
 }
 
 export function FilaLocal({ local }: { local: DatosFilaLocal }) {
@@ -37,7 +35,6 @@ export function FilaLocal({ local }: { local: DatosFilaLocal }) {
             <div className="mt-0.5 text-sm text-cemento">
               {local.barrio}, {local.direccion}
             </div>
-            {local.visita && <div className="mt-1 text-sm font-medium">{local.visita}</div>}
           </div>
           <div className="flex w-[7.5rem] shrink-0 flex-col justify-center sm:w-48">
             <Regla estados={local.estados} etiqueta={local.frase} />

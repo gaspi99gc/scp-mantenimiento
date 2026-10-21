@@ -12,9 +12,7 @@ import {
   localDe,
   ORDEN_ESTADO,
   tipoDe,
-  visitaProgramadaDe,
 } from "@/lib/datos";
-import { fechaConDia, hoy } from "@/lib/fechas";
 import type { Control, Ejecucion, Elemento, EstadoControl, FechaISO, ResultadoEjecucion, TipoControl } from "@/lib/tipos";
 
 /** Dominio que va impreso en las etiquetas. Provisorio hasta tener el dominio propio (D1). */
@@ -25,8 +23,6 @@ export const urlDeEtiqueta = (qrToken: string) => `${DOMINIO_ETIQUETAS}/e/${qrTo
 export interface ControlDeFicha {
   control: Control;
   tipo: TipoControl;
-  /** "Visita el vie 14 nov" si hay una visita abierta que lo incluye */
-  programada?: string;
   bloqueo?: { texto: string; permiteReemplazo: boolean };
 }
 
@@ -45,13 +41,6 @@ export interface ItemHistorial {
 const porVencimiento = (a: Control, b: Control) =>
   (a.vencimiento ?? "0000") < (b.vencimiento ?? "0000") ? -1 : (a.vencimiento ?? "0000") > (b.vencimiento ?? "0000") ? 1 : 0;
 
-function textoProgramada(controlId: string): string | undefined {
-  const v = visitaProgramadaDe(controlId);
-  if (!v) return undefined;
-  if (v.fecha === hoy()) return v.estado === "en_curso" ? "Visita en curso hoy" : "Visita hoy";
-  return `Visita el ${fechaConDia(v.fecha)}`;
-}
-
 /** Controles del elemento, peor estado primero (y dentro del mismo estado, el que vence antes). */
 export function controlesDeFicha(elementoId: string): ControlDeFicha[] {
   return controlesDeElemento(elementoId)
@@ -60,7 +49,6 @@ export function controlesDeFicha(elementoId: string): ControlDeFicha[] {
     .map((control) => ({
       control,
       tipo: tipoDe(control),
-      programada: textoProgramada(control.id),
       bloqueo: bloqueoDe(control),
     }));
 }

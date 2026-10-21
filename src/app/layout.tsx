@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: { default: "SCP Mantenimiento", template: "%s | SCP" },
-  description: "Vencimientos, visitas e informes de mantenimiento de SCP.",
+  description: "Vencimientos y controles de mantenimiento de SCP.",
 };
 
 export const viewport: Viewport = {

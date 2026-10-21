@@ -16,8 +16,6 @@ export interface ItemControl {
   control: Control;
   tipo: TipoControl;
   elemento?: Elemento;
-  /** "Visita el mié 14 oct" si hay una visita abierta que lo incluye */
-  programada?: string;
 }
 
 const minuscula = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
@@ -72,7 +70,7 @@ export function ControlesLocal({ items }: { items: ItemControl[] }) {
   return (
     <>
       <Planilla>
-        {items.map(({ control, tipo, elemento, programada }) => {
+        {items.map(({ control, tipo, elemento }) => {
           const c = actual(control);
           const estado = estadoDe(c, tipo);
           const detalle = elemento
@@ -88,7 +86,6 @@ export function ControlesLocal({ items }: { items: ItemControl[] }) {
                 titulo={tipo.nombre}
                 detalle={detalle}
                 derecha={<Fecha control={c} tipo={tipo} />}
-                debajo={programada && <span className="text-sm font-medium">{programada}</span>}
               />
             );
           }
@@ -103,7 +100,6 @@ export function ControlesLocal({ items }: { items: ItemControl[] }) {
                     <div className="min-w-0 flex-1">
                       <div className="font-semibold leading-snug">{tipo.nombre}</div>
                       <div className="mt-0.5 text-sm text-cemento">{detalle}</div>
-                      {programada && !registro && <div className="mt-1 text-sm font-medium">{programada}</div>}
                     </div>
                     <div className="flex shrink-0 flex-col items-end justify-center text-right">
                       <Fecha control={c} tipo={tipo} />

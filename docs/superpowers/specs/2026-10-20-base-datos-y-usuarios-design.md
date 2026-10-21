@@ -1,5 +1,7 @@
 # Base de datos, usuarios y seguridad
 
+> **Reemplazado (D18).** El dueño decidió arrancar con un núcleo simple y sumar de a una. Queda como referencia de ideas, no como diseño vigente.
+
 > Diseño aprobado en la conversación del 20/10/2026. Reemplaza, donde se contradigan, a §3, §4 y §11 de [`propuesta-final.md`](../../propuesta-final.md) y a [`autenticacion.md`](../../autenticacion.md). Las decisiones están en [`decisiones.md`](../../decisiones.md) (D12 a D17).
 
 ## 1. Qué cambia y por qué

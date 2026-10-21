@@ -17,8 +17,8 @@ export default function CodigoDesconocido() {
       </p>
       <div className="mt-8 flex flex-wrap gap-2">
         <BotonLink href="/s/escanear">Escanear otro código</BotonLink>
-        <BotonLink href="/s" variante="secundario">
-          Ir a Hoy
+        <BotonLink href="/s/agenda" variante="secundario">
+          Ir a la Agenda
         </BotonLink>
       </div>
     </main>

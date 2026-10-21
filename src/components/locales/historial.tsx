@@ -1,20 +1,12 @@
 // Historial del local como línea de tiempo: un día por marca, del más nuevo al más viejo.
-// Las visitas se marcan con un cuadrado (lleno si se hizo, vacío si fue fallida);
-// los días con solo trabajos, con un agujero perforado, como la grilla de la tarjeta.
+// Cada día se marca con un agujero perforado, como la grilla de la tarjeta.
 
-import Link from "next/link";
-import { Cifra, cx } from "@/components/ui";
+import { Cifra } from "@/components/ui";
 import { fechaMedia } from "@/lib/fechas";
 import { haceCuanto, RESULTADO, type DiaHistorial, type EventoHistorial } from "./consultas";
 
-function Marca({ dia }: { dia: DiaHistorial }) {
-  const visita = dia.eventos.find((e) => e.clase === "visita");
-  const base = "absolute left-0 top-[5px] z-10 size-4";
-  if (!visita) return <span aria-hidden className={cx(base, "perforado rounded-full")} />;
-  if (visita.estado === "fallida") return <span aria-hidden className={cx(base, "rounded-[3px] border-2 border-tinta bg-papel")} />;
-  if (visita.estado === "en_curso")
-    return <span aria-hidden className={cx(base, "rounded-[3px] bg-tinta ring-2 ring-tinta ring-offset-2 ring-offset-papel")} />;
-  return <span aria-hidden className={cx(base, "rounded-[3px] bg-tinta")} />;
+function Marca() {
+  return <span aria-hidden className="perforado absolute left-0 top-[5px] z-10 size-4 rounded-full" />;
 }
 
 function Nota({ children }: { children: string }) {
@@ -22,25 +14,6 @@ function Nota({ children }: { children: string }) {
 }
 
 function Evento({ ev }: { ev: EventoHistorial }) {
-  if (ev.clase === "visita") {
-    return (
-      <li>
-        <p className="font-semibold leading-snug">{ev.titulo}</p>
-        <p className="mt-0.5 text-sm text-cemento">
-          De {ev.franja.replace(/ h$/, "\u00a0h")}.{ev.que && ` ${ev.que}.`}
-        </p>
-        {ev.nota && <Nota>{ev.nota}</Nota>}
-        {ev.informe && (
-          <Link
-            href={`/s/informes/${ev.informe.id}`}
-            className="mt-1 inline-flex min-h-10 items-center gap-1 text-sm font-semibold underline decoration-junta decoration-2 underline-offset-4 hover:decoration-tinta"
-          >
-            Ver informe <Cifra className="text-base">{ev.informe.numero}</Cifra>
-          </Link>
-        )}
-      </li>
-    );
-  }
   return (
     <li>
       <p className="font-semibold leading-snug">{ev.titulo}</p>
@@ -86,7 +59,7 @@ export function LineaDeTiempo({ dias }: { dias: DiaHistorial[] }) {
             {i < dias.length - 1 && (
               <span aria-hidden className="absolute bottom-0 left-[7px] top-[13px] w-0.5 bg-junta" />
             )}
-            <Marca dia={dia} />
+            <Marca />
             <h3 className="flex flex-wrap items-baseline gap-x-2">
               <Cifra className="text-xl leading-none">{fechaMedia(dia.fecha)}</Cifra>
               <span className="text-sm text-cemento">{haceCuanto(dia.fecha)}</span>

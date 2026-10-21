@@ -21,6 +21,7 @@
 | D15 | 20/10/2026 | **Controles por local** | Todos los locales llevan todo: se crean todos los controles que aplican y lo que no aplica se marca "no aplica" con motivo |
 | D16 | 20/10/2026 | **Usuarios** | Por ahora solo SCP (admin y supervisores), creados por el admin. Ingreso rápido de admin solo en desarrollo. La base queda lista para usuarios de cliente |
 | D17 | 20/10/2026 | **Alcance de la base** | Primera versión con solo lo que usan las pantallas. Ver [`superpowers/specs/2026-10-20-base-datos-y-usuarios-design.md`](superpowers/specs/2026-10-20-base-datos-y-usuarios-design.md) |
+| D18 | 20/10/2026 | **Núcleo simple** | Se limpia la app para quedarse con lo básico y sumar de a una: se van la pestaña Hoy (el inicio es la Agenda), las visitas, los informes con PDF y las fotos/evidencia al registrar. Quedan locales, equipos, registrar controles, QR, cambio de cilindro, pedidos, catálogo, login y usuarios. Reemplaza a D13, D14 y D17 y al diseño de 18 tablas |
 
 ## Interpretaciones a confirmar
 

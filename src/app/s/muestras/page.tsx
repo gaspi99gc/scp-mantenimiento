@@ -1,8 +1,8 @@
 // Hoja de muestras del sistema de diseño: sirve de referencia para armar pantallas.
 import { Colgadero, Tarjeta } from "@/components/tarjeta";
 import { Boton, Chip, Encabezado, FechaFila, Fila, MarcaEstado, Planilla, Vacio } from "@/components/ui";
-import { controles, describirControl, estadoControl, tipoDe, visitaProgramadaDe } from "@/lib/datos";
-import { fechaConDia, fechaCorta, textoRelativo } from "@/lib/fechas";
+import { controles, describirControl, estadoControl, tipoDe } from "@/lib/datos";
+import { fechaCorta, textoRelativo } from "@/lib/fechas";
 
 export const metadata = { title: "Muestras" };
 
@@ -13,7 +13,7 @@ export default function Muestras() {
       <Encabezado
         titulo="Muestras del sistema de diseño"
         bajada="Referencia para armar pantallas. Ver docs/diseno.md."
-        volver={{ href: "/s", texto: "Hoy" }}
+        volver={{ href: "/s/mas", texto: "Más" }}
       />
 
       <Planilla titulo="Tarjetas de control">
@@ -21,14 +21,12 @@ export default function Muestras() {
           <Colgadero>
             {delElemento.map((c) => {
               const tipo = tipoDe(c);
-              const v = visitaProgramadaDe(c.id);
               return (
                 <Tarjeta
                   key={c.id}
                   control={c}
                   tipo={tipo}
                   estado={estadoControl(c)}
-                  programada={v ? `Visita el ${fechaConDia(v.fecha)}` : undefined}
                 >
                   <Boton variante={estadoControl(c) === "al_dia" ? "secundario" : "primario"} ancho>
                     {tipo.verbo}
@@ -66,9 +64,9 @@ export default function Muestras() {
       <section className="mb-7 space-y-4">
         <h2 className="rotulo text-xl">Botones, chips y estados</h2>
         <div className="flex flex-wrap gap-2">
-          <Boton>Armar visita</Boton>
+          <Boton>Registrar recarga</Boton>
           <Boton variante="secundario">Ver ficha</Boton>
-          <Boton variante="peligro">Marcar visita fallida</Boton>
+          <Boton variante="peligro">Dar de baja</Boton>
           <Boton variante="fantasma">Cancelar</Boton>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -83,7 +81,7 @@ export default function Muestras() {
           <MarcaEstado estado="al_dia" />
           <MarcaEstado estado="sin_datos" />
         </div>
-        <Vacio accion={<Boton variante="secundario">Armar visita</Boton>}>
+        <Vacio accion={<Boton variante="secundario">Agregar elemento</Boton>}>
           No hay nada vencido en este local. El próximo control es la limpieza de la campana, el 2 de diciembre.
         </Vacio>
       </section>
