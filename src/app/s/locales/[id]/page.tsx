@@ -165,16 +165,21 @@ function Acceso({ local }: { local: Local }) {
         )}
         <div className="divide-y divide-junta px-4 sm:grid sm:grid-cols-2 sm:gap-6 sm:divide-y-0">
           <Dato rotulo="Horario de acceso" icono={<IconoReloj tamano={22} />}>
-            {local.horarioAcceso}
+            {local.horarioAcceso || <span className="text-cemento">Sin cargar</span>}
           </Dato>
           <Dato rotulo="Encargado" icono={<IconoTelefono tamano={22} />}>
-            {local.encargado.nombre},{" "}
-            <a
-              href={`tel:+${local.encargado.telefono.replace(/[^\d]/g, "")}`}
-              className="cifra whitespace-nowrap text-lg underline decoration-junta decoration-2 underline-offset-4 hover:decoration-tinta"
-            >
-              {local.encargado.telefono}
-            </a>
+            {local.encargado.nombre || "Sin cargar"}
+            {local.encargado.telefono && (
+              <>
+                ,{" "}
+                <a
+                  href={`tel:+${local.encargado.telefono.replace(/[^\d]/g, "")}`}
+                  className="cifra whitespace-nowrap text-lg underline decoration-junta decoration-2 underline-offset-4 hover:decoration-tinta"
+                >
+                  {local.encargado.telefono}
+                </a>
+              </>
+            )}
           </Dato>
         </div>
       </div>

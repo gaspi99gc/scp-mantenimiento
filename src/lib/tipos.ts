@@ -6,7 +6,7 @@ export type FechaISO = string;
 export type EstadoControl = "vencido" | "pronto" | "al_dia" | "sin_datos" | "suspendido";
 export type UnidadPeriodo = "dia" | "mes" | "anio" | "manual";
 export type BaseRecalculo = "desde_ejecucion" | "desde_vencimiento";
-export type Rubro = "gastronomico" | "retail" | "farmacia" | "oficina";
+export type Rubro = "gastronomico" | "retail" | "farmacia" | "oficina" | "otro";
 
 export interface Supervisor {
   id: string;

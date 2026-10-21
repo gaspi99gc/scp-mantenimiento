@@ -11,7 +11,7 @@ import {
 } from "@/components/locales/consultas";
 import type { DatosFilaLocal } from "@/components/locales/fila-local";
 import { IconoSumar } from "@/components/iconos";
-import { Boton, Encabezado } from "@/components/ui";
+import { BotonLink, Encabezado } from "@/components/ui";
 import { cargarDatos, resumenLocal } from "@/lib/datos";
 
 export const metadata = { title: "Locales" };
@@ -69,11 +69,10 @@ export default async function Locales() {
           </>
         }
         acciones={
-          // TODO(supabase): alta de local (cliente, dirección, rubro, horario y requisitos de acceso).
-          <Boton variante="secundario" className="px-3">
+          <BotonLink href="/s/locales/nuevo" variante="secundario" className="px-3">
             <IconoSumar tamano={20} />
             Agregar<span className="sr-only sm:not-sr-only"> local</span>
-          </Boton>
+          </BotonLink>
         }
       />
 

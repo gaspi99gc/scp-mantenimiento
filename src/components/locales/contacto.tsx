@@ -1,6 +1,7 @@
 // Acciones de contacto de la ficha del local: llamar, WhatsApp y cómo llegar.
 // Son enlaces comunes (tel:, wa.me, Google Maps): el celular abre la aplicación que corresponde.
 
+import { cx } from "@/components/ui";
 import type { ReactNode } from "react";
 import { IconoMapa, IconoTelefono, IconoWhatsapp } from "@/components/iconos";
 import type { Local } from "@/lib/tipos";
@@ -23,14 +24,23 @@ function Accion({ href, icono, children, externo }: { href: string; icono: React
 
 export function AccionesContacto({ local, quienEscribe }: { local: Local; quienEscribe: string }) {
   const enlaces = enlacesContacto(local, quienEscribe);
+  // Sin teléfono del encargado solo queda "Cómo llegar".
+  const conTelefono = local.encargado.telefono.replace(/[^\d]/g, "").length >= 8;
   return (
-    <ul className="mb-7 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap" aria-label="Contacto">
-      <Accion href={enlaces.telefono} icono={<IconoTelefono tamano={20} />}>
-        Llamar a {primerNombre(local.encargado.nombre)}
-      </Accion>
-      <Accion href={enlaces.whatsapp} icono={<IconoWhatsapp tamano={20} />} externo>
-        WhatsApp
-      </Accion>
+    <ul
+      className={cx("mb-7 grid gap-2 sm:flex sm:flex-wrap", conTelefono ? "grid-cols-3" : "grid-cols-1")}
+      aria-label="Contacto"
+    >
+      {conTelefono && (
+        <>
+          <Accion href={enlaces.telefono} icono={<IconoTelefono tamano={20} />}>
+            {local.encargado.nombre ? `Llamar a ${primerNombre(local.encargado.nombre)}` : "Llamar"}
+          </Accion>
+          <Accion href={enlaces.whatsapp} icono={<IconoWhatsapp tamano={20} />} externo>
+            WhatsApp
+          </Accion>
+        </>
+      )}
       <Accion href={enlaces.mapa} icono={<IconoMapa tamano={20} />} externo>
         Cómo llegar
       </Accion>
