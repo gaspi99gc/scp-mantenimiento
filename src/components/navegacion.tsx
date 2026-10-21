@@ -20,7 +20,7 @@ function activo(path: string, href: string) {
   return path === href || path.startsWith(href + "/");
 }
 
-export function Navegacion({ nombre }: { nombre: string }) {
+export function Navegacion({ nombre, rol }: { nombre: string; rol: string }) {
   const path = usePathname();
 
   return (
@@ -118,7 +118,7 @@ export function Navegacion({ nombre }: { nombre: string }) {
         </ul>
         <div className="mt-auto border-t border-white/15 px-2 pt-4 text-sm">
           <div className="font-semibold text-papel">{nombre}</div>
-          <div>Supervisor</div>
+          <div>{rol}</div>
         </div>
       </nav>
     </>

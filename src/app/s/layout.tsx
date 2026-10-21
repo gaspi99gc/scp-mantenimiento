@@ -1,10 +1,12 @@
 export const dynamic = "force-dynamic";
 
 import { Navegacion } from "@/components/navegacion";
-import { supervisorActual } from "@/lib/datos";
+import { exigirStaff, ROL_TEXTO } from "@/lib/sesion";
 
+// Toda la app del supervisor exige sesión de admin o supervisor activo (el proxy solo redirige por comodidad).
 // En la computadora el contenido se centra en el espacio que deja la columna, con márgenes iguales a los dos lados.
-export default function LayoutSupervisor({ children }: { children: React.ReactNode }) {
+export default async function LayoutSupervisor({ children }: { children: React.ReactNode }) {
+  const usuario = await exigirStaff();
   return (
     <>
       <a
@@ -13,7 +15,7 @@ export default function LayoutSupervisor({ children }: { children: React.ReactNo
       >
         Ir al contenido
       </a>
-      <Navegacion nombre={supervisorActual.nombre} />
+      <Navegacion nombre={usuario.nombre} rol={ROL_TEXTO[usuario.rol]} />
       <main id="contenido" tabIndex={-1} className="px-4 pb-40 outline-none lg:ml-60 lg:px-12 lg:pb-16">
         <div className="mx-auto max-w-[640px] lg:max-w-[960px]">{children}</div>
       </main>

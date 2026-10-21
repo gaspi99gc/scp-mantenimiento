@@ -1,4 +1,5 @@
 // Fila de menú con icono. Si la sección todavía no existe, se ve igual pero sin link y con "Próximamente".
+// Con `accion` (una Server Action) es un botón que la envía, como "Cerrar sesión".
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { IconoSiguiente } from "@/components/iconos";
@@ -10,8 +11,10 @@ export function FilaMenu({
   titulo,
   detalle,
   proximamente,
+  accion,
 }: {
   href?: string;
+  accion?: () => Promise<void>;
   icono: ReactNode;
   titulo: string;
   detalle?: string;
@@ -31,13 +34,19 @@ export function FilaMenu({
         </div>
         {detalle && <div className="mt-0.5 text-sm text-cemento">{detalle}</div>}
       </div>
-      {!proximamente && <IconoSiguiente tamano={20} className="shrink-0 text-cemento" />}
+      {!proximamente && !accion && <IconoSiguiente tamano={20} className="shrink-0 text-cemento" />}
     </div>
   );
 
   return (
     <li>
-      {href && !proximamente ? (
+      {accion ? (
+        <form action={accion}>
+          <button type="submit" className="block w-full text-left transition-colors hover:bg-yeso/60 active:bg-yeso">
+            {contenido}
+          </button>
+        </form>
+      ) : href && !proximamente ? (
         <Link href={href} className="block transition-colors hover:bg-yeso/60 active:bg-yeso">
           {contenido}
         </Link>

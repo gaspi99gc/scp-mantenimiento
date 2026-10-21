@@ -3,8 +3,9 @@ import { FilaMenu } from "@/components/cuenta/fila-menu";
 import {
   IconoCatalogo, IconoClientes, IconoMuestras, IconoProveedores, IconoSalir, IconoUsuarios,
 } from "@/components/cuenta/iconos";
+import { cerrarSesion } from "@/app/login/acciones";
 import { Encabezado, Planilla } from "@/components/ui";
-import { supervisorActual } from "@/lib/datos";
+import { exigirStaff, ROL_TEXTO } from "@/lib/sesion";
 
 export const metadata: Metadata = { title: "Más" };
 
@@ -15,9 +16,9 @@ const iniciales = (nombre: string) =>
     .slice(0, 2)
     .join("");
 
-export default function Mas() {
-  // TODO(supabase): el usuario y su rol salen de la sesión (getClaims) y de la tabla `perfil`.
-  const usuario = { ...supervisorActual, rol: "Supervisor" };
+export default async function Mas() {
+  const usuario = await exigirStaff();
+  const esAdmin = usuario.rol === "admin";
 
   return (
     <>
@@ -35,14 +36,23 @@ export default function Mas() {
         </span>
         <div className="min-w-0">
           <p className="rotulo text-xl">{usuario.nombre}</p>
-          <p className="mt-0.5">{usuario.rol}</p>
-          <p className="text-sm text-cemento">Ve y carga todos los locales.</p>
+          <p className="mt-0.5">{ROL_TEXTO[usuario.rol]}</p>
+          <p className="text-sm text-cemento">
+            {esAdmin ? "Ve y carga todo, y maneja usuarios y catálogo." : "Ve y carga todos los locales."}
+          </p>
         </div>
       </section>
 
       <Planilla>
         <FilaMenu icono={<IconoClientes />} titulo="Clientes" detalle="Razón social, CUIT, locales y abono" proximamente />
-        <FilaMenu icono={<IconoUsuarios />} titulo="Usuarios" detalle="Invitar y desactivar supervisores" proximamente />
+        {esAdmin && (
+          <FilaMenu
+            href="/s/mas/usuarios"
+            icono={<IconoUsuarios />}
+            titulo="Usuarios"
+            detalle="Crear supervisores, desactivarlos y ponerles contraseña"
+          />
+        )}
         <FilaMenu
           href="/s/mas/catalogo"
           icono={<IconoCatalogo />}
@@ -64,8 +74,7 @@ export default function Mas() {
       </Planilla>
 
       <Planilla>
-        {/* TODO(supabase): supabase.auth.signOut() en una Server Action y después redirigir a /login. */}
-        <FilaMenu href="/login" icono={<IconoSalir />} titulo="Cerrar sesión" />
+        <FilaMenu accion={cerrarSesion} icono={<IconoSalir />} titulo="Cerrar sesión" />
       </Planilla>
     </>
   );

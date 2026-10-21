@@ -1,23 +1,26 @@
 // Entrada a la app. Queda fuera del layout del supervisor: no hay navegación hasta que la persona entra.
-// TODO(supabase): si ya hay sesión válida (getClaims), redirigir a /s. El registro público está desactivado.
+// Si ya hay sesión, va directo a la app (o a elegir contraseña si todavía no la eligió).
 
 import type { Metadata } from "next";
-import { FormularioLogin, type PasoLogin } from "@/components/cuenta/formulario-login";
+import { redirect } from "next/navigation";
+import { FormularioLogin } from "@/components/cuenta/formulario-login";
 import { TarjetaPared, TiraMeses } from "@/components/cuenta/tarjeta-pared";
 import { MarcaSCP } from "@/components/ui";
+import { destinoSeguro, usuarioActual } from "@/lib/sesion";
 
 export const metadata: Metadata = { title: "Entrar" };
-
-const PASOS: PasoLogin[] = ["credenciales", "codigo", "recuperar", "recuperado"];
 
 export default async function PaginaLogin({
   searchParams,
 }: {
   searchParams: Promise<{ [clave: string]: string | string[] | undefined }>;
 }) {
-  // ?paso=codigo muestra el segundo paso del admin; ?error=1, el error de credenciales (para revisar los estados).
-  const { paso, error } = await searchParams;
-  const pasoInicial = PASOS.find((p) => p === paso) ?? "credenciales";
+  const { siguiente } = await searchParams;
+  const usuario = await usuarioActual();
+  if (usuario?.activo) redirect(usuario.debeCambiarClave ? "/cuenta/clave" : destinoSeguro(siguiente));
+
+  const ingresoRapido =
+    process.env.NODE_ENV === "development" && !!process.env.DEV_ADMIN_EMAIL && !!process.env.DEV_ADMIN_PASSWORD;
 
   return (
     <div className="min-h-dvh bg-papel lg:grid lg:grid-cols-[minmax(480px,5fr)_7fr] lg:bg-yeso">
@@ -31,9 +34,12 @@ export default async function PaginaLogin({
         </header>
 
         <main className="mt-12 w-full max-w-[400px] lg:my-auto lg:py-12">
-          <FormularioLogin key={pasoInicial} pasoInicial={pasoInicial} errorInicial={error === "1"} />
+          <FormularioLogin
+            siguiente={typeof siguiente === "string" ? siguiente : undefined}
+            ingresoRapido={ingresoRapido}
+          />
           <p className="mt-8 border-t border-junta pt-4 text-sm text-cemento">
-            El acceso es solo por invitación. Si no tenés usuario, pedíselo a tu supervisor.
+            El acceso es solo por invitación. Si no tenés usuario, pedíselo al admin de SCP.
           </p>
         </main>
       </div>
