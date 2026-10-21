@@ -53,7 +53,7 @@ function CampoClaveProvisoria({ id }: { id: string }) {
         <button
           type="button"
           onClick={() => setClave(generarClave())}
-          className="min-h-10 rounded-[2px] px-2 text-sm font-semibold underline decoration-junta decoration-2 underline-offset-4 hover:decoration-tinta"
+          className="-my-2 min-h-12 rounded-[2px] px-2 text-sm font-semibold underline decoration-junta decoration-2 underline-offset-4 hover:decoration-tinta"
         >
           Generar una
         </button>
@@ -185,15 +185,11 @@ export function FilaUsuario({ usuario }: { usuario: DatosUsuario }) {
         </div>
         {!usuario.soyYo && (
           <div className="flex flex-wrap gap-2">
-            <Boton
-              type="button"
-              variante="secundario"
-              onClick={() => setAbierta(!abierta)}
-              aria-expanded={abierta}
-              disabled={!usuario.activo}
-            >
-              Contraseña provisoria
-            </Boton>
+            {usuario.activo && (
+              <Boton type="button" variante="secundario" onClick={() => setAbierta(!abierta)} aria-expanded={abierta}>
+                Contraseña provisoria
+              </Boton>
+            )}
             <Boton type="button" variante={usuario.activo ? "peligro" : "secundario"} onClick={alternarActivo} disabled={cambiando}>
               {cambiando ? "Guardando…" : usuario.activo ? "Desactivar" : "Reactivar"}
             </Boton>
@@ -203,7 +199,7 @@ export function FilaUsuario({ usuario }: { usuario: DatosUsuario }) {
       <div aria-live="polite" className="empty:hidden mt-3">
         {(estadoActivo.error || estadoActivo.ok) && <Aviso estado={estadoActivo} />}
       </div>
-      {abierta && (
+      {abierta && usuario.activo && (
         <form action={ponerClave} className="mt-3 grid gap-3 rounded-[var(--radius-planilla)] bg-yeso/60 p-3">
           <input type="hidden" name="id" value={usuario.id} />
           <Aviso estado={estadoClave} />
