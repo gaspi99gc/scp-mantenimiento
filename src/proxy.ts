@@ -5,7 +5,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { OPCIONES_COOKIE } from "@/lib/supabase/cookies";
 
-const PROTEGIDAS = ["/s", "/e", "/cuenta"];
+const PROTEGIDAS = ["/s", "/e"];
 
 export async function proxy(request: NextRequest) {
   let respuesta = NextResponse.next({ request });

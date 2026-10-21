@@ -1,5 +1,5 @@
-// Más → Usuarios: solo el admin. Alta de supervisores y admins con contraseña provisoria,
-// desactivar y reactivar, y poner una contraseña provisoria nueva.
+// Más → Usuarios: solo el admin. Alta de supervisores y admins con su contraseña,
+// desactivar y reactivar, y cambiarles la contraseña. El admin maneja todas las contraseñas.
 
 import type { Metadata } from "next";
 import { FilaUsuario, NuevoUsuario, type DatosUsuario } from "@/components/cuenta/usuarios";
@@ -14,7 +14,7 @@ export default async function Usuarios() {
   const supabase = await clienteServidor();
   const { data: perfiles, error } = await supabase
     .from("perfil")
-    .select("id, nombre, email, usuario, rol, activo, debe_cambiar_clave")
+    .select("id, nombre, email, usuario, rol, activo")
     .order("activo", { ascending: false })
     .order("nombre");
 
@@ -25,7 +25,6 @@ export default async function Usuarios() {
     usuario: p.usuario ?? undefined,
     rol: ROL_TEXTO[p.rol],
     activo: p.activo,
-    debeCambiarClave: p.debe_cambiar_clave,
     soyYo: p.id === yo.id,
   }));
   const activos = usuarios.filter((u) => u.activo).length;

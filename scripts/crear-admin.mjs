@@ -61,7 +61,7 @@ if (usuario) {
 
 const { error: errorPerfil } = await admin
   .from("perfil")
-  .upsert({ id: usuario.id, nombre, email, rol: "admin", activo: true, debe_cambiar_clave: false });
+  .upsert({ id: usuario.id, nombre, email, rol: "admin", activo: true });
 // Usuario corto para entrar ("admin"), si nadie más lo tiene.
 await admin.from("perfil").update({ usuario: "admin" }).eq("id", usuario.id).is("usuario", null);
 if (errorPerfil) throw errorPerfil;

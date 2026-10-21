@@ -299,7 +299,6 @@ export type Database = {
         Row: {
           activo: boolean
           creado_en: string
-          debe_cambiar_clave: boolean
           email: string
           id: string
           nombre: string
@@ -309,7 +308,6 @@ export type Database = {
         Insert: {
           activo?: boolean
           creado_en?: string
-          debe_cambiar_clave?: boolean
           email: string
           id: string
           nombre: string
@@ -319,7 +317,6 @@ export type Database = {
         Update: {
           activo?: boolean
           creado_en?: string
-          debe_cambiar_clave?: boolean
           email?: string
           id?: string
           nombre?: string

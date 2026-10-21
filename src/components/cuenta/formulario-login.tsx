@@ -2,7 +2,7 @@
 
 // Formulario de entrada: usuario (o email) y contraseña contra Supabase Auth (Server Action iniciarSesion).
 // En la compu (npm run dev) aparece además el botón de ingreso rápido como admin.
-// No hay recupero por email todavía: la contraseña nueva la pone el admin.
+// No hay recupero por email: las contraseñas las maneja el admin desde Más → Usuarios.
 
 import { useActionState, useState } from "react";
 import { entrarComoAdminDev, iniciarSesion, type EstadoLogin } from "@/app/login/acciones";
@@ -70,8 +70,7 @@ export function FormularioLogin({ siguiente, ingresoRapido }: { siguiente?: stri
       </button>
       {olvido && (
         <p className="text-sm" role="status">
-          Pedile al admin de SCP que te ponga una contraseña provisoria. Al entrar con ella, la app te pide que elijas una
-          nueva.
+          Pedile al admin de SCP que te ponga una contraseña nueva.
         </p>
       )}
 

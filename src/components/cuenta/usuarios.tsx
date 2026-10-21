@@ -7,7 +7,7 @@ import {
   cambiarActivo,
   cambiarMisDatos,
   crearUsuario,
-  ponerClaveProvisoria,
+  ponerClave as ponerClaveAccion,
   type EstadoUsuarios,
 } from "@/app/s/mas/usuarios/acciones";
 import { Boton, cx } from "@/components/ui";
@@ -44,13 +44,13 @@ function Aviso({ estado }: { estado: EstadoUsuarios }) {
   return null;
 }
 
-function CampoClaveProvisoria({ id }: { id: string }) {
+function CampoClave({ id }: { id: string }) {
   const [clave, setClave] = useState("");
   return (
     <Campo
       id={id}
-      rotulo="Contraseña provisoria"
-      ayuda="Se la pasás a la persona. Al entrar, la app le pide que elija una propia."
+      rotulo="Contraseña"
+      ayuda="Al menos 10 caracteres, con letras y números. Se la pasás a la persona para que entre."
       extra={
         <button
           type="button"
@@ -150,7 +150,7 @@ export function NuevoUsuario() {
           ))}
         </div>
       </fieldset>
-      <CampoClaveProvisoria id="clave-nueva" />
+      <CampoClave id="clave-nueva" />
       <div className="sm:col-span-2">
         <Boton type="submit" disabled={creando} className="max-sm:w-full">
           {creando ? "Creando…" : "Crear usuario"}
@@ -167,13 +167,12 @@ export interface DatosUsuario {
   usuario?: string;
   rol: string;
   activo: boolean;
-  debeCambiarClave: boolean;
   soyYo: boolean;
 }
 
 export function FilaUsuario({ usuario }: { usuario: DatosUsuario }) {
   const [abierta, setAbierta] = useState(false);
-  const [estadoClave, ponerClave, poniendo] = useActionState<EstadoUsuarios, FormData>(ponerClaveProvisoria, {});
+  const [estadoClave, ponerClave, poniendo] = useActionState<EstadoUsuarios, FormData>(ponerClaveAccion, {});
   const [estadoActivo, setEstadoActivo] = useState<EstadoUsuarios>({});
   const [cambiando, empezar] = useTransition();
 
@@ -184,7 +183,7 @@ export function FilaUsuario({ usuario }: { usuario: DatosUsuario }) {
     empezar(async () => setEstadoActivo(await cambiarActivo(usuario.id, !usuario.activo)));
   }
 
-  const estado = !usuario.activo ? "Desactivado" : usuario.debeCambiarClave ? "Falta que elija su contraseña" : "Activo";
+  const estado = usuario.activo ? "Activo" : "Desactivado";
 
   return (
     <li className={cx("px-4 py-3.5", !usuario.activo && "rayado-suave")}>
@@ -214,7 +213,7 @@ export function FilaUsuario({ usuario }: { usuario: DatosUsuario }) {
           <div className="flex flex-wrap gap-2">
             {usuario.activo && (
               <Boton type="button" variante="secundario" onClick={() => setAbierta(!abierta)} aria-expanded={abierta}>
-                Contraseña provisoria
+                Cambiar contraseña
               </Boton>
             )}
             <Boton type="button" variante={usuario.activo ? "peligro" : "secundario"} onClick={alternarActivo} disabled={cambiando}>
@@ -231,10 +230,10 @@ export function FilaUsuario({ usuario }: { usuario: DatosUsuario }) {
         <form action={ponerClave} className="mt-3 grid gap-3 rounded-[var(--radius-planilla)] bg-yeso/60 p-3">
           <input type="hidden" name="id" value={usuario.id} />
           <Aviso estado={estadoClave} />
-          <CampoClaveProvisoria id={`clave-${usuario.id}`} />
+          <CampoClave id={`clave-${usuario.id}`} />
           <div>
             <Boton type="submit" disabled={poniendo} className="max-sm:w-full">
-              {poniendo ? "Guardando…" : "Poner contraseña provisoria"}
+              {poniendo ? "Guardando…" : "Guardar contraseña"}
             </Boton>
           </div>
         </form>

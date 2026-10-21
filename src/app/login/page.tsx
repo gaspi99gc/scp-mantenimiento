@@ -1,5 +1,5 @@
 // Entrada a la app. Queda fuera del layout del supervisor: no hay navegación hasta que la persona entra.
-// Si ya hay sesión, va directo a la app (o a elegir contraseña si todavía no la eligió).
+// Si ya hay sesión, va directo a la app.
 
 import type { Metadata } from "next";
 import { headers } from "next/headers";
@@ -18,7 +18,7 @@ export default async function PaginaLogin({
 }) {
   const { siguiente, cambio } = await searchParams;
   const usuario = await usuarioActual();
-  if (usuario?.activo) redirect(usuario.debeCambiarClave ? "/cuenta/clave" : destinoSeguro(siguiente));
+  if (usuario?.activo) redirect(destinoSeguro(siguiente));
 
   const host = ((await headers()).get("host") ?? "").replace(/:\d+$/, "");
   const ingresoRapido =

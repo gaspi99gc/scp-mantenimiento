@@ -17,7 +17,6 @@ export interface Usuario {
   usuario?: string;
   rol: Rol;
   activo: boolean;
-  debeCambiarClave: boolean;
 }
 
 export const usuarioActual = cache(async (): Promise<Usuario | null> => {
@@ -27,24 +26,23 @@ export const usuarioActual = cache(async (): Promise<Usuario | null> => {
   if (!id) return null;
   const { data: p } = await supabase
     .from("perfil")
-    .select("id, nombre, email, usuario, rol, activo, debe_cambiar_clave")
+    .select("id, nombre, email, usuario, rol, activo")
     .eq("id", id)
     .maybeSingle();
   if (!p) return null;
-  return { id: p.id, nombre: p.nombre, email: p.email, usuario: p.usuario ?? undefined, rol: p.rol, activo: p.activo, debeCambiarClave: p.debe_cambiar_clave };
+  return { id: p.id, nombre: p.nombre, email: p.email, usuario: p.usuario ?? undefined, rol: p.rol, activo: p.activo };
 });
 
-/** Hay sesión y el usuario está activo (puede que todavía tenga que elegir su contraseña). */
+/** Hay sesión y el usuario está activo. */
 export async function exigirSesion(): Promise<Usuario> {
   const u = await usuarioActual();
   if (!u || !u.activo) redirect("/login");
   return u;
 }
 
-/** Admin o supervisor activo que ya eligió su contraseña. */
+/** Admin o supervisor activo. */
 export async function exigirStaff(): Promise<Usuario> {
   const u = await exigirSesion();
-  if (u.debeCambiarClave) redirect("/cuenta/clave");
   if (u.rol !== "admin" && u.rol !== "supervisor") notFound();
   return u;
 }
