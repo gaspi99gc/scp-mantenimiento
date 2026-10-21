@@ -5,6 +5,7 @@
 import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { OPCIONES_COOKIE } from "./cookies";
 import type { Database } from "./tipos-db";
 
 export async function clienteServidor() {
@@ -13,6 +14,7 @@ export async function clienteServidor() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
+      cookieOptions: OPCIONES_COOKIE,
       cookies: {
         getAll: () => almacen.getAll(),
         setAll(lista) {

@@ -8,7 +8,8 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "crear-admin": "node --env-file=.env.local scripts/crear-admin.mjs",
-    "test:db": "node supabase/tests/correr-remoto.mjs"
+    "test:db": "node supabase/tests/correr-remoto.mjs",
+    "cargar-ejemplo": "node --env-file=.env.local scripts/cargar-ejemplo.mjs"
   },
   "dependencies": {
     "@fontsource-variable/archivo": "5.3.0",

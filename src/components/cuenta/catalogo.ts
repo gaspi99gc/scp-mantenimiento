@@ -2,22 +2,19 @@
 import { textoPeriodo } from "@/lib/fechas";
 import type { TipoControl } from "@/lib/tipos";
 
-/**
- * A qué se aplica cada tipo. TipoControl todavía no lo trae (en la propuesta es `aplica_a` + tipo de elemento),
- * así que por ahora vive acá.
- */
+/** A qué se aplica cada tipo de control del catálogo inicial, por nombre. */
 const APLICA_A: Record<string, string> = {
-  "tc-recarga": "Matafuegos",
-  "tc-ph": "Matafuegos, por cilindro",
-  "tc-vida": "Matafuegos, por cilindro",
-  "tc-tanque": "Tanques de agua",
-  "tc-campana": "Campanas de cocina",
-  "tc-grasera": "Graseras",
-  "tc-tablero": "Tableros eléctricos",
-  "tc-pat": "Instalación eléctrica del local",
-  "tc-luces": "Luces de emergencia",
-  "tc-plagas": "Todo el local",
-  "tc-aire": "Equipos de aire acondicionado",
+  "Recarga": "Matafuegos",
+  "Prueba hidráulica": "Matafuegos, por cilindro",
+  "Vida útil": "Matafuegos, por cilindro",
+  "Limpieza y análisis": "Tanques de agua",
+  "Limpieza de campana": "Campanas de cocina",
+  "Limpieza de grasera": "Graseras",
+  "Control de tablero": "Tableros eléctricos",
+  "Medición de puesta a tierra": "Instalación eléctrica del local",
+  "Prueba de autonomía": "Luces de emergencia",
+  "Control de plagas": "Todo el local",
+  "Service de aire": "Equipos de aire acondicionado",
 };
 
 const mayuscula = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);

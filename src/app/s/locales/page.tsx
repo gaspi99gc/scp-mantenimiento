@@ -12,13 +12,14 @@ import {
 import type { DatosFilaLocal } from "@/components/locales/fila-local";
 import { IconoSumar } from "@/components/iconos";
 import { Boton, Encabezado } from "@/components/ui";
-import { clientes, locales, resumenLocal } from "@/lib/datos";
+import { cargarDatos, resumenLocal } from "@/lib/datos";
 
 export const metadata = { title: "Locales" };
 
 const porNombre = (a: { nombre: string }, b: { nombre: string }) => a.nombre.localeCompare(b.nombre, "es");
 
-export default function Locales() {
+export default async function Locales() {
+  const { clientes, locales } = await cargarDatos();
   const filas = locales.map((l) => {
     const cliente = clientes.find((c) => c.id === l.clienteId)!;
     const resumen = resumenLocal(l.id);

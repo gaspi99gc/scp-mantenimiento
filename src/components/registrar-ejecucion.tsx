@@ -2,7 +2,7 @@
 
 // Formulario para registrar un trabajo sobre un control. Lo usan la ficha del elemento y la de controles del local.
 // Es la interacción más importante de la app: tiene que poder hacerse en menos de un minuto, parado en el local.
-// Por ahora no guarda nada: devuelve el resultado con `alRegistrar` y la pantalla que lo usa actualiza su estado.
+// Devuelve lo cargado con `alRegistrar`; la pantalla que lo usa lo guarda en la base y muestra el resultado.
 
 import { useMemo, useState } from "react";
 import { fechaMedia, hoy, proponerVencimiento, textoPeriodo } from "@/lib/fechas";
@@ -42,6 +42,7 @@ export function RegistrarEjecucion({
   tipo,
   elemento,
   bloqueo,
+  guardando,
 }: {
   abierta: boolean;
   alCerrar: () => void;
@@ -50,6 +51,8 @@ export function RegistrarEjecucion({
   tipo: TipoControl;
   elemento?: Elemento;
   bloqueo?: { texto: string; permiteReemplazo: boolean };
+  /** Mientras la base guarda: el botón queda ocupado. */
+  guardando?: boolean;
 }) {
   const [resultado, setResultado] = useState<ResultadoEjecucion | null>(bloqueo ? "reemplazo" : "ok");
   const [fecha, setFecha] = useState<FechaISO>(hoy());
@@ -98,8 +101,8 @@ export function RegistrarEjecucion({
       titulo={tipo.verbo}
       pie={
         <div>
-          <Boton ancho onClick={confirmar} disabled={faltan.length > 0}>
-            {renueva || !resultado ? tipo.verbo : "Registrar que no se pudo hacer"}
+          <Boton ancho onClick={confirmar} disabled={faltan.length > 0 || guardando}>
+            {guardando ? "Guardando…" : renueva || !resultado ? tipo.verbo : "Registrar que no se pudo hacer"}
           </Boton>
           {faltan.length > 0 && (
             <p className="mt-2 text-sm text-cemento" aria-live="polite">

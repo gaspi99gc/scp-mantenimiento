@@ -1,7 +1,7 @@
 // Consultas de la Agenda, armadas con los exports de datos.ts.
 // Devuelven objetos planos (solo texto y números) para poder pasarlos a componentes cliente.
 
-import { clienteDe, controles, describirControl, estadoControl, localDe, ORDEN_ESTADO } from "@/lib/datos";
+import { clienteDe, datos, describirControl, estadoControl, localDe, ORDEN_ESTADO } from "@/lib/datos";
 import { fechaCorta, fechaNumerica, hoy, nombreMes, sumarDias, sumarMeses, textoRelativo } from "@/lib/fechas";
 import type { Control, EstadoControl, FechaISO } from "@/lib/tipos";
 import { mayusculaInicial, minusculaInicial, normalizar } from "./texto";
@@ -78,7 +78,7 @@ export function periodoDe(fecha: FechaISO | undefined, referencia: FechaISO): { 
 }
 
 export function datosAgenda(referencia: FechaISO = hoy()) {
-  const filas: FilaAgenda[] = controles.map((c) => {
+  const filas: FilaAgenda[] = datos().controles.map((c) => {
     const f = filaDe(c);
     const periodo = periodoDe(c.vencimiento, referencia);
     const local = localDe(c.localId)!;

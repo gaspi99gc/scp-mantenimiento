@@ -3,6 +3,7 @@
 
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { OPCIONES_COOKIE } from "@/lib/supabase/cookies";
 
 const PROTEGIDAS = ["/s", "/e", "/cuenta"];
 
@@ -13,6 +14,7 @@ export async function proxy(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
+      cookieOptions: OPCIONES_COOKIE,
       cookies: {
         getAll: () => request.cookies.getAll(),
         setAll(lista, encabezados) {
@@ -47,5 +49,5 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   // Todo menos archivos estáticos e imágenes.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
 };

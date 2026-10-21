@@ -1,230 +1,181 @@
-// Datos de ejemplo para diseñar las pantallas. Todo es ficticio.
-// Las fechas se calculan relativas a hoy, así las pantallas siempre muestran un caso realista.
-// Cuando exista Supabase, este archivo se reemplaza por consultas; las firmas de las funciones de abajo se mantienen.
+// Datos de la app, leídos de Supabase con la sesión de quien navega (las reglas de la base filtran).
+//
+// Cómo se usa: cada página (o layout, o generateMetadata) llama primero a `await cargarDatos()`.
+// Después, todas las funciones de abajo (localDe, controlesDeLocal, resumenLocal…) leen esa misma
+// foto de los datos, sin volver a la base. La foto vive solo durante ese pedido (cache de React),
+// así que dos personas nunca comparten datos.
+//
+// Con pocos cientos de controles alcanza con leer todo de una vez. Si algún día son miles,
+// conviene pasar las consultas pesadas a filtros en la base.
 
-import { estadoDe, hoy, sumarDias, sumarMeses } from "./fechas";
+import "server-only";
+import { cache } from "react";
+import { TIPO } from "./catalogo";
+import { estadoDe } from "./fechas";
+import { exigirStaff } from "./sesion";
+import { clienteServidor } from "./supabase/servidor";
 import type {
-  Cliente, Control, Ejecucion, Elemento, EstadoControl, Local, Pedido, Supervisor, TipoControl,
+  Cliente, Control, Ejecucion, Elemento, EstadoControl, Local, Pedido, TipoControl, Unidad,
 } from "./tipos";
 
-const H = hoy();
-const d = (n: number) => sumarDias(H, n);
-const m = (n: number) => sumarMeses(H, n);
-// Última limpieza de la campana de La Espiga Caballito (ejecución ej-1).
-const ultimaCampana = sumarMeses(d(21), -3);
+export interface Foto {
+  clientes: Cliente[];
+  locales: Local[];
+  tiposControl: TipoControl[];
+  elementos: Elemento[];
+  controles: Control[];
+  ejecuciones: Ejecucion[];
+  pedidos: Pedido[];
+}
 
-export const supervisorActual: Supervisor = { id: "sup-1", nombre: "Matías Ferreyra", telefono: "+54 9 11 5555-0142" };
-export const supervisores: Supervisor[] = [
-  supervisorActual,
-  { id: "sup-2", nombre: "Lorena Paz", telefono: "+54 9 11 5555-0187" },
-];
+export { TIPO };
 
-export const clientes: Cliente[] = [
-  { id: "cli-1", nombre: "Panadería La Espiga", razonSocial: "La Espiga S.R.L.", cuit: "30-71234567-8" },
-  { id: "cli-2", nombre: "Bodegón Don Ernesto", razonSocial: "Ernesto Gastronomía S.A.", cuit: "30-70987654-3" },
-  { id: "cli-3", nombre: "Óptica Visión Sur", razonSocial: "Visión Sur S.A.S.", cuit: "30-71555222-1" },
-];
+// "2026-10-20T11:12:00+00:00" → "2026-10-20T08:12:00-03:00": las pantallas leen fecha y hora en horario argentino.
+const formatoArgentina = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/Argentina/Buenos_Aires",
+  year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit",
+  hourCycle: "h23",
+});
+function enArgentina(ts: string): string {
+  const p = Object.fromEntries(formatoArgentina.formatToParts(new Date(ts)).map((x) => [x.type, x.value]));
+  return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:${p.second}-03:00`;
+}
 
-export const locales: Local[] = [
-  {
-    id: "loc-1", clienteId: "cli-1", nombre: "La Espiga Caballito", direccion: "Av. Rivadavia 5320", barrio: "Caballito",
-    rubro: "gastronomico", horarioAcceso: "Lunes a sábado de 6 a 21 h", encargado: { nombre: "Sandra Gómez", telefono: "+54 9 11 4444-1201" },
-    supervisorId: "sup-1",
-  },
-  {
-    id: "loc-2", clienteId: "cli-1", nombre: "La Espiga Almagro", direccion: "Av. Corrientes 4185", barrio: "Almagro",
-    rubro: "gastronomico", horarioAcceso: "Todos los días de 7 a 20 h", encargado: { nombre: "Ramiro Ibáñez", telefono: "+54 9 11 4444-3388" },
-    supervisorId: "sup-1",
-  },
-  {
-    id: "loc-3", clienteId: "cli-2", nombre: "Don Ernesto Palermo", direccion: "Gorriti 4870", barrio: "Palermo",
-    rubro: "gastronomico", horarioAcceso: "Martes a domingo de 11 a 1 h. Cocina desde las 9 h",
-    encargado: { nombre: "Ernesto Vidal", telefono: "+54 9 11 4444-7710" }, supervisorId: "sup-1",
-  },
-  {
-    id: "loc-4", clienteId: "cli-3", nombre: "Visión Sur Shopping Caballito", direccion: "Ferrari 250, local 214", barrio: "Caballito",
-    rubro: "retail", horarioAcceso: "Trabajos solo de 8 a 10 h, antes de que abra el shopping",
-    requisitosAcceso: "Permiso de trabajo con 48 h de anticipación y nómina con ART",
-    encargado: { nombre: "Paula Herrera", telefono: "+54 9 11 4444-2045" }, supervisorId: "sup-1",
-  },
-  {
-    id: "loc-5", clienteId: "cli-3", nombre: "Visión Sur Belgrano", direccion: "Av. Cabildo 2140", barrio: "Belgrano",
-    rubro: "retail", horarioAcceso: "Lunes a sábado de 10 a 20 h", encargado: { nombre: "Tomás Rey", telefono: "+54 9 11 4444-9932" },
-    supervisorId: "sup-2",
-  },
-];
+async function leer(): Promise<Foto> {
+  // Los layouts no se vuelven a correr al navegar dentro de la app: cada lectura vuelve a verificar.
+  await exigirStaff();
+  const db = await clienteServidor();
+  const [cli, loc, te, tc, eq, un, co, re, pe] = await Promise.all([
+    db.from("cliente").select("id, nombre, razon_social, cuit"),
+    db.from("local").select("*"),
+    db.from("tipo_equipo").select("id, nombre"),
+    db.from("tipo_control").select("*"),
+    db.from("equipo").select("id, local_id, tipo_equipo_id, codigo, ubicacion, detalle, qr_token, estado"),
+    db.from("unidad").select("equipo_id, serie, fabricacion, instalada_desde, retirada_en"),
+    db.from("control").select("id, local_id, equipo_id, tipo_control_id, vencimiento, ultima_fecha, ultimo_ejecutor").eq("estado", "activo"),
+    db.from("registro").select("id, control_id, fecha, resultado, origen, ejecutor, oblea, nota, vencimiento_anterior, vencimiento_nuevo"),
+    db.from("pedido").select("id, local_id, titulo, detalle, urgencia, estado, canal, creado_en, sla_vence_en"),
+  ]);
+  const error = [cli, loc, te, tc, eq, un, co, re, pe].find((r) => r.error)?.error;
+  if (error) throw new Error(`No se pudieron leer los datos: ${error.message}`);
 
-export const tiposControl: TipoControl[] = [
-  {
-    id: "tc-recarga", nombre: "Recarga", periodoValor: 12, periodoUnidad: "mes", base: "desde_ejecucion", anticipacionDias: 10,
-    evidencia: ["Foto de la tarjeta", "Número de oblea"], ejecutor: "tercero", norma: "IRAM 3517-2",
-    verbo: "Registrar recarga", hecho: "Recarga registrada",
-  },
-  {
-    id: "tc-ph", nombre: "Prueba hidráulica", periodoValor: 5, periodoUnidad: "anio", base: "desde_ejecucion", anticipacionDias: 60,
-    evidencia: ["Certificado"], ejecutor: "tercero", norma: "IRAM 3517-2",
-    verbo: "Registrar prueba hidráulica", hecho: "Prueba hidráulica registrada",
-    satisfaceA: ["tc-recarga"], dependeDeUnidad: true,
-  },
-  {
-    id: "tc-vida", nombre: "Vida útil", periodoValor: 20, periodoUnidad: "anio", base: "desde_ejecucion", anticipacionDias: 90,
-    evidencia: [], ejecutor: "SCP", norma: "IRAM 3517-2", verbo: "Registrar reemplazo", hecho: "Reemplazo registrado",
-    dependeDeUnidad: true,
-  },
-  {
-    id: "tc-tanque", nombre: "Limpieza y análisis", periodoValor: 6, periodoUnidad: "mes", base: "desde_ejecucion", anticipacionDias: 20,
-    evidencia: ["Certificado", "Análisis bacteriológico"], ejecutor: "tercero", norma: "Ley 3751 CABA",
-    verbo: "Registrar limpieza", hecho: "Limpieza registrada",
-  },
-  {
-    id: "tc-campana", nombre: "Limpieza de campana", periodoValor: 3, periodoUnidad: "mes", base: "desde_ejecucion", anticipacionDias: 10,
-    evidencia: ["Foto antes", "Foto después"], ejecutor: "SCP", verbo: "Registrar limpieza", hecho: "Limpieza registrada",
-  },
-  {
-    id: "tc-grasera", nombre: "Limpieza de grasera", periodoValor: 3, periodoUnidad: "mes", base: "desde_ejecucion", anticipacionDias: 10,
-    evidencia: ["Foto antes", "Foto después"], ejecutor: "SCP", verbo: "Registrar limpieza", hecho: "Limpieza registrada",
-  },
-  {
-    id: "tc-tablero", nombre: "Control de tablero", periodoValor: 6, periodoUnidad: "mes", base: "desde_ejecucion", anticipacionDias: 15,
-    evidencia: ["Checklist", "Foto del tablero"], ejecutor: "SCP", verbo: "Registrar control", hecho: "Control registrado",
-  },
-  {
-    id: "tc-pat", nombre: "Medición de puesta a tierra", periodoValor: 12, periodoUnidad: "mes", base: "desde_ejecucion", anticipacionDias: 30,
-    evidencia: ["Protocolo firmado"], ejecutor: "tercero", norma: "Res. SRT 900/15",
-    verbo: "Registrar medición", hecho: "Medición registrada",
-  },
-  {
-    id: "tc-luces", nombre: "Prueba de autonomía", periodoValor: 3, periodoUnidad: "mes", base: "desde_ejecucion", anticipacionDias: 7,
-    evidencia: ["Checklist"], ejecutor: "SCP", verbo: "Registrar prueba", hecho: "Prueba registrada",
-  },
-  {
-    id: "tc-plagas", nombre: "Control de plagas", periodoValor: 1, periodoUnidad: "mes", base: "desde_vencimiento", anticipacionDias: 5,
-    evidencia: ["Certificado"], ejecutor: "tercero", verbo: "Registrar control", hecho: "Control registrado",
-  },
-  {
-    id: "tc-aire", nombre: "Service de aire", periodoValor: 12, periodoUnidad: "mes", base: "desde_vencimiento", anticipacionDias: 20,
-    evidencia: ["Checklist", "Foto de filtros"], ejecutor: "SCP", verbo: "Registrar service", hecho: "Service registrado",
-  },
-];
+  const nombreTipoEquipo = new Map(te.data!.map((t) => [t.id, t.nombre]));
+  const unidades = un.data!;
 
-export const elementos: Elemento[] = [
-  // La Espiga Caballito
-  {
-    id: "el-1", localId: "loc-1", tipo: "Matafuego ABC 5 kg", codigo: "ESP1-MAT-01", ubicacion: "Salón, junto a la caja",
-    qrToken: "q7f3k2", estado: "activo",
-    unidad: { serie: "C-448120", fabricacion: "2019-03-10", instaladaDesde: m(-11) },
-    unidadesAnteriores: [{ serie: "C-301877", fabricacion: "2015-08-02", instaladaDesde: "2021-02-15", retiradaEn: m(-11) }],
-  },
-  {
-    id: "el-2", localId: "loc-1", tipo: "Matafuego ABC 5 kg", codigo: "ESP1-MAT-02", ubicacion: "Cuadra, junto al horno",
-    qrToken: "p2m9x1", estado: "activo", unidad: { serie: "C-512093", fabricacion: "2021-06-21", instaladaDesde: m(-12) },
-  },
-  {
-    id: "el-3", localId: "loc-1", tipo: "Matafuego CO₂ 3,5 kg", codigo: "ESP1-MAT-03", ubicacion: "Tablero principal",
-    qrToken: "z8w4r6", estado: "activo", unidad: { serie: "K-220419", fabricacion: "2018-11-05", instaladaDesde: m(-12) },
-  },
-  { id: "el-4", localId: "loc-1", tipo: "Tanque de agua 1.000 l", codigo: "ESP1-TAN-01", ubicacion: "Terraza", qrToken: "t5n1v8", estado: "activo" },
-  { id: "el-5", localId: "loc-1", tipo: "Campana de cuadra", codigo: "ESP1-CAM-01", ubicacion: "Cuadra", qrToken: "c3b7y2", estado: "activo" },
-  { id: "el-6", localId: "loc-1", tipo: "Tablero eléctrico", codigo: "ESP1-TAB-01", ubicacion: "Pasillo de servicio", qrToken: "e6h2j9", estado: "activo" },
-  // La Espiga Almagro
-  {
-    id: "el-7", localId: "loc-2", tipo: "Matafuego ABC 5 kg", codigo: "ESP2-MAT-01", ubicacion: "Salón",
-    qrToken: "a1s5d3", estado: "activo", unidad: { serie: "C-600217", fabricacion: "2022-01-14", instaladaDesde: m(-4) },
-  },
-  { id: "el-8", localId: "loc-2", tipo: "Grasera", codigo: "ESP2-GRA-01", ubicacion: "Patio", qrToken: "g4f8h0", estado: "activo" },
-  // Don Ernesto Palermo
-  {
-    id: "el-9", localId: "loc-3", tipo: "Matafuego ABC 10 kg", codigo: "DEP-MAT-01", ubicacion: "Cocina, junto a la puerta trasera",
-    qrToken: "m2k6l4", estado: "en_servicio_externo", unidad: { serie: "C-389001", fabricacion: "2008-04-30", instaladaDesde: "2020-05-11" },
-  },
-  {
-    id: "el-10", localId: "loc-3", tipo: "Matafuego ABC 5 kg", codigo: "DEP-MAT-02", ubicacion: "Salón, escalera",
-    qrToken: "n7b3v5", estado: "activo", unidad: { serie: "C-577342", fabricacion: "2020-09-18", instaladaDesde: m(-10) },
-  },
-  { id: "el-11", localId: "loc-3", tipo: "Campana de cocina", codigo: "DEP-CAM-01", ubicacion: "Cocina", qrToken: "w9e1r7", estado: "activo" },
-  { id: "el-12", localId: "loc-3", tipo: "Luces de emergencia (6)", codigo: "DEP-LUZ-01", ubicacion: "Salón y salidas", qrToken: "u3i8o2", estado: "activo" },
-  { id: "el-13", localId: "loc-3", tipo: "Tanque de agua 2.000 l", codigo: "DEP-TAN-01", ubicacion: "Azotea", qrToken: "y6t2r4", estado: "activo" },
-  // Visión Sur Shopping
-  {
-    id: "el-14", localId: "loc-4", tipo: "Matafuego ABC 5 kg", codigo: "VSC-MAT-01", ubicacion: "Detrás del mostrador",
-    qrToken: "b8n4m1", estado: "activo", unidad: { serie: "C-610455", fabricacion: "2023-02-08", instaladaDesde: m(-3) },
-  },
-  { id: "el-15", localId: "loc-4", tipo: "Equipo de aire 4.500 fg", codigo: "VSC-AIR-01", ubicacion: "Salón", qrToken: "k1l9p3", estado: "activo" },
-  { id: "el-16", localId: "loc-4", tipo: "Tablero eléctrico", codigo: "VSC-TAB-01", ubicacion: "Depósito", qrToken: "x5c7v2", estado: "activo" },
-  // Visión Sur Belgrano
-  {
-    id: "el-17", localId: "loc-5", tipo: "Matafuego ABC 5 kg", codigo: "VSB-MAT-01", ubicacion: "Entrada",
-    qrToken: "r4t6y8", estado: "activo", unidad: { serie: "C-598830", fabricacion: "2021-10-27", instaladaDesde: m(-6) },
-  },
-];
+  return {
+    clientes: cli.data!.map((c) => ({ id: c.id, nombre: c.nombre, razonSocial: c.razon_social, cuit: c.cuit })),
+    locales: loc.data!.map((l) => ({
+      id: l.id,
+      clienteId: l.cliente_id,
+      nombre: l.nombre,
+      direccion: l.direccion,
+      barrio: l.barrio,
+      rubro: l.rubro === "otro" ? "oficina" : l.rubro,
+      horarioAcceso: l.horario_acceso,
+      requisitosAcceso: l.requisitos_acceso ?? undefined,
+      encargado: { nombre: l.encargado_nombre, telefono: l.encargado_telefono },
+      supervisorId: l.supervisor_id ?? "",
+    })),
+    tiposControl: tc.data!.map((t) => ({
+      id: t.id,
+      nombre: t.nombre,
+      periodoValor: t.periodo_valor ?? 0,
+      periodoUnidad: t.periodo_unidad,
+      base: t.base,
+      anticipacionDias: t.anticipacion_dias,
+      evidencia: t.evidencia,
+      ejecutor: t.ejecutor === "scp" ? "SCP" : "tercero",
+      norma: t.norma ?? undefined,
+      verbo: t.verbo,
+      hecho: t.texto_hecho,
+      dependeDeUnidad: t.depende_de_unidad,
+    })),
+    elementos: eq.data!.map((e) => {
+      const propias = unidades.filter((u) => u.equipo_id === e.id);
+      const actual = propias.find((u) => !u.retirada_en);
+      const aUnidad = (u: (typeof propias)[number]): Unidad => ({
+        serie: u.serie, fabricacion: u.fabricacion, instaladaDesde: u.instalada_desde,
+      });
+      return {
+        id: e.id,
+        localId: e.local_id,
+        tipo: [nombreTipoEquipo.get(e.tipo_equipo_id), e.detalle].filter(Boolean).join(" "),
+        codigo: e.codigo,
+        ubicacion: e.ubicacion,
+        qrToken: e.qr_token,
+        estado: e.estado,
+        unidad: actual && aUnidad(actual),
+        unidadesAnteriores: propias
+          .filter((u) => u.retirada_en)
+          .sort((a, b) => (a.retirada_en! < b.retirada_en! ? 1 : -1))
+          .map((u) => ({ ...aUnidad(u), retiradaEn: u.retirada_en! })),
+      };
+    }),
+    controles: co.data!.map((c) => ({
+      id: c.id,
+      localId: c.local_id,
+      elementoId: c.equipo_id ?? undefined,
+      tipoControlId: c.tipo_control_id,
+      vencimiento: c.vencimiento ?? undefined,
+      ultimaEjecucion: c.ultima_fecha ?? undefined,
+      ultimoEjecutor: c.ultimo_ejecutor ?? undefined,
+    })),
+    ejecuciones: re.data!.map((r) => ({
+      id: r.id,
+      controlId: r.control_id,
+      fecha: r.fecha,
+      resultado: r.resultado,
+      vencimientoAnterior: r.vencimiento_anterior ?? undefined,
+      vencimientoNuevo: r.vencimiento_nuevo ?? undefined,
+      origen: r.origen,
+      oblea: r.oblea ?? undefined,
+      ejecutor: r.ejecutor,
+      nota: r.nota ?? undefined,
+    })),
+    pedidos: pe.data!.map((p) => ({
+      id: p.id,
+      localId: p.local_id,
+      titulo: p.titulo,
+      detalle: p.detalle,
+      urgencia: p.urgencia,
+      estado: p.estado,
+      canal: p.canal,
+      creado: enArgentina(p.creado_en),
+      slaVence: enArgentina(p.sla_vence_en),
+    })),
+  };
+}
 
-export const controles: Control[] = [
-  // La Espiga Caballito: el caso del enunciado, matafuegos que vencen en pocos días
-  { id: "co-1", localId: "loc-1", elementoId: "el-1", tipoControlId: "tc-recarga", vencimiento: d(6), ultimaEjecucion: sumarMeses(d(6), -12), ultimoEjecutor: "Recargas Norte" },
-  { id: "co-2", localId: "loc-1", elementoId: "el-1", tipoControlId: "tc-ph", vencimiento: "2029-03-10", ultimaEjecucion: "2024-03-10", ultimoEjecutor: "Recargas Norte" },
-  { id: "co-3", localId: "loc-1", elementoId: "el-1", tipoControlId: "tc-vida", vencimiento: "2039-03-10", ultimaEjecucion: "2019-03-10" },
-  { id: "co-4", localId: "loc-1", elementoId: "el-2", tipoControlId: "tc-recarga", vencimiento: d(6), ultimaEjecucion: sumarMeses(d(6), -12), ultimoEjecutor: "Recargas Norte" },
-  { id: "co-5", localId: "loc-1", elementoId: "el-2", tipoControlId: "tc-ph", vencimiento: d(40), ultimaEjecucion: sumarMeses(d(40), -60), ultimoEjecutor: "Recargas Norte" },
-  { id: "co-6", localId: "loc-1", elementoId: "el-2", tipoControlId: "tc-vida", vencimiento: "2041-06-21", ultimaEjecucion: "2021-06-21" },
-  { id: "co-7", localId: "loc-1", elementoId: "el-3", tipoControlId: "tc-recarga", vencimiento: d(6), ultimaEjecucion: sumarMeses(d(6), -12), ultimoEjecutor: "Recargas Norte" },
-  { id: "co-8", localId: "loc-1", elementoId: "el-3", tipoControlId: "tc-ph", ultimoEjecutor: undefined },
-  { id: "co-9", localId: "loc-1", elementoId: "el-4", tipoControlId: "tc-tanque", vencimiento: d(51), ultimaEjecucion: sumarMeses(d(51), -6), ultimoEjecutor: "Aguas Claras S.A." },
-  { id: "co-10", localId: "loc-1", elementoId: "el-5", tipoControlId: "tc-campana", vencimiento: d(21), ultimaEjecucion: ultimaCampana, ultimoEjecutor: "SCP" },
-  { id: "co-11", localId: "loc-1", elementoId: "el-6", tipoControlId: "tc-tablero", vencimiento: d(97), ultimaEjecucion: sumarMeses(d(97), -6), ultimoEjecutor: "SCP" },
-  { id: "co-12", localId: "loc-1", tipoControlId: "tc-plagas", vencimiento: d(3), ultimaEjecucion: sumarMeses(d(3), -1), ultimoEjecutor: "Fumigadora Sur" },
-  { id: "co-13", localId: "loc-1", tipoControlId: "tc-pat", vencimiento: d(140), ultimaEjecucion: sumarMeses(d(140), -12), ultimoEjecutor: "Ing. Carla Domínguez" },
-  // La Espiga Almagro
-  { id: "co-14", localId: "loc-2", elementoId: "el-7", tipoControlId: "tc-recarga", vencimiento: d(244), ultimaEjecucion: sumarMeses(d(244), -12), ultimoEjecutor: "Recargas Norte" },
-  { id: "co-15", localId: "loc-2", elementoId: "el-8", tipoControlId: "tc-grasera", vencimiento: d(-4), ultimaEjecucion: sumarMeses(d(-4), -3), ultimoEjecutor: "SCP" },
-  { id: "co-16", localId: "loc-2", tipoControlId: "tc-plagas", vencimiento: d(12), ultimaEjecucion: sumarMeses(d(12), -1), ultimoEjecutor: "Fumigadora Sur" },
-  // Don Ernesto Palermo
-  { id: "co-17", localId: "loc-3", elementoId: "el-9", tipoControlId: "tc-recarga", vencimiento: d(-2), ultimaEjecucion: sumarMeses(d(-2), -12), ultimoEjecutor: "Recargas Norte" },
-  { id: "co-18", localId: "loc-3", elementoId: "el-9", tipoControlId: "tc-ph", vencimiento: d(-2), ultimaEjecucion: sumarMeses(d(-2), -60), ultimoEjecutor: "Recargas Norte" },
-  { id: "co-19", localId: "loc-3", elementoId: "el-9", tipoControlId: "tc-vida", vencimiento: "2028-04-30", ultimaEjecucion: "2008-04-30" },
-  { id: "co-20", localId: "loc-3", elementoId: "el-10", tipoControlId: "tc-recarga", vencimiento: d(58), ultimaEjecucion: sumarMeses(d(58), -12), ultimoEjecutor: "Recargas Norte" },
-  { id: "co-21", localId: "loc-3", elementoId: "el-11", tipoControlId: "tc-campana", vencimiento: d(-9), ultimaEjecucion: sumarMeses(d(-9), -3), ultimoEjecutor: "SCP" },
-  { id: "co-22", localId: "loc-3", elementoId: "el-12", tipoControlId: "tc-luces", vencimiento: d(5), ultimaEjecucion: sumarMeses(d(5), -3), ultimoEjecutor: "SCP" },
-  { id: "co-23", localId: "loc-3", elementoId: "el-13", tipoControlId: "tc-tanque" },
-  { id: "co-24", localId: "loc-3", tipoControlId: "tc-plagas", vencimiento: d(1), ultimaEjecucion: sumarMeses(d(1), -1), ultimoEjecutor: "Fumigadora Sur" },
-  // Visión Sur Shopping
-  { id: "co-25", localId: "loc-4", elementoId: "el-14", tipoControlId: "tc-recarga", vencimiento: d(275), ultimaEjecucion: sumarMeses(d(275), -12), ultimoEjecutor: "Recargas Norte" },
-  { id: "co-26", localId: "loc-4", elementoId: "el-15", tipoControlId: "tc-aire", vencimiento: d(9), ultimaEjecucion: sumarMeses(d(9), -12), ultimoEjecutor: "SCP" },
-  { id: "co-27", localId: "loc-4", elementoId: "el-16", tipoControlId: "tc-tablero", vencimiento: d(33), ultimaEjecucion: sumarMeses(d(33), -6), ultimoEjecutor: "SCP" },
-  // Visión Sur Belgrano
-  { id: "co-28", localId: "loc-5", elementoId: "el-17", tipoControlId: "tc-recarga", vencimiento: d(183), ultimaEjecucion: sumarMeses(d(183), -12), ultimoEjecutor: "Recargas Norte" },
-];
+// Un casillero por pedido: lo comparten la página, su layout y su generateMetadata.
+const casillero = cache((): { foto?: Foto } => ({}));
 
-export const ejecuciones: Ejecucion[] = [
-  { id: "ej-1", controlId: "co-10", fecha: ultimaCampana, resultado: "ok", vencimientoAnterior: sumarDias(ultimaCampana, 2), vencimientoNuevo: d(21), origen: "calculado", ejecutor: "SCP" },
-  { id: "ej-2", controlId: "co-1", fecha: sumarMeses(d(6), -12), resultado: "reemplazo", vencimientoAnterior: sumarMeses(d(6), -12), vencimientoNuevo: d(6), origen: "certificado", oblea: "0045821", ejecutor: "Recargas Norte", nota: "Se reemplazó la unidad C-301877 por C-448120." },
-  { id: "ej-3", controlId: "co-1", fecha: sumarMeses(d(6), -24), resultado: "ok", vencimientoAnterior: sumarMeses(d(6), -24), vencimientoNuevo: sumarMeses(d(6), -12), origen: "calculado", oblea: "0031177", ejecutor: "Recargas Norte" },
-  { id: "ej-4", controlId: "co-2", fecha: "2024-03-10", resultado: "ok", vencimientoNuevo: "2029-03-10", origen: "certificado", ejecutor: "Recargas Norte" },
-];
+/** Lee los datos de la base (una sola vez por pedido). Llamarla al principio de cada página. */
+export async function cargarDatos(): Promise<Foto> {
+  const c = casillero();
+  c.foto ??= await leer();
+  return c.foto;
+}
 
-export const pedidos: Pedido[] = [
-  {
-    id: "pe-1", localId: "loc-3", titulo: "Pérdida de agua bajo la bacha de la cocina", detalle: "Gotea desde anoche, pusimos un balde.",
-    urgencia: "urgente", estado: "nuevo", creado: `${H}T08:12:00-03:00`, slaVence: `${d(1)}T08:12:00-03:00`, canal: "portal",
-  },
-  {
-    id: "pe-2", localId: "loc-4", titulo: "Tubo del cartel de la vidriera apagado", detalle: "Es el de la izquierda.",
-    urgencia: "normal", estado: "aceptado", creado: `${d(-1)}T17:40:00-03:00`, slaVence: `${d(2)}T17:40:00-03:00`, canal: "whatsapp",
-  },
-];
+/** La foto de este pedido. Falla a propósito si la página se olvidó de llamar a cargarDatos(). */
+export function datos(): Foto {
+  const foto = casillero().foto;
+  if (!foto) throw new Error("Falta llamar a `await cargarDatos()` al principio de la página.");
+  return foto;
+}
 
-// ——— Consultas (mismas firmas que tendrán con Supabase) ———
+// ——— Consultas ———
 
-export const tipoDe = (control: Control): TipoControl => tiposControl.find((t) => t.id === control.tipoControlId)!;
-export const localDe = (id: string) => locales.find((l) => l.id === id);
-export const clienteDe = (id: string) => clientes.find((c) => c.id === id);
-export const elementoDe = (id: string) => elementos.find((e) => e.id === id);
+export const tipoDe = (control: Control): TipoControl => datos().tiposControl.find((t) => t.id === control.tipoControlId)!;
+export const localDe = (id: string) => datos().locales.find((l) => l.id === id);
+export const clienteDe = (id: string) => datos().clientes.find((c) => c.id === id);
+export const elementoDe = (id: string) => datos().elementos.find((e) => e.id === id);
 
-export const elementosDeLocal = (localId: string) => elementos.filter((e) => e.localId === localId);
-export const controlesDeLocal = (localId: string) => controles.filter((c) => c.localId === localId);
-export const controlesDeElemento = (elementoId: string) => controles.filter((c) => c.elementoId === elementoId);
+export const elementosDeLocal = (localId: string) => datos().elementos.filter((e) => e.localId === localId);
+export const controlesDeLocal = (localId: string) => datos().controles.filter((c) => c.localId === localId);
+export const controlesDeElemento = (elementoId: string) => datos().controles.filter((c) => c.elementoId === elementoId);
 export const ejecucionesDeControl = (controlId: string) =>
-  ejecuciones.filter((e) => e.controlId === controlId).sort((a, b) => (a.fecha < b.fecha ? 1 : -1));
-export const pedidosDeLocal = (localId: string) => pedidos.filter((p) => p.localId === localId);
+  datos().ejecuciones.filter((e) => e.controlId === controlId).sort((a, b) => (a.fecha < b.fecha ? 1 : -1));
+export const pedidosDeLocal = (localId: string) => datos().pedidos.filter((p) => p.localId === localId);
 
 export const estadoControl = (c: Control): EstadoControl => estadoDe(c, tipoDe(c));
 
@@ -254,12 +205,12 @@ export function resumenLocal(localId: string) {
 }
 
 /**
- * Regla cruzada (§3.3 de la propuesta): con la prueba hidráulica del cilindro vencida
- * no se puede registrar una recarga; hay que reemplazar la unidad o hacer primero la prueba.
+ * Con la prueba hidráulica del cilindro vencida no conviene registrar una recarga:
+ * hay que reemplazar la unidad o registrar primero la prueba. Es un aviso en pantalla.
  */
 export function bloqueoDe(c: Control): { texto: string; permiteReemplazo: boolean } | undefined {
-  if (c.tipoControlId !== "tc-recarga" || !c.elementoId) return undefined;
-  const ph = controles.find((x) => x.elementoId === c.elementoId && x.tipoControlId === "tc-ph");
+  if (c.tipoControlId !== TIPO.recarga || !c.elementoId) return undefined;
+  const ph = datos().controles.find((x) => x.elementoId === c.elementoId && x.tipoControlId === TIPO.pruebaHidraulica);
   if (!ph?.vencimiento || estadoControl(ph) !== "vencido") return undefined;
   const [a, mm, dd] = ph.vencimiento.split("-");
   return {

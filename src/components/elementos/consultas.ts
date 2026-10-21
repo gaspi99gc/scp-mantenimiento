@@ -1,13 +1,13 @@
 // Consultas de la pantalla de elementos, armadas con los exports de datos.ts.
 // Solo se usan en el servidor (páginas); los componentes cliente importan únicamente los tipos.
-// TODO(supabase): estas funciones pasan a ser consultas a la base con las mismas firmas.
+// Leen la foto de datos del pedido (cargarDatos en la página), que viene de Supabase.
 
 import QRCode from "qrcode";
 import {
   bloqueoDe,
   controlesDeElemento,
   ejecucionesDeControl,
-  elementos,
+  datos,
   estadoControl,
   localDe,
   ORDEN_ESTADO,
@@ -80,7 +80,7 @@ export function peorControl(elementoId: string): { estado: EstadoControl; contro
   return cs.length ? { estado: estadoControl(cs[0]), control: cs[0] } : { estado: "sin_datos" };
 }
 
-export const elementoPorToken = (token: string) => elementos.find((e) => e.qrToken === token.trim().toLowerCase());
+export const elementoPorToken = (token: string) => datos().elementos.find((e) => e.qrToken === token.trim().toLowerCase());
 
 const normalizar = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]/g, "");
 
@@ -93,14 +93,14 @@ export function buscarElemento(texto: string): Elemento | undefined {
   if (!t) return undefined;
   const token = (t.match(/\/e\/([a-z0-9]+)\/?$/i)?.[1] ?? t).toLowerCase();
   const codigo = normalizar(t);
-  return elementos.find((e) => normalizar(e.codigo) === codigo || e.qrToken === token);
+  return datos().elementos.find((e) => normalizar(e.codigo) === codigo || e.qrToken === token);
 }
 
 /** Códigos que se parecen a lo que se escribió, para cuando no hay coincidencia exacta. */
 export function codigosParecidos(texto: string, max = 4): Elemento[] {
   const t = normalizar(texto);
   if (t.length < 2) return [];
-  return elementos.filter((e) => normalizar(e.codigo).includes(t)).slice(0, max);
+  return datos().elementos.filter((e) => normalizar(e.codigo).includes(t)).slice(0, max);
 }
 
 export function nombreLocal(localId: string) {

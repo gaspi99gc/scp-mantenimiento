@@ -2,6 +2,7 @@
 
 // Entrar y salir. Los mensajes de error nunca dicen si un email tiene cuenta.
 
+import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
 import { destinoSeguro } from "@/lib/sesion";
@@ -39,15 +40,21 @@ export async function iniciarSesion(_previo: EstadoLogin, datos: FormData): Prom
   redirect(destinoSeguro(datos.get("siguiente")));
 }
 
-/** Botón de ingreso rápido: solo existe corriendo la app en la compu (npm run dev). */
+/** Botón de ingreso rápido: solo corriendo la app en la compu (npm run dev) y abierta desde esa misma compu. */
 export async function entrarComoAdminDev(): Promise<EstadoLogin> {
   const email = process.env.DEV_ADMIN_EMAIL;
   const clave = process.env.DEV_ADMIN_PASSWORD;
-  if (process.env.NODE_ENV !== "development" || !email || !clave) notFound();
+  if (process.env.NODE_ENV !== "development" || !email || !clave || !(await desdeEstaCompu())) notFound();
 
   const error = await entrarCon(email, clave);
   if (error) return { error: `${error} Revisá DEV_ADMIN_EMAIL y DEV_ADMIN_PASSWORD en .env.local y corré npm run crear-admin.` };
   redirect("/s");
+}
+
+/** Que el pedido venga de localhost: alguien en la misma Wi-Fi que abre la IP de la compu no puede usarlo. */
+async function desdeEstaCompu(): Promise<boolean> {
+  const host = ((await headers()).get("host") ?? "").replace(/:\d+$/, "");
+  return host === "localhost" || host === "127.0.0.1" || host === "[::1]";
 }
 
 export async function cerrarSesion() {

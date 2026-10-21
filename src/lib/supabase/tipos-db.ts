@@ -537,7 +537,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      marcar_clave_cambiada: { Args: never; Returns: undefined }
+      cerrar_sesiones: { Args: { p_usuario: string }; Returns: undefined }
       reemplazar_unidad: {
         Args: {
           p_desde: string

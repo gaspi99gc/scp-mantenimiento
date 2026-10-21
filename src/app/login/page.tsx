@@ -2,6 +2,7 @@
 // Si ya hay sesión, va directo a la app (o a elegir contraseña si todavía no la eligió).
 
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { FormularioLogin } from "@/components/cuenta/formulario-login";
 import { TarjetaPared, TiraMeses } from "@/components/cuenta/tarjeta-pared";
@@ -19,8 +20,12 @@ export default async function PaginaLogin({
   const usuario = await usuarioActual();
   if (usuario?.activo) redirect(usuario.debeCambiarClave ? "/cuenta/clave" : destinoSeguro(siguiente));
 
+  const host = ((await headers()).get("host") ?? "").replace(/:\d+$/, "");
   const ingresoRapido =
-    process.env.NODE_ENV === "development" && !!process.env.DEV_ADMIN_EMAIL && !!process.env.DEV_ADMIN_PASSWORD;
+    process.env.NODE_ENV === "development" &&
+    !!process.env.DEV_ADMIN_EMAIL &&
+    !!process.env.DEV_ADMIN_PASSWORD &&
+    ["localhost", "127.0.0.1", "[::1]"].includes(host);
 
   return (
     <div className="min-h-dvh bg-papel lg:grid lg:grid-cols-[minmax(480px,5fr)_7fr] lg:bg-yeso">

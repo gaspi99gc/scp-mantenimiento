@@ -21,8 +21,8 @@ function Accion({ href, icono, children, externo }: { href: string; icono: React
   );
 }
 
-export function AccionesContacto({ local }: { local: Local }) {
-  const enlaces = enlacesContacto(local);
+export function AccionesContacto({ local, quienEscribe }: { local: Local; quienEscribe: string }) {
+  const enlaces = enlacesContacto(local, quienEscribe);
   return (
     <ul className="mb-7 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap" aria-label="Contacto">
       <Accion href={enlaces.telefono} icono={<IconoTelefono tamano={20} />}>

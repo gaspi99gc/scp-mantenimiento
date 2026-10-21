@@ -61,7 +61,7 @@ select is(
 
 -- ——— Quién ve qué ———
 select pg_temp.como('22222222-2222-4222-8222-222222222222');
-select is((select count(*)::int from public.local), 1, 'el supervisor activo ve los locales');
+select is((select count(*)::int from public.local where id = 'aaaaaaaa-0000-4000-8000-000000000002'), 1, 'el supervisor activo ve los locales');
 reset role;
 
 select pg_temp.como('33333333-3333-4333-8333-333333333333');
@@ -184,10 +184,23 @@ select is((select vencimiento from public.control where id = (select vida from i
 reset role;
 
 -- ——— Primer ingreso ———
+-- El cambio obligatorio no se puede saltear por la API: solo el servidor baja la marca.
+select is(
+  (select count(*)::int from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname in ('public', 'app') and p.proname = 'marcar_clave_cambiada'), 0,
+  'no existe una función para saltear el cambio de contraseña');
+update public.perfil set debe_cambiar_clave = false where id = '44444444-4444-4444-8444-444444444444';
 select pg_temp.como('44444444-4444-4444-8444-444444444444');
-select lives_ok('select public.marcar_clave_cambiada()', 'el usuario nuevo marca que eligió su contraseña');
-select is((select count(*)::int from public.local), 1, 'después de elegir la contraseña ya ve los locales');
+select is((select count(*)::int from public.local where id = 'aaaaaaaa-0000-4000-8000-000000000002'), 1, 'después de elegir la contraseña ya ve los locales');
 reset role;
+
+-- ——— Sesiones y funciones internas ———
+select ok(not has_function_privilege('authenticated', 'public.cerrar_sesiones(uuid)', 'execute'),
+  'un usuario no puede cerrar sesiones ajenas');
+select ok(not has_function_privilege('anon', 'app.es_staff()', 'execute'), 'sin sesión no se consulta quién es staff');
+select throws_ok(
+  $$update public.control set estado = 'no_aplica' where id = (select recarga from ids)$$,
+  '23514', null, '"no aplica" exige un motivo');
 
 select * from finish();
 rollback;

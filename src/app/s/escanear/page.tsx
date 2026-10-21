@@ -12,6 +12,7 @@ import { Boton, Cifra, Encabezado, FechaFila, Fila, Planilla } from "@/component
 import { elementoDe } from "@/lib/datos";
 import { fechaCorta, textoRelativo } from "@/lib/fechas";
 import type { Elemento } from "@/lib/tipos";
+import { cargarDatos } from "@/lib/datos";
 
 export const metadata: Metadata = { title: "Escanear" };
 
@@ -54,6 +55,7 @@ export default async function Escanear({
   searchParams: Promise<{ [clave: string]: string | string[] | undefined }>;
 }) {
   const { codigo } = await searchParams;
+  await cargarDatos();
   const texto = typeof codigo === "string" ? codigo.trim() : "";
   const encontrado = texto ? buscarElemento(texto) : undefined;
   if (encontrado) redirect(`/s/elementos/${encontrado.id}`);

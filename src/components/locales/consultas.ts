@@ -3,14 +3,13 @@
 
 import {
   clienteDe,
-  controles,
+  datos,
   controlesDeLocal,
   describirControl,
-  ejecuciones,
   estadoControl,
   ORDEN_ESTADO,
   resumenLocal,
-  supervisorActual,
+  TIPO,
 } from "@/lib/datos";
 import { diasEntre, fechaConDia, hoy } from "@/lib/fechas";
 import type { EstadoControl, FechaISO, Local, Pedido, ResultadoEjecucion } from "@/lib/tipos";
@@ -103,7 +102,7 @@ export interface DiaHistorial {
 const minuscula = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
 
 function sobreDe(controlId: string) {
-  const c = controles.find((x) => x.id === controlId)!;
+  const c = datos().controles.find((x) => x.id === controlId)!;
   const { tipo, elemento, sobre, donde } = describirControl(c);
   return {
     titulo: tipo.nombre,
@@ -119,7 +118,7 @@ export function historialDeLocal(localId: string): DiaHistorial[] {
 
   const delLocal = controlesDeLocal(localId);
   const conRegistro = new Set<string>();
-  for (const e of ejecuciones) {
+  for (const e of datos().ejecuciones) {
     const c = delLocal.find((x) => x.id === e.controlId);
     if (!c) continue;
     conRegistro.add(c.id);
@@ -137,10 +136,10 @@ export function historialDeLocal(localId: string): DiaHistorial[] {
   }
 
   // Controles cuya última ejecución todavía no está en la tabla de ejecuciones (datos de relevamiento).
-  // TODO(supabase): con la cadena de vencimientos completa en la base esto sobra; sale todo de `ejecucion`.
+  // Son las fechas cargadas en el relevamiento, antes de que hubiera registros en la app.
   // La vida útil se cuenta desde la fabricación: no es un trabajo y no va al historial.
   for (const c of delLocal) {
-    if (conRegistro.has(c.id) || !c.ultimaEjecucion || c.tipoControlId === "tc-vida") continue;
+    if (conRegistro.has(c.id) || !c.ultimaEjecucion || c.tipoControlId === TIPO.vidaUtil) continue;
     eventos.push({
       clase: "ejecucion",
       id: `ult-${c.id}`,
@@ -179,9 +178,9 @@ export function haceCuanto(fecha: FechaISO, referencia: FechaISO = hoy()): strin
 
 export const primerNombre = (nombre: string) => nombre.split(" ")[0];
 
-export function enlacesContacto(local: Local) {
+export function enlacesContacto(local: Local, quienEscribe: string) {
   const numero = local.encargado.telefono.replace(/[^\d]/g, "");
-  const mensaje = `Hola ${primerNombre(local.encargado.nombre)}, te escribe ${primerNombre(supervisorActual.nombre)} de SCP.`;
+  const mensaje = `Hola ${primerNombre(local.encargado.nombre)}, te escribe ${primerNombre(quienEscribe)} de SCP.`;
   return {
     telefono: `tel:+${numero}`,
     whatsapp: `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`,

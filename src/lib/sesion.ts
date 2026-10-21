@@ -44,6 +44,7 @@ export async function exigirSesion(): Promise<Usuario> {
 export async function exigirStaff(): Promise<Usuario> {
   const u = await exigirSesion();
   if (u.debeCambiarClave) redirect("/cuenta/clave");
+  if (u.rol !== "admin" && u.rol !== "supervisor") notFound();
   return u;
 }
 

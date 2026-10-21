@@ -1,24 +1,25 @@
 "use client";
 
 // Ficha del elemento: el colgadero con todos sus controles (D3), la unidad instalada y el historial.
-// Registrar un control o reemplazar la unidad actualiza el estado local (todavía no hay base)
-// y la tarjeta afectada muestra la fecha nueva con el golpe de sello.
+// Registrar un control o reemplazar la unidad se guarda en la base; la pantalla muestra la fecha
+// que quedó guardada y la tarjeta afectada la recibe con el golpe de sello.
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, useTransition, type ReactNode } from "react";
+import { reemplazarUnidad, registrarControl } from "@/app/s/acciones-controles";
 import { IconoCerrar, IconoCheck, IconoHerramienta } from "@/components/iconos";
 import { RegistrarEjecucion, type Registro } from "@/components/registrar-ejecucion";
 import { Colgadero, Tarjeta } from "@/components/tarjeta";
 import { Boton, Cifra, CLASE_PLANILLA, cx, Fila, Planilla, Vacio } from "@/components/ui";
-import { estadoDe, fechaMedia, hoy, proponerVencimiento } from "@/lib/fechas";
+import { estadoDe, fechaMedia, hoy } from "@/lib/fechas";
 import type { Elemento, FechaISO, Unidad } from "@/lib/tipos";
 import type { ControlDeFicha, ItemHistorial } from "./consultas";
+import { TIPO } from "@/lib/catalogo";
 import { HojaUnidad, type DatosUnidad } from "./hoja-unidad";
 import { TEXTO_ORIGEN, TEXTO_RESULTADO } from "./textos";
 
 // Controles que siguen a la unidad física (en la propuesta: depende_de_unidad).
-// TODO(supabase): leer la marca del tipo de control en lugar de fijar los ids.
-const ID_PRUEBA = "tc-ph";
-const ID_VIDA = "tc-vida";
+const ID_PRUEBA = TIPO.pruebaHidraulica;
+const ID_VIDA = TIPO.vidaUtil;
 
 type UnidadAnterior = Unidad & { retiradaEn: FechaISO };
 
@@ -57,6 +58,7 @@ export function FichaElemento({
     null,
   );
   const [aviso, setAviso] = useState<Aviso | null>(null);
+  const [guardando, empezar] = useTransition();
 
   // El aviso se va solo, salvo que pida hacer algo.
   useEffect(() => {
@@ -98,11 +100,32 @@ export function FichaElemento({
   function alRegistrar(r: Registro) {
     const item = items.find((i) => i.control.id === r.controlId);
     if (!item) return;
-    const { tipo, control } = item;
-    // TODO(supabase): registrar_ejecucion() en una sola transacción (§3.3 de la propuesta).
     // El formulario todavía no pide quién hizo el trabajo: se toma el ejecutor habitual del control.
-    const ejecutor = tipo.ejecutor === "SCP" ? "SCP" : (control.ultimoEjecutor ?? supervisor);
-    const nuevo = r.vencimientoNuevo;
+    const ejecutor = item.tipo.ejecutor === "SCP" ? "SCP" : (item.control.ultimoEjecutor ?? supervisor);
+    empezar(async () => {
+      const res = await registrarControl({
+        controlId: r.controlId,
+        fecha: r.fecha,
+        resultado: r.resultado,
+        ejecutor,
+        oblea: r.oblea,
+        nota: r.motivo,
+        fechaTarjeta: r.origen === "certificado" ? r.vencimientoNuevo : undefined,
+      });
+      if (res.error) {
+        setRegistro((prev) => prev && { ...prev, abierta: false });
+        setAviso({ tono: "tinta", texto: `No se guardó. ${res.error}` });
+        return;
+      }
+      // La fecha que vale es la que calculó la base.
+      reflejarRegistro(r, ejecutor, res.vencimientoNuevo);
+    });
+  }
+
+  function reflejarRegistro(r: Registro, ejecutor: string, nuevo: FechaISO | undefined) {
+    const item = items.find((i) => i.control.id === r.controlId);
+    if (!item) return;
+    const { tipo } = item;
 
     if (nuevo) {
       setItems((prev) =>
@@ -158,9 +181,27 @@ export function FichaElemento({
 
   function alConfirmarUnidad(d: DatosUnidad) {
     if (!hojaUnidad) return;
+    const desde = hojaUnidad.modo === "completar" ? (unidadPendienteDesde ?? hoy()) : hoy();
+    empezar(async () => {
+      const res = await reemplazarUnidad({
+        elementoId: elemento.id,
+        serie: d.serie,
+        fabricacion: d.fabricacion,
+        desde,
+        ultimaPrueba: d.ultimaPrueba || undefined,
+      });
+      if (res.error) {
+        setHojaUnidad((prev) => prev && { ...prev, abierta: false });
+        setAviso({ tono: "tinta", texto: `No se guardó. ${res.error}` });
+        return;
+      }
+      reflejarUnidad(d, desde, res.vencimientos ?? []);
+    });
+  }
+
+  function reflejarUnidad(d: DatosUnidad, desde: FechaISO, vencimientos: { controlId: string; vencimiento?: string }[]) {
+    if (!hojaUnidad) return;
     const { modo } = hojaUnidad;
-    // TODO(supabase): crear la Unidad, cerrar la anterior (retirada_en) y recalcular los controles que dependen de ella.
-    const desde = modo === "completar" ? (unidadPendienteDesde ?? hoy()) : hoy();
     if (modo === "reemplazar" && unidad) {
       setAnteriores((prev) => [{ ...unidad, retiradaEn: desde }, ...prev]);
       setHistorial((prev) =>
@@ -181,12 +222,14 @@ export function FichaElemento({
     setUnidad({ serie: d.serie, fabricacion: d.fabricacion, instaladaDesde: desde });
     setUnidadPendienteDesde(null);
 
-    // La prueba hidráulica se cuenta desde la última prueba de la unidad; la vida útil, desde la fabricación.
+    // Las fechas nuevas son las que guardó la base: la vida útil desde la fabricación y la prueba
+    // hidráulica desde la última prueba del cilindro.
     const baseDe = (i: ControlDeFicha) =>
-      i.tipo.id === ID_PRUEBA ? d.ultimaPrueba : i.tipo.id === ID_VIDA ? d.fabricacion : undefined;
+      i.tipo.id === ID_PRUEBA ? d.ultimaPrueba || d.fabricacion : i.tipo.id === ID_VIDA ? d.fabricacion : undefined;
     const recalculados = items.flatMap((i) => {
       const base = baseDe(i);
-      return base ? [{ id: i.control.id, nombre: i.tipo.nombre, base, vence: proponerVencimiento(i.tipo, base) }] : [];
+      const vence = vencimientos.find((v) => v.controlId === i.control.id)?.vencimiento;
+      return base && vence ? [{ id: i.control.id, nombre: i.tipo.nombre, base, vence }] : [];
     });
     setItems((prev) =>
       prev.map((i) => {
@@ -389,6 +432,7 @@ export function FichaElemento({
           tipo={activo.tipo}
           elemento={elementoActual}
           bloqueo={bloqueoVigente(activo)}
+          guardando={guardando}
         />
       )}
 

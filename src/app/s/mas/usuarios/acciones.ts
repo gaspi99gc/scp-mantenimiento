@@ -11,11 +11,11 @@ import { clienteAdmin } from "@/lib/supabase/admin";
 export type EstadoUsuarios = { error?: string; ok?: string };
 
 const REGLA = "La contraseña provisoria necesita al menos 10 caracteres, con letras y números.";
-const ClaveProvisoria = z.string().min(10, REGLA).regex(/[a-zA-ZñÑ]/, REGLA).regex(/\d/, REGLA);
+const ClaveProvisoria = z.string().min(10, REGLA).max(72, REGLA).regex(/[a-zA-ZñÑ]/, REGLA).regex(/\d/, REGLA);
 const Id = z.string().uuid();
 
 const Nuevo = z.object({
-  nombre: z.string().trim().min(2, "Escribí el nombre y el apellido."),
+  nombre: z.string().trim().min(2, "Escribí el nombre y el apellido.").max(120),
   email: z.string().trim().toLowerCase().email("A ese email le falta algo. Ej.: nombre@scp.com.ar"),
   rol: z.enum(["admin", "supervisor"]),
   clave: ClaveProvisoria,
@@ -23,6 +23,7 @@ const Nuevo = z.object({
 
 // Bloqueo en Auth para que un usuario desactivado no pueda renovar su sesión (100 años).
 const BLOQUEO = "876000h";
+const ERROR_GENERICO = "No se pudo guardar el cambio. Probá de nuevo.";
 
 export async function crearUsuario(_previo: EstadoUsuarios, datos: FormData): Promise<EstadoUsuarios> {
   await exigirAdmin();
@@ -58,17 +59,33 @@ export async function crearUsuario(_previo: EstadoUsuarios, datos: FormData): Pr
 
 export async function cambiarActivo(id: string, activo: boolean): Promise<EstadoUsuarios> {
   const yo = await exigirAdmin();
-  if (!Id.safeParse(id).success) return { error: "Usuario inválido." };
+  if (!Id.safeParse(id).success || !z.boolean().safeParse(activo).success) return { error: "Datos inválidos." };
   if (id === yo.id) return { error: "No podés desactivarte a vos mismo." };
 
   const admin = clienteAdmin();
-  const { error } = await admin.from("perfil").update({ activo }).eq("id", id);
-  if (error) return { error: "No se pudo guardar el cambio. Probá de nuevo." };
-  // El perfil ya lo deja afuera de la base en el momento; el bloqueo impide que renueve la sesión.
-  await admin.auth.admin.updateUserById(id, { ban_duration: activo ? "none" : BLOQUEO });
+  if (activo) {
+    // Al volver, tiene que elegir contraseña de nuevo; recién después se le levanta el bloqueo.
+    const { error } = await admin.from("perfil").update({ activo: true, debe_cambiar_clave: true }).eq("id", id);
+    if (error) return { error: ERROR_GENERICO };
+    const { error: errorAuth } = await admin.auth.admin.updateUserById(id, { ban_duration: "none" });
+    if (errorAuth) return { error: ERROR_GENERICO };
+  } else {
+    // Primero la base lo deja afuera; después se bloquea en Auth y se cierran sus sesiones abiertas.
+    const { error } = await admin.from("perfil").update({ activo: false }).eq("id", id);
+    if (error) return { error: ERROR_GENERICO };
+    const { error: errorAuth } = await admin.auth.admin.updateUserById(id, { ban_duration: BLOQUEO });
+    const { error: errorSesiones } = await admin.rpc("cerrar_sesiones", { p_usuario: id });
+    if (errorAuth || errorSesiones) {
+      return { error: "Quedó sin acceso a los datos, pero no se pudo cerrar su sesión. Probá de nuevo." };
+    }
+  }
 
   revalidatePath("/s/mas/usuarios");
-  return { ok: activo ? "Usuario reactivado." : "Usuario desactivado. Ya no puede entrar ni ver datos." };
+  return {
+    ok: activo
+      ? "Usuario reactivado. Al entrar va a tener que elegir una contraseña nueva."
+      : "Usuario desactivado. Ya no puede entrar ni ver datos.",
+  };
 }
 
 export async function ponerClaveProvisoria(_previo: EstadoUsuarios, datos: FormData): Promise<EstadoUsuarios> {
@@ -80,9 +97,14 @@ export async function ponerClaveProvisoria(_previo: EstadoUsuarios, datos: FormD
   if (id.data === yo.id) return { error: "Tu propia contraseña no se cambia desde acá." };
 
   const admin = clienteAdmin();
+  // Primero la marca (así no ve datos hasta elegir una propia), después la contraseña y por último
+  // se cierran las sesiones abiertas: quien tuviera su sesión no puede quedarse con la cuenta.
+  const { error: errorMarca } = await admin.from("perfil").update({ debe_cambiar_clave: true }).eq("id", id.data);
+  if (errorMarca) return { error: ERROR_GENERICO };
   const { error } = await admin.auth.admin.updateUserById(id.data, { password: clave.data });
   if (error) return { error: "No se pudo poner la contraseña. Probá de nuevo." };
-  await admin.from("perfil").update({ debe_cambiar_clave: true }).eq("id", id.data);
+  const { error: errorSesiones } = await admin.rpc("cerrar_sesiones", { p_usuario: id.data });
+  if (errorSesiones) return { error: "La contraseña quedó puesta, pero no se pudieron cerrar sus sesiones. Probá de nuevo." };
 
   revalidatePath("/s/mas/usuarios");
   return { ok: "Contraseña provisoria puesta. Al entrar con ella, le va a pedir que elija una nueva." };

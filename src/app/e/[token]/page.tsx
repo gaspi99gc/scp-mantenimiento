@@ -4,12 +4,20 @@
 
 import { notFound, redirect } from "next/navigation";
 import { elementoPorToken } from "@/components/elementos/consultas";
+import { cargarDatos } from "@/lib/datos";
 import { exigirStaff } from "@/lib/sesion";
 
 export default async function DestinoDelQR({ params }: { params: Promise<{ token: string }> }) {
   await exigirStaff();
+  await cargarDatos();
   const { token } = await params;
-  const elemento = elementoPorToken(decodeURIComponent(token));
+  let texto = token;
+  try {
+    texto = decodeURIComponent(token);
+  } catch {
+    notFound();
+  }
+  const elemento = elementoPorToken(texto);
   if (!elemento) notFound();
   redirect(`/s/elementos/${elemento.id}`);
 }

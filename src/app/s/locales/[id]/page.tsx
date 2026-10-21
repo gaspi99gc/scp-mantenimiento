@@ -34,7 +34,9 @@ import {
   Planilla,
   Vacio,
 } from "@/components/ui";
+import { exigirStaff } from "@/lib/sesion";
 import {
+  cargarDatos,
   controlesDeElemento,
   controlesDeLocal,
   describirControl,
@@ -54,6 +56,7 @@ type Seccion = (typeof SECCIONES)[number];
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  await cargarDatos();
   return { title: localDe(id)?.nombre ?? "Local" };
 }
 
@@ -76,6 +79,8 @@ export default async function FichaLocal({
 }) {
   const { id } = await params;
   const { ver } = await searchParams;
+  await cargarDatos();
+  const usuario = await exigirStaff();
   const local = localDe(id);
   if (!local) notFound();
 
@@ -113,7 +118,7 @@ export default async function FichaLocal({
         </div>
       </Encabezado>
 
-      <AccionesContacto local={local} />
+      <AccionesContacto local={local} quienEscribe={usuario.nombre} />
 
       <Acceso local={local} />
 

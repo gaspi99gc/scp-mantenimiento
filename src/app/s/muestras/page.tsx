@@ -1,12 +1,13 @@
 // Hoja de muestras del sistema de diseño: sirve de referencia para armar pantallas.
 import { Colgadero, Tarjeta } from "@/components/tarjeta";
 import { Boton, Chip, Encabezado, FechaFila, Fila, MarcaEstado, Planilla, Vacio } from "@/components/ui";
-import { controles, describirControl, estadoControl, tipoDe } from "@/lib/datos";
+import { cargarDatos, describirControl, estadoControl, tipoDe } from "@/lib/datos";
 import { fechaCorta, textoRelativo } from "@/lib/fechas";
 
 export const metadata = { title: "Muestras" };
 
-export default function Muestras() {
+export default async function Muestras() {
+  const { controles } = await cargarDatos();
   const delElemento = controles.filter((c) => c.elementoId === "el-1" || c.elementoId === "el-3" || c.id === "co-17" || c.id === "co-23");
   return (
     <>

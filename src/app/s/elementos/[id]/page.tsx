@@ -7,16 +7,20 @@ import { controlesDeFicha, historialDeElemento, svgDelQR, urlDeEtiqueta } from "
 import { EtiquetaQR } from "@/components/elementos/etiqueta-qr";
 import { FichaElemento } from "@/components/elementos/ficha-elemento";
 import { Chapa, Encabezado } from "@/components/ui";
-import { elementoDe, localDe, supervisorActual } from "@/lib/datos";
+import { cargarDatos, elementoDe, localDe } from "@/lib/datos";
+import { exigirStaff } from "@/lib/sesion";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
+  await cargarDatos();
   const elemento = elementoDe(id);
   return { title: elemento ? `${elemento.tipo}, ${elemento.codigo}` : "Equipo" };
 }
 
 export default async function FichaDeElemento({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  await cargarDatos();
+  const usuario = await exigirStaff();
   const elemento = elementoDe(id);
   if (!elemento) notFound();
   const local = localDe(elemento.localId);
@@ -42,7 +46,7 @@ export default async function FichaDeElemento({ params }: { params: Promise<{ id
         elemento={elemento}
         controles={controlesDeFicha(elemento.id)}
         historial={historialDeElemento(elemento.id)}
-        supervisor={supervisorActual.nombre}
+        supervisor={usuario.nombre}
         etiqueta={
           <EtiquetaQR
             svg={svg}

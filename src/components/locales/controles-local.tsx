@@ -4,7 +4,8 @@
 // Los controles de un elemento llevan a su ficha (ahí se registran, D3).
 // Los controles del local (plagas, puesta a tierra…) no tienen ficha propia: se registran desde acá.
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { registrarControl } from "@/app/s/acciones-controles";
 import { IconoCheck } from "@/components/iconos";
 import { RegistrarEjecucion, type Registro } from "@/components/registrar-ejecucion";
 import { Tarjeta } from "@/components/tarjeta";
@@ -37,11 +38,13 @@ function Fecha({ control, tipo }: { control: Control; tipo: TipoControl }) {
 }
 
 export function ControlesLocal({ items }: { items: ItemControl[] }) {
-  // Estado local mientras no haya base: el control actualizado y lo que se registró.
+  // Lo recién registrado, para mostrarlo sin esperar a que se recargue la página.
   const [actualizados, setActualizados] = useState<Record<string, Control>>({});
   const [registros, setRegistros] = useState<Record<string, Registro>>({});
   const [elegido, setElegido] = useState<string | null>(null);
   const [abierta, setAbierta] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [guardando, empezar] = useTransition();
 
   const actual = (c: Control) => actualizados[c.id] ?? c;
   const itemElegido = items.find((i) => i.control.id === elegido);
@@ -50,25 +53,42 @@ export function ControlesLocal({ items }: { items: ItemControl[] }) {
     const item = items.find((i) => i.control.id === r.controlId);
     if (!item) return;
     const antes = actual(item.control);
-    // TODO(supabase): registrar_ejecucion() en una transacción (bloquea el control, cierra el vencimiento
-    // abierto y crea el nuevo). Acá solo se refleja el resultado en pantalla.
-    if (r.vencimientoNuevo) {
-      setActualizados((a) => ({
-        ...a,
-        [r.controlId]: {
-          ...antes,
-          vencimiento: r.vencimientoNuevo,
-          ultimaEjecucion: r.fecha,
-          ultimoEjecutor: item.tipo.ejecutor === "SCP" ? "SCP" : antes.ultimoEjecutor,
-        },
-      }));
-    }
-    setRegistros((x) => ({ ...x, [r.controlId]: r }));
-    setAbierta(false);
+    // El formulario todavía no pide quién hizo el trabajo: se toma el ejecutor habitual del control.
+    const ejecutor = item.tipo.ejecutor === "SCP" ? "SCP" : (antes.ultimoEjecutor ?? "Tercero");
+    setError(null);
+    empezar(async () => {
+      const res = await registrarControl({
+        controlId: r.controlId,
+        fecha: r.fecha,
+        resultado: r.resultado,
+        ejecutor,
+        oblea: r.oblea,
+        nota: r.motivo,
+        fechaTarjeta: r.origen === "certificado" ? r.vencimientoNuevo : undefined,
+      });
+      setAbierta(false);
+      if (res.error) {
+        setError(`No se guardó. ${res.error}`);
+        return;
+      }
+      // La fecha que vale es la que calculó la base.
+      if (res.vencimientoNuevo) {
+        setActualizados((a) => ({
+          ...a,
+          [r.controlId]: { ...antes, vencimiento: res.vencimientoNuevo, ultimaEjecucion: r.fecha, ultimoEjecutor: ejecutor },
+        }));
+      }
+      setRegistros((x) => ({ ...x, [r.controlId]: { ...r, vencimientoNuevo: res.vencimientoNuevo } }));
+    });
   }
 
   return (
     <>
+      {error && (
+        <p role="alert" className="mb-3 rounded-[var(--radius-planilla)] border-2 border-rojo bg-papel p-3 text-sm font-medium">
+          {error}
+        </p>
+      )}
       <Planilla>
         {items.map(({ control, tipo, elemento }) => {
           const c = actual(control);
@@ -144,6 +164,7 @@ export function ControlesLocal({ items }: { items: ItemControl[] }) {
           abierta={abierta}
           alCerrar={() => setAbierta(false)}
           alRegistrar={registrar}
+          guardando={guardando}
           control={actual(itemElegido.control)}
           tipo={itemElegido.tipo}
           elemento={itemElegido.elemento}

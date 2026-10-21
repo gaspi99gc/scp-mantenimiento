@@ -5,6 +5,7 @@ import { datosAgenda } from "@/components/agenda/consultas";
 import { cantidad } from "@/components/agenda/texto";
 import { Boton, Encabezado } from "@/components/ui";
 import { hoy } from "@/lib/fechas";
+import { cargarDatos } from "@/lib/datos";
 
 export const metadata = { title: "Agenda" };
 
@@ -25,6 +26,7 @@ export default async function PaginaAgenda({
   searchParams: Promise<{ [clave: string]: string | string[] | undefined }>;
 }) {
   const { estado, q } = await searchParams;
+  await cargarDatos();
   const filtro = FILTROS.find((f) => f === estado) ?? "todos";
   const { filas, locales } = datosAgenda(hoy());
 

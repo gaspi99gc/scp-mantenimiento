@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { fichaCatalogo } from "@/components/cuenta/catalogo";
 import { Cifra, Encabezado } from "@/components/ui";
-import { tiposControl } from "@/lib/datos";
+import { cargarDatos } from "@/lib/datos";
 
 export const metadata: Metadata = { title: "Catálogo de controles" };
 
@@ -9,8 +9,9 @@ function SinDato({ children }: { children: React.ReactNode }) {
   return <span className="text-cemento">{children}</span>;
 }
 
-export default function Catalogo() {
-  // TODO(supabase): leer `tipo_control` (todo usuario logueado lo lee; solo el admin lo edita).
+export default async function Catalogo() {
+  const { tiposControl } = await cargarDatos();
+  // El catálogo sale de `tipo_control`: lo lee el staff y solo el admin lo edita (todavía no desde la app).
   const fichas = tiposControl.map(fichaCatalogo);
   const deScp = fichas.filter((f) => f.quien === "SCP").length;
 
