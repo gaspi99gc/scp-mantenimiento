@@ -45,6 +45,7 @@ Los datos viven en Supabase: lo que registrás queda guardado. Con los datos de 
 | Usuarios (solo admin) | `/s/mas/usuarios` |
 | Catálogo de controles | `/s/mas/catalogo` |
 | Login | `/login` |
+| Ficha del cliente y sus usuarios | `/s/clientes/<id>` (Locales → nombre del cliente) |
 | App del cliente (con el usuario `local1`) | `/c`, `/c/equipos/<id>` |
 
 ### Base de datos

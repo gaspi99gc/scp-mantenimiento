@@ -11,7 +11,7 @@ import { randomInt } from "node:crypto";
 const PROYECTO_DESARROLLO = "qotlyqischkjpohsmwbn";
 const LOCAL_DE_EJEMPLO = "20000000-0000-4000-8000-000000000001";
 const USUARIO = "local1";
-const EMAIL = "local1@example.com"; // example.com está reservado: nunca llega un mail a nadie.
+const EMAIL = "local1@sin-email.example.com"; // el mismo email interno que usa la app para clientes sin email (src/lib/email-interno.ts)
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const secreta = process.env.SUPABASE_SECRET_KEY;

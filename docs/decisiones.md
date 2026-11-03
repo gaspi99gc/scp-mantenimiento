@@ -22,9 +22,10 @@
 | D16 | 20/10/2026 | **Usuarios** | Por ahora solo SCP (admin y supervisores), creados por el admin. Ingreso rápido de admin solo en desarrollo. La base queda lista para usuarios de cliente |
 | D17 | 20/10/2026 | **Alcance de la base** | Primera versión con solo lo que usan las pantallas. Ver [`superpowers/specs/2026-10-20-base-datos-y-usuarios-design.md`](superpowers/specs/2026-10-20-base-datos-y-usuarios-design.md) |
 | D18 | 20/10/2026 | **Núcleo simple** | Se limpia la app para quedarse con lo básico y sumar de a una: se van la pestaña Hoy (el inicio es la Agenda), las visitas, los informes con PDF y las fotos/evidencia al registrar. Quedan locales, equipos, registrar controles, QR, cambio de cilindro, pedidos, catálogo, login y usuarios. Reemplaza a D13, D14 y D17 y al diseño de 18 tablas |
-| D19 | 03/11/2026 | **Usuarios de cliente** | El admin los crea en *Más → Usuarios* con el rol **Cliente** y elige qué ven: un local, o todos los locales de un cliente (cadena). Ven todo de sus locales (D9) pero **solo para leer**: estado, controles, equipos y trabajos hechos. Entran por `/c`. La base (RLS) les devuelve únicamente lo suyo |
+| D19 | 03/11/2026 | **Usuarios de cliente** | Se crean desde la **ficha del cliente** (Locales → nombre del cliente), solo el admin. Entran con **usuario y contraseña** que les da SCP; el email es opcional. Por defecto ven **todos los locales** del cliente (también los que se agreguen después); se pueden elegir algunos. Ven todo de sus locales (D9) pero **solo para leer**, en `/c`. Por ahora, para probar, un usuario por local; en uso real, uno por persona. *Más → Usuarios* queda para la gente de SCP |
 | D20 | 03/11/2026 | **Un solo QR para todos** | El QR del equipo lleva a la ficha que corresponde a quien escanea: la del supervisor para SCP, la de solo lectura para el cliente. Sin sesión pide entrar. No hay vista pública sin usuario |
 | D21 | 03/11/2026 | **Sin pedidos** | La app no tiene pedidos: ni el cliente los carga ni SCP los registra. El cliente solo ve el estado de sus locales. Se saca la pestaña Pedidos de la ficha del local. Reemplaza lo que decía D18 sobre pedidos y el punto 5 de los próximos pasos |
+| D22 | 03/11/2026 | **Resumen mensual en la app** | El resumen mensual (D6) lo ve el cliente dentro de la app. No se mandan mails |
 
 ## Interpretaciones a confirmar
 

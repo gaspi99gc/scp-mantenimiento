@@ -1,5 +1,6 @@
 // Ficha del local: estado, contacto y acceso arriba; controles, elementos e historial en pestañas.
 
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AccionesContacto } from "@/components/locales/contacto";
 import {
@@ -90,7 +91,17 @@ export default async function FichaLocal({
       <Encabezado
         volver={{ href: "/s/locales", texto: "Locales" }}
         titulo={local.nombre}
-        bajada={`${cliente.nombre}, ${local.direccion}, ${local.barrio}`}
+        bajada={
+          <>
+            <Link
+              href={`/s/clientes/${cliente.id}`}
+              className="text-tinta underline decoration-junta decoration-2 underline-offset-4 hover:decoration-tinta"
+            >
+              {cliente.nombre}
+            </Link>
+            , {local.direccion}, {local.barrio}
+          </>
+        }
       >
         <div className="mt-5">
           <Regla estados={estados} etiqueta={fraseResumen(resumen)} className="max-w-md" />

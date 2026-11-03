@@ -13,7 +13,12 @@ export default async function NuevoLocal() {
   const usuario = await exigirStaff();
   const { clientes } = await cargarDatos();
   const db = await clienteServidor();
-  const { data: perfiles } = await db.from("perfil").select("id, nombre").eq("activo", true).order("nombre");
+  const { data: perfiles } = await db
+    .from("perfil")
+    .select("id, nombre")
+    .eq("activo", true)
+    .in("rol", ["admin", "supervisor"]) // los usuarios de cliente no son supervisores
+    .order("nombre");
 
   return (
     <>

@@ -28,7 +28,7 @@ function generarClave(): string {
   return c.join("");
 }
 
-function Aviso({ estado }: { estado: EstadoUsuarios }) {
+export function Aviso({ estado }: { estado: EstadoUsuarios }) {
   if (estado.error)
     return (
       <AvisoError>
@@ -44,7 +44,7 @@ function Aviso({ estado }: { estado: EstadoUsuarios }) {
   return null;
 }
 
-function CampoClave({ id }: { id: string }) {
+export function CampoClave({ id }: { id: string }) {
   const [clave, setClave] = useState("");
   return (
     <Campo
@@ -78,16 +78,9 @@ function CampoClave({ id }: { id: string }) {
   );
 }
 
-/** Un cliente con sus locales, para elegir qué ve un usuario de cliente. */
-export interface OpcionCliente {
-  id: string;
-  nombre: string;
-  locales: { id: string; nombre: string }[];
-}
-
-export function NuevoUsuario({ clientes }: { clientes: OpcionCliente[] }) {
+export function NuevoUsuario() {
   const [estado, crear, creando] = useActionState<EstadoUsuarios, FormData>(crearUsuario, {});
-  const [rol, setRol] = useState<"supervisor" | "admin" | "cliente">("supervisor");
+  const [rol, setRol] = useState<"supervisor" | "admin">("supervisor");
   // Después de crear uno, el formulario se vacía (cambia la key) para cargar el siguiente.
   const [vuelta, setVuelta] = useState(0);
   const [ultimoOk, setUltimoOk] = useState<string | undefined>();
@@ -133,12 +126,11 @@ export function NuevoUsuario({ clientes }: { clientes: OpcionCliente[] }) {
       </Campo>
       <fieldset className="sm:col-span-2">
         <legend className="rotulo mb-1.5 text-lg">Rol</legend>
-        <div className="grid gap-2 sm:grid-cols-3">
+        <div className="grid gap-2 sm:grid-cols-2">
           {(
             [
               ["supervisor", "Supervisor", "Ve y carga los locales"],
               ["admin", "Admin", "Además maneja usuarios"],
-              ["cliente", "Cliente", "Ve su local, sin cargar nada"],
             ] as const
           ).map(([valor, texto, ayuda]) => (
             <label
@@ -161,40 +153,6 @@ export function NuevoUsuario({ clientes }: { clientes: OpcionCliente[] }) {
           ))}
         </div>
       </fieldset>
-      {rol === "cliente" && (
-        <Campo
-          id="acceso-nuevo"
-          rotulo="Qué local ve"
-          ayuda="Solo ve ese local, para leer: estado, equipos y trabajos hechos. Para una cadena, elegí todos los locales del cliente."
-        >
-          {clientes.length === 0 ? (
-            <p className="text-cemento">Primero cargá el cliente y su local en Locales.</p>
-          ) : (
-            <select
-              id="acceso-nuevo"
-              name="acceso"
-              required
-              defaultValue=""
-              aria-describedby="acceso-nuevo-ayuda"
-              className={cx(CLASE_CAMPO, "border-borde")}
-            >
-              <option value="" disabled>
-                Elegí un local
-              </option>
-              {clientes.map((c) => (
-                <optgroup key={c.id} label={c.nombre}>
-                  {c.locales.map((l) => (
-                    <option key={l.id} value={`local:${l.id}`}>
-                      {l.nombre}
-                    </option>
-                  ))}
-                  {c.locales.length > 1 && <option value={`cliente:${c.id}`}>Todos los locales de {c.nombre}</option>}
-                </optgroup>
-              ))}
-            </select>
-          )}
-        </Campo>
-      )}
       <CampoClave id="clave-nueva" />
       <div className="sm:col-span-2">
         <Boton type="submit" disabled={creando} className="max-sm:w-full">

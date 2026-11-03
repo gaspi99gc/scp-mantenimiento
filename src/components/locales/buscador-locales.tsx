@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 // Lista de locales agrupada por cliente, con buscador por local, cliente o barrio.
 // La página arma los datos en el servidor; acá solo se filtra.
 
@@ -83,7 +85,12 @@ export function BuscadorLocales({ grupos }: { grupos: GrupoCliente[] }) {
           key={g.id}
           titulo={
             <>
-              {g.nombre}
+              <Link
+                href={`/s/clientes/${g.id}`}
+                className="underline decoration-junta decoration-2 underline-offset-4 hover:decoration-tinta"
+              >
+                {g.nombre}
+              </Link>
               <span className="mt-0.5 block text-sm font-normal text-cemento">{g.razonSocial}</span>
             </>
           }
