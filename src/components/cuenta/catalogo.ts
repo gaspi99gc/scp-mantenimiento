@@ -1,46 +1,46 @@
-// Textos del catálogo de controles, armados a partir de los tipos de control de datos.ts.
-import { textoPeriodo } from "@/lib/fechas";
-import type { TipoControl } from "@/lib/tipos";
+// Textos del catálogo de controles, a partir de lo que guarda la base (tipo_control y a qué equipos se aplica).
+import type { Database } from "@/lib/supabase/tipos-db";
 
-/** A qué se aplica cada tipo de control del catálogo inicial, por nombre. */
-const APLICA_A: Record<string, string> = {
-  "Recarga": "Matafuegos",
-  "Prueba hidráulica": "Matafuegos, por cilindro",
-  "Vida útil": "Matafuegos, por cilindro",
-  "Limpieza y análisis": "Tanques de agua",
-  "Limpieza de campana": "Campanas de cocina",
-  "Limpieza de grasera": "Graseras",
-  "Control de tablero": "Tableros eléctricos",
-  "Medición de puesta a tierra": "Instalación eléctrica del local",
-  "Prueba de autonomía": "Luces de emergencia",
-  "Control de plagas": "Todo el local",
-  "Service de aire": "Equipos de aire acondicionado",
+type FilaTipoControl = Database["public"]["Tables"]["tipo_control"]["Row"];
+
+const UNIDAD: Record<"dia" | "mes" | "anio", [string, string]> = {
+  dia: ["día", "días"],
+  mes: ["mes", "meses"],
+  anio: ["año", "años"],
 };
 
-const mayuscula = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+/** "Cada 12 meses", "Todos los meses", "Según el documento". */
+export function textoPeriodoCatalogo(unidad: FilaTipoControl["periodo_unidad"], valor: number | null): string {
+  if (unidad === "manual" || !valor) return "Según el documento";
+  const [uno, varios] = UNIDAD[unidad];
+  if (valor === 1) return unidad === "mes" ? "Todos los meses" : unidad === "anio" ? "Todos los años" : "Todos los días";
+  return `Cada ${valor} ${valor === 1 ? uno : varios}`;
+}
 
-export function fichaCatalogo(t: TipoControl) {
-  const evidencia = t.evidencia.map((e, i) => (i === 0 ? e : e.charAt(0).toLowerCase() + e.slice(1)));
+/** "Matafuegos ABC 5 kg, ABC 10 kg y CO₂" se arma con la lista de nombres de tipo de equipo. */
+export function textoAplicaA(alLocal: boolean, equipos: string[]): string {
+  if (alLocal) return "Todo el local";
+  if (equipos.length === 0) return "Sin tipos de equipo";
+  if (equipos.length === 1) return equipos[0];
+  return `${equipos.slice(0, -1).join(", ")} y ${equipos.at(-1)}`;
+}
+
+export function fichaCatalogo(t: FilaTipoControl, equipos: string[]) {
   return {
     id: t.id,
     nombre: t.nombre,
-    aplicaA: APLICA_A[t.id],
-    periodo: mayuscula(textoPeriodo(t)),
+    activo: t.activo,
+    aplicaA: textoAplicaA(t.aplica_al_local, equipos),
+    periodo: textoPeriodoCatalogo(t.periodo_unidad, t.periodo_valor),
     base:
-      t.periodoUnidad === "manual"
+      t.periodo_unidad === "manual"
         ? "la fecha la dice el documento"
         : t.base === "desde_ejecucion"
           ? "desde el día del trabajo"
           : "desde el vencimiento anterior",
-    aviso: t.anticipacionDias,
-    quien: t.ejecutor === "SCP" ? "SCP" : "Tercero",
-    norma: t.norma,
-    evidencia:
-      evidencia.length === 0
-        ? undefined
-        : evidencia.length === 1
-          ? evidencia[0]
-          : `${evidencia.slice(0, -1).join(", ")} y ${evidencia[evidencia.length - 1]}`,
+    aviso: t.anticipacion_dias,
+    quien: t.ejecutor === "scp" ? "SCP" : "Un tercero",
+    norma: t.norma ?? undefined,
   };
 }
 

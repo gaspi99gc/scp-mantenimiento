@@ -71,7 +71,7 @@ export default async function Locales() {
         acciones={
           <BotonLink href="/s/locales/nuevo" variante="secundario" className="px-3">
             <IconoSumar tamano={20} />
-            Agregar<span className="sr-only sm:not-sr-only"> local</span>
+            Agregar<span className="sr-only sm:not-sr-only sm:-ml-1"> local</span>
           </BotonLink>
         }
       />
