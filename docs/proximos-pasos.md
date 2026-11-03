@@ -21,7 +21,7 @@
    - también cargar a mano los que llegan por WhatsApp o por teléfono.
 6. [ ] **Informes en PDF** del local por período, para descargar o compartir.
 7. [x] **Catálogo editable** por el admin: tipos de control, períodos y a qué equipos se aplican.
-8. [ ] **Borrar los datos de ejemplo** cuando se empiecen a cargar los reales.
+8. [x] **Borrar los datos de ejemplo** (hecho el 02/11: quedan solo los usuarios y el catálogo).
 
 ## Antes de cargar datos reales de clientes
 
