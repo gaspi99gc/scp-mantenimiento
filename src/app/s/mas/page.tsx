@@ -60,10 +60,10 @@ export default async function Mas() {
           detalle="Período, aviso y norma de cada control"
         />
         <FilaMenu
+          href="/s/proveedores"
           icono={<IconoProveedores />}
           titulo="Proveedores"
           detalle="Recargadoras, fumigadoras y matriculados"
-          proximamente
         />
         <FilaMenu
           href="/s/muestras"

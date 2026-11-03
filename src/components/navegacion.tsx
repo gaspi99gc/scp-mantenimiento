@@ -6,15 +6,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { IconoProveedores } from "./cuenta/iconos";
 import { IconoAgenda, IconoEscanear, IconoLocales, IconoMas } from "./iconos";
 import { cx, MarcaSCP } from "./ui";
 
+// Celular: Proveedores y Más a la izquierda, Escanear en el medio, Locales y Agenda a la derecha.
 const ITEMS = [
-  { href: "/s/agenda", texto: "Agenda", Icono: IconoAgenda },
+  { href: "/s/proveedores", texto: "Proveedores", Icono: IconoProveedores },
+  { href: "/s/mas", texto: "Más", Icono: IconoMas },
   { href: "/s/escanear", texto: "Escanear", Icono: IconoEscanear, central: true },
   { href: "/s/locales", texto: "Locales", Icono: IconoLocales },
-  { href: "/s/mas", texto: "Más", Icono: IconoMas },
+  { href: "/s/agenda", texto: "Agenda", Icono: IconoAgenda },
 ];
+// Computadora: la columna se lee de arriba para abajo, con lo de todos los días primero.
+const ORDEN_COMPU = ["/s/agenda", "/s/locales", "/s/proveedores", "/s/mas"];
 
 function activo(path: string, href: string) {
   return path === href || path.startsWith(href + "/");
@@ -30,7 +35,7 @@ export function Navegacion({ nombre, rol }: { nombre: string; rol: string }) {
         aria-label="Principal"
         className="fixed inset-x-0 bottom-0 z-30 bg-tinta pb-[env(safe-area-inset-bottom)] text-hierro lg:hidden"
       >
-        <ul className="mx-auto grid h-16 max-w-[640px] grid-cols-4">
+        <ul className="mx-auto grid h-16 max-w-[640px] grid-cols-5">
           {ITEMS.map(({ href, texto, Icono, central }) => {
             const a = activo(path, href);
             return (
@@ -96,7 +101,7 @@ export function Navegacion({ nombre, rol }: { nombre: string; rol: string }) {
           Escanear QR
         </Link>
         <ul className="space-y-0.5">
-          {ITEMS.filter((i) => !i.central).map(({ href, texto, Icono }) => {
+          {ORDEN_COMPU.map((ruta) => ITEMS.find((i) => i.href === ruta)!).map(({ href, texto, Icono }) => {
             const a = activo(path, href);
             return (
               <li key={href}>
