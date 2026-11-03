@@ -3,7 +3,7 @@
 Plataforma web para SCP, una empresa de mantenimiento integral de comercios y locales (obras, electricidad, plomería, gas, impermeabilizaciones, pintura, durlock) que trabaja con un abono mensual "todo incluido".
 
 - **Supervisor (SCP):** ve qué vence y registra cada control desde el celular; la app calcula la próxima fecha.
-- **Cliente:** ve el estado de cumplimiento de sus locales, los informes, los certificados y la carpeta de inspección, y hace pedidos.
+- **Cliente:** ve el estado de sus locales (uno o varios): qué está al día, qué vence, los equipos y los trabajos hechos. Solo para leer.
 
 ## Stack
 
@@ -65,4 +65,4 @@ Los datos viven en Supabase: lo que registrás queda guardado. Con los datos de 
 
 ## Estado
 
-Núcleo simple (decisión D18) conectado a Supabase: login y usuarios (solo SCP), Agenda, locales, equipos con sus tarjetas de control, registrar un control, cambio de cilindro, escanear QR, pedidos y catálogo. Visitas, informes con PDF y fotos quedan para más adelante.
+Núcleo simple (decisión D18) conectado a Supabase: login y usuarios (solo SCP), Agenda, locales, equipos con sus tarjetas de control, registrar un control, cambio de cilindro, escanear QR, catálogo y la app del cliente (solo lectura). Visitas, informes con PDF y fotos quedan para más adelante.

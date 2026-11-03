@@ -92,15 +92,3 @@ export interface Ejecucion {
   ejecutor: string;
   nota?: string;
 }
-
-export interface Pedido {
-  id: string;
-  localId: string;
-  titulo: string;
-  detalle: string;
-  urgencia: "emergencia" | "urgente" | "normal";
-  estado: "nuevo" | "aceptado" | "programado" | "resuelto";
-  creado: string; // ISO con hora
-  slaVence: string; // ISO con hora
-  canal: "portal" | "whatsapp" | "telefono";
-}

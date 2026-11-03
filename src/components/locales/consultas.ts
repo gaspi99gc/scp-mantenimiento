@@ -11,8 +11,8 @@ import {
   resumenLocal,
   TIPO,
 } from "@/lib/datos";
-import { diasEntre, fechaConDia, hoy } from "@/lib/fechas";
-import type { EstadoControl, FechaISO, Local, Pedido, ResultadoEjecucion } from "@/lib/tipos";
+import { diasEntre, hoy } from "@/lib/fechas";
+import type { EstadoControl, FechaISO, Local, ResultadoEjecucion } from "@/lib/tipos";
 
 export type Resumen = ReturnType<typeof resumenLocal>;
 
@@ -192,52 +192,3 @@ export function enlacesContacto(local: Local, quienEscribe: string) {
 }
 
 export const clienteDeLocal = (local: Local) => clienteDe(local.clienteId)!;
-
-// ——— Pedidos ———
-
-export const URGENCIA: Record<Pedido["urgencia"], string> = {
-  emergencia: "Emergencia",
-  urgente: "Urgente",
-  normal: "Normal",
-};
-export const ESTADO_PEDIDO: Record<Pedido["estado"], string> = {
-  nuevo: "nuevo",
-  aceptado: "aceptado",
-  programado: "programado",
-  resuelto: "resuelto",
-};
-const CANAL: Record<Pedido["canal"], string> = {
-  portal: "por el portal",
-  whatsapp: "por WhatsApp",
-  telefono: "por teléfono",
-};
-
-/** "hoy a las 8:12", "ayer a las 17:40", "el vie 9 oct a las 10:05" (la hora ya viene en horario de Argentina). */
-export function momento(isoConHora: string, referencia: FechaISO = hoy()): string {
-  const fecha = isoConHora.slice(0, 10);
-  const hora = isoConHora.slice(11, 16).replace(/^0/, "");
-  const d = diasEntre(fecha, referencia);
-  const dia = d === 0 ? "hoy" : d === 1 ? "ayer" : `el ${fechaConDia(fecha)}`;
-  return `${dia} a las ${hora}`;
-}
-
-/** "Urgente, nuevo. Llegó por el portal hoy a las 8:12." */
-export function detallePedido(p: Pedido): string {
-  return `${URGENCIA[p.urgencia]}, ${ESTADO_PEDIDO[p.estado]}. Llegó ${CANAL[p.canal]} ${momento(p.creado)}.`;
-}
-
-/** Cuánto le queda al plazo del abono (SLA). Los colores siguen la misma regla que los vencimientos. */
-export function plazoPedido(p: Pedido, ahora: number = Date.now()): { estado?: EstadoControl; cifra: string; texto: string } {
-  if (p.estado === "resuelto") return { cifra: "Listo", texto: "Resuelto" };
-  const horas = (Date.parse(p.slaVence) - ahora) / 3_600_000;
-  if (horas < 0) return { estado: "vencido", cifra: fechaCortaConHora(p.slaVence), texto: "Venció el plazo" };
-  const estado: EstadoControl = horas <= 24 ? "pronto" : "al_dia";
-  if (horas < 1) return { estado, cifra: `${Math.max(1, Math.round(horas * 60))} min`, texto: "de plazo" };
-  if (horas < 48) return { estado, cifra: `${Math.floor(horas)} h`, texto: "de plazo" };
-  return { estado, cifra: `${Math.floor(horas / 24)} días`, texto: "de plazo" };
-}
-
-function fechaCortaConHora(isoConHora: string): string {
-  const [, m, d] = isoConHora.slice(0, 10).split("-");
-  return `${d}/${m} ${isoConHora.slice(11, 16).replace(/^0/, "")}`;
-}

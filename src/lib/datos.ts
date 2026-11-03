@@ -15,7 +15,7 @@ import { estadoDe } from "./fechas";
 import { exigirCliente, exigirStaff } from "./sesion";
 import { clienteServidor } from "./supabase/servidor";
 import type {
-  Cliente, Control, Ejecucion, Elemento, EstadoControl, Local, Pedido, TipoControl, Unidad,
+  Cliente, Control, Ejecucion, Elemento, EstadoControl, Local, TipoControl, Unidad,
 } from "./tipos";
 
 export interface Foto {
@@ -25,28 +25,16 @@ export interface Foto {
   elementos: Elemento[];
   controles: Control[];
   ejecuciones: Ejecucion[];
-  pedidos: Pedido[];
 }
 
 export { TIPO };
-
-// "2026-10-20T11:12:00+00:00" → "2026-10-20T08:12:00-03:00": las pantallas leen fecha y hora en horario argentino.
-const formatoArgentina = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "America/Argentina/Buenos_Aires",
-  year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit",
-  hourCycle: "h23",
-});
-function enArgentina(ts: string): string {
-  const p = Object.fromEntries(formatoArgentina.formatToParts(new Date(ts)).map((x) => [x.type, x.value]));
-  return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:${p.second}-03:00`;
-}
 
 async function leer(guardia: () => Promise<unknown>): Promise<Foto> {
   // Los layouts no se vuelven a correr al navegar dentro de la app: cada lectura vuelve a verificar.
   // Las consultas son las mismas para el staff y para un cliente: la base le devuelve a cada uno lo suyo.
   await guardia();
   const db = await clienteServidor();
-  const [cli, loc, te, tc, eq, un, co, re, pe] = await Promise.all([
+  const [cli, loc, te, tc, eq, un, co, re] = await Promise.all([
     db.from("cliente").select("id, nombre, razon_social, cuit"),
     db.from("local").select("*"),
     db.from("tipo_equipo").select("id, nombre"),
@@ -55,9 +43,8 @@ async function leer(guardia: () => Promise<unknown>): Promise<Foto> {
     db.from("unidad").select("equipo_id, serie, fabricacion, instalada_desde, retirada_en"),
     db.from("control").select("id, local_id, equipo_id, tipo_control_id, vencimiento, ultima_fecha, ultimo_ejecutor").eq("estado", "activo"),
     db.from("registro").select("id, control_id, fecha, resultado, origen, ejecutor, oblea, nota, vencimiento_anterior, vencimiento_nuevo"),
-    db.from("pedido").select("id, local_id, titulo, detalle, urgencia, estado, canal, creado_en, sla_vence_en"),
   ]);
-  const error = [cli, loc, te, tc, eq, un, co, re, pe].find((r) => r.error)?.error;
+  const error = [cli, loc, te, tc, eq, un, co, re].find((r) => r.error)?.error;
   if (error) throw new Error(`No se pudieron leer los datos: ${error.message}`);
 
   const nombreTipoEquipo = new Map(te.data!.map((t) => [t.id, t.nombre]));
@@ -133,17 +120,6 @@ async function leer(guardia: () => Promise<unknown>): Promise<Foto> {
       ejecutor: r.ejecutor,
       nota: r.nota ?? undefined,
     })),
-    pedidos: pe.data!.map((p) => ({
-      id: p.id,
-      localId: p.local_id,
-      titulo: p.titulo,
-      detalle: p.detalle,
-      urgencia: p.urgencia,
-      estado: p.estado,
-      canal: p.canal,
-      creado: enArgentina(p.creado_en),
-      slaVence: enArgentina(p.sla_vence_en),
-    })),
   };
 }
 
@@ -186,7 +162,6 @@ export const controlesDeLocal = (localId: string) => datos().controles.filter((c
 export const controlesDeElemento = (elementoId: string) => datos().controles.filter((c) => c.elementoId === elementoId);
 export const ejecucionesDeControl = (controlId: string) =>
   datos().ejecuciones.filter((e) => e.controlId === controlId).sort((a, b) => (a.fecha < b.fecha ? 1 : -1));
-export const pedidosDeLocal = (localId: string) => datos().pedidos.filter((p) => p.localId === localId);
 
 export const estadoControl = (c: Control): EstadoControl => estadoDe(c, tipoDe(c));
 

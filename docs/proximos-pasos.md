@@ -14,11 +14,7 @@
 2. [ ] **Marcar "no aplica"** un control, con motivo, y **deshacer un registro equivocado**.
 3. [ ] **Avisos al celular de los vencimientos** (como Lasia: 7 días antes, 2 días antes y el mismo día, hasta que se registra). Le llegan al supervisor responsable del local.
 4. [ ] **Exportar la agenda a Excel**, con los filtros que estén puestos.
-5. [ ] **Pedidos de los clientes** (como los pedidos de Lasia que ve el supervisor técnico):
-   - [x] usuarios para los clientes, que ven solo sus locales (03/11: app del cliente en `/c`, solo lectura, D19);
-   - el cliente carga un pedido desde su celular y le avisa al supervisor;
-   - el supervisor lo toma, le cambia el estado y el cliente ve cómo va;
-   - también cargar a mano los que llegan por WhatsApp o por teléfono.
+5. [x] **App del cliente** (03/11): ve el estado de sus locales, solo para leer (D19). No hay pedidos (D21).
 6. [ ] **Informes en PDF** del local por período, para descargar o compartir.
 7. [x] **Catálogo editable** por el admin: tipos de control, períodos y a qué equipos se aplican.
 8. [x] **Borrar los datos de ejemplo** (hecho el 02/11: quedan solo los usuarios y el catálogo).

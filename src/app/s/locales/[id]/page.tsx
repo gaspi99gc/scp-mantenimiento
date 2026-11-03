@@ -1,16 +1,13 @@
-// Ficha del local: estado, contacto y acceso arriba; controles, elementos, historial y pedidos en pestañas.
+// Ficha del local: estado, contacto y acceso arriba; controles, elementos e historial en pestañas.
 
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AccionesContacto } from "@/components/locales/contacto";
 import {
   clienteDeLocal,
-  detallePedido,
   estadosDeLocal,
   fraseResumen,
   historialDeLocal,
   peorDe,
-  plazoPedido,
 } from "@/components/locales/consultas";
 import { ControlesLocal, type ItemControl } from "@/components/locales/controles-local";
 import { LineaDeTiempo } from "@/components/locales/historial";
@@ -24,12 +21,10 @@ import {
   IconoTelefono,
 } from "@/components/iconos";
 import {
-  Boton,
   BotonLink,
   Cifra,
   Dato,
   Encabezado,
-  FechaFila,
   Fila,
   MarcaEstado,
   Planilla,
@@ -45,14 +40,13 @@ import {
   estadoControl,
   localDe,
   ORDEN_ESTADO,
-  pedidosDeLocal,
   resumenLocal,
   tipoDe,
 } from "@/lib/datos";
 import { textoRelativo } from "@/lib/fechas";
 import type { Control, Local } from "@/lib/tipos";
 
-const SECCIONES = ["controles", "elementos", "historial", "pedidos"] as const;
+const SECCIONES = ["controles", "elementos", "historial"] as const;
 type Seccion = (typeof SECCIONES)[number];
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -90,8 +84,6 @@ export default async function FichaLocal({
   const resumen = resumenLocal(local.id);
   const estados = estadosDeLocal(local.id);
   const elementos = elementosDeLocal(local.id);
-  const pedidos = pedidosDeLocal(local.id);
-  const pedidosAbiertos = pedidos.filter((p) => p.estado !== "resuelto");
 
   return (
     <>
@@ -105,17 +97,6 @@ export default async function FichaLocal({
           <p className="mt-2 font-medium" aria-hidden>
             {fraseResumen(resumen)}
           </p>
-          {pedidosAbiertos.length > 0 && seccion !== "pedidos" && (
-            <p className="mt-1">
-              <Link
-                href={`/s/locales/${local.id}?ver=pedidos`}
-                scroll={false}
-                className="font-medium underline decoration-junta decoration-2 underline-offset-4 hover:decoration-tinta"
-              >
-                {pedidosAbiertos.length === 1 ? "Hay 1 pedido abierto" : `Hay ${pedidosAbiertos.length} pedidos abiertos`}
-              </Link>
-            </p>
-          )}
         </div>
       </Encabezado>
 
@@ -130,7 +111,6 @@ export default async function FichaLocal({
           { clave: "controles", texto: "Controles", cantidad: resumen.total },
           { clave: "elementos", texto: "Equipos", cantidad: elementos.length },
           { clave: "historial", texto: "Historial" },
-          { clave: "pedidos", texto: "Pedidos", cantidad: pedidosAbiertos.length },
         ]}
       />
 
@@ -138,7 +118,6 @@ export default async function FichaLocal({
         {seccion === "controles" && <SeccionControles localId={local.id} />}
         {seccion === "elementos" && <SeccionElementos localId={local.id} />}
         {seccion === "historial" && <SeccionHistorial localId={local.id} />}
-        {seccion === "pedidos" && <SeccionPedidos localId={local.id} />}
       </div>
 
     </>
@@ -296,54 +275,6 @@ function SeccionHistorial({ localId }: { localId: string }) {
         <>
           <Bajada>Trabajos registrados, del más nuevo al más viejo.</Bajada>
           <LineaDeTiempo dias={dias} />
-        </>
-      )}
-    </section>
-  );
-}
-
-function SeccionPedidos({ localId }: { localId: string }) {
-  const lista = pedidosDeLocal(localId).sort((a, b) => (a.slaVence < b.slaVence ? -1 : 1));
-  return (
-    <section aria-labelledby="titulo-seccion">
-      <h2 id="titulo-seccion" className="sr-only">
-        Pedidos
-      </h2>
-      {lista.length === 0 ? (
-        <div className="mb-7">
-          <Vacio
-            accion={
-              // TODO(supabase): carga de pedidos que llegan por WhatsApp o por teléfono.
-              <Boton variante="secundario">
-                <IconoSumar tamano={20} />
-                Cargar pedido
-              </Boton>
-            }
-          >
-            No hay pedidos de este local. Si el encargado te pide algo por WhatsApp o por teléfono, cargalo acá para que
-            corra el plazo del abono.
-          </Vacio>
-        </div>
-      ) : (
-        <>
-          <Bajada>Ordenados por el plazo del abono que les queda.</Bajada>
-          <Planilla>
-            {lista.map((p) => {
-              const plazo = plazoPedido(p);
-              return (
-                <Fila
-                  key={p.id}
-                  estado={plazo.estado}
-                  titulo={p.titulo}
-                  detalle={p.detalle}
-                  derecha={
-                    <FechaFila fecha={plazo.cifra} relativo={plazo.texto} tono={plazo.estado === "vencido" ? "rojo" : "normal"} />
-                  }
-                  debajo={<p className="text-sm">{detallePedido(p)}</p>}
-                />
-              );
-            })}
-          </Planilla>
         </>
       )}
     </section>

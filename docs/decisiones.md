@@ -24,6 +24,7 @@
 | D18 | 20/10/2026 | **Núcleo simple** | Se limpia la app para quedarse con lo básico y sumar de a una: se van la pestaña Hoy (el inicio es la Agenda), las visitas, los informes con PDF y las fotos/evidencia al registrar. Quedan locales, equipos, registrar controles, QR, cambio de cilindro, pedidos, catálogo, login y usuarios. Reemplaza a D13, D14 y D17 y al diseño de 18 tablas |
 | D19 | 03/11/2026 | **Usuarios de cliente** | El admin los crea en *Más → Usuarios* con el rol **Cliente** y elige qué ven: un local, o todos los locales de un cliente (cadena). Ven todo de sus locales (D9) pero **solo para leer**: estado, controles, equipos y trabajos hechos. Entran por `/c`. La base (RLS) les devuelve únicamente lo suyo |
 | D20 | 03/11/2026 | **Un solo QR para todos** | El QR del equipo lleva a la ficha que corresponde a quien escanea: la del supervisor para SCP, la de solo lectura para el cliente. Sin sesión pide entrar. No hay vista pública sin usuario |
+| D21 | 03/11/2026 | **Sin pedidos** | La app no tiene pedidos: ni el cliente los carga ni SCP los registra. El cliente solo ve el estado de sus locales. Se saca la pestaña Pedidos de la ficha del local. Reemplaza lo que decía D18 sobre pedidos y el punto 5 de los próximos pasos |
 
 ## Interpretaciones a confirmar
 
