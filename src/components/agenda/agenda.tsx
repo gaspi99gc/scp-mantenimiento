@@ -5,7 +5,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { IconoBuscar, IconoCerrar } from "@/components/iconos";
-import { Boton, Chip, cx, ESTADO, Planilla, Vacio } from "@/components/ui";
+import { Boton, BotonLink, Chip, cx, ESTADO, Planilla, Vacio } from "@/components/ui";
 import type { EstadoControl } from "@/lib/tipos";
 import type { FilaAgenda } from "./consultas";
 import { FilaDeAgenda } from "./fila-agenda";
@@ -166,6 +166,10 @@ export function Agenda({
         q.trim() ? (
           <Vacio accion={<Boton variante="secundario" onClick={() => buscar("")}>Borrar la búsqueda</Boton>}>
             No hay controles que coincidan con “{q.trim()}”. Probá con el nombre del local, el barrio o el tipo de elemento.
+          </Vacio>
+        ) : filtro === "todos" ? (
+          <Vacio accion={<BotonLink href="/s/locales/nuevo">Agregar un local</BotonLink>}>
+            Todavía no hay controles cargados. Se crean solos al agregar un local y sus equipos.
           </Vacio>
         ) : (
           <Vacio accion={<Boton variante="secundario" onClick={() => elegir("todos")}>Ver todos</Boton>}>

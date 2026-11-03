@@ -5,7 +5,7 @@
 
 import { useId, useState } from "react";
 import { IconoCerrar } from "@/components/iconos";
-import { Boton, Planilla, Vacio } from "@/components/ui";
+import { Boton, BotonLink, Planilla, Vacio } from "@/components/ui";
 import { FilaLocal, type DatosFilaLocal } from "./fila-local";
 import { IconoBuscar } from "@/components/iconos";
 
@@ -95,7 +95,12 @@ export function BuscadorLocales({ grupos }: { grupos: GrupoCliente[] }) {
         </Planilla>
       ))}
 
-      {cantidad === 0 && (
+      {cantidad === 0 && !busqueda.trim() && (
+        <Vacio accion={<BotonLink href="/s/locales/nuevo">Agregar el primer local</BotonLink>}>
+          Todavía no hay locales cargados. Al agregar uno se le crean solos sus controles.
+        </Vacio>
+      )}
+      {cantidad === 0 && busqueda.trim() && (
         <Vacio accion={<Boton variante="secundario" onClick={() => setBusqueda("")}>Borrar la búsqueda</Boton>}>
           No hay locales que coincidan con «{busqueda.trim()}». Probá con el barrio o con el nombre del cliente.
         </Vacio>
