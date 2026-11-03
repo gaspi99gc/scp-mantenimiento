@@ -22,6 +22,8 @@
 | D16 | 20/10/2026 | **Usuarios** | Por ahora solo SCP (admin y supervisores), creados por el admin. Ingreso rápido de admin solo en desarrollo. La base queda lista para usuarios de cliente |
 | D17 | 20/10/2026 | **Alcance de la base** | Primera versión con solo lo que usan las pantallas. Ver [`superpowers/specs/2026-10-20-base-datos-y-usuarios-design.md`](superpowers/specs/2026-10-20-base-datos-y-usuarios-design.md) |
 | D18 | 20/10/2026 | **Núcleo simple** | Se limpia la app para quedarse con lo básico y sumar de a una: se van la pestaña Hoy (el inicio es la Agenda), las visitas, los informes con PDF y las fotos/evidencia al registrar. Quedan locales, equipos, registrar controles, QR, cambio de cilindro, pedidos, catálogo, login y usuarios. Reemplaza a D13, D14 y D17 y al diseño de 18 tablas |
+| D19 | 03/11/2026 | **Usuarios de cliente** | El admin los crea en *Más → Usuarios* con el rol **Cliente** y elige qué ven: un local, o todos los locales de un cliente (cadena). Ven todo de sus locales (D9) pero **solo para leer**: estado, controles, equipos y trabajos hechos. Entran por `/c`. La base (RLS) les devuelve únicamente lo suyo |
+| D20 | 03/11/2026 | **Un solo QR para todos** | El QR del equipo lleva a la ficha que corresponde a quien escanea: la del supervisor para SCP, la de solo lectura para el cliente. Sin sesión pide entrar. No hay vista pública sin usuario |
 
 ## Interpretaciones a confirmar
 

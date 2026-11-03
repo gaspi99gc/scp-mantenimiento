@@ -28,6 +28,7 @@ Next.js (App Router, TypeScript) · Supabase (Postgres, Auth, Storage, RLS) · V
    npm install
    npm run crear-admin      # la primera vez: crea tu usuario admin
    npm run cargar-ejemplo   # opcional: datos de ejemplo con fechas relativas a hoy (solo proyecto de desarrollo)
+   npm run crear-usuario-prueba   # opcional: el cliente de prueba "local1", vinculado a un local
    npm run dev
    ```
 
@@ -44,6 +45,7 @@ Los datos viven en Supabase: lo que registrás queda guardado. Con los datos de 
 | Usuarios (solo admin) | `/s/mas/usuarios` |
 | Catálogo de controles | `/s/mas/catalogo` |
 | Login | `/login` |
+| App del cliente (con el usuario `local1`) | `/c`, `/c/equipos/<id>` |
 
 ### Base de datos
 

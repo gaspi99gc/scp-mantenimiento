@@ -1,15 +1,17 @@
 // Destino del QR impreso en la etiqueta de cada equipo: scp.com.ar/e/<qrToken>.
-// Pide sesión (sin ella, el proxy manda al login y después vuelve acá), busca el elemento y lleva a su ficha.
-// Si el token no existe, muestra not-found.tsx.
+// Un solo QR para todos: pide sesión (sin ella, el proxy manda al login y después vuelve acá) y lleva a la
+// ficha del equipo que corresponde a quien escanea: la del supervisor para SCP, la de solo lectura para el cliente.
+// Si el token no existe, o el equipo no es de un local del cliente, muestra not-found.tsx.
 
 import { notFound, redirect } from "next/navigation";
 import { elementoPorToken } from "@/components/elementos/consultas";
-import { cargarDatos } from "@/lib/datos";
-import { exigirStaff } from "@/lib/sesion";
+import { cargarDatos, cargarDatosCliente } from "@/lib/datos";
+import { exigirSesion } from "@/lib/sesion";
 
 export default async function DestinoDelQR({ params }: { params: Promise<{ token: string }> }) {
-  await exigirStaff();
-  await cargarDatos();
+  const usuario = await exigirSesion();
+  const esCliente = usuario.rol === "cliente";
+  await (esCliente ? cargarDatosCliente() : cargarDatos());
   const { token } = await params;
   let texto = token;
   try {
@@ -17,7 +19,8 @@ export default async function DestinoDelQR({ params }: { params: Promise<{ token
   } catch {
     notFound();
   }
+  // Para un cliente, la base solo trae sus equipos: el de otro local no aparece y da "no existe".
   const elemento = elementoPorToken(texto);
   if (!elemento) notFound();
-  redirect(`/s/elementos/${elemento.id}`);
+  redirect(esCliente ? `/c/equipos/${elemento.id}` : `/s/elementos/${elemento.id}`);
 }

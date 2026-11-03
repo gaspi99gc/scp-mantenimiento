@@ -20,7 +20,9 @@ const Id = z.string().uuid();
 const Nuevo = z.object({
   nombre: z.string().trim().min(2, "Escribí el nombre y el apellido.").max(120),
   email: z.string().trim().toLowerCase().email("A ese email le falta algo. Ej.: nombre@scp.com.ar"),
-  rol: z.enum(["admin", "supervisor"]),
+  rol: z.enum(["admin", "supervisor", "cliente"]),
+  // Solo para clientes: "local:<id>" (ve ese local) o "cliente:<id>" (ve todos los locales de ese cliente).
+  acceso: z.string().regex(/^(local|cliente):[0-9a-f-]{36}$/).optional(),
   clave: Clave,
   usuario: z
     .string()
@@ -42,6 +44,22 @@ export async function crearUsuario(_previo: EstadoUsuarios, datos: FormData): Pr
   const usuario = leidos.data.usuario || null;
 
   const admin = clienteAdmin();
+
+  // Un usuario de cliente tiene que saber qué locales va a ver: se resuelve antes de crear nada.
+  let membresia: { cliente_id: string; local_id: string | null } | undefined;
+  if (rol === "cliente") {
+    if (!leidos.data.acceso) return { error: "Elegí qué local va a ver." };
+    const [clase, id] = leidos.data.acceso.split(":");
+    if (clase === "local") {
+      const { data: local } = await admin.from("local").select("id, cliente_id").eq("id", id).maybeSingle();
+      if (!local) return { error: "Ese local ya no existe. Recargá la página." };
+      membresia = { cliente_id: local.cliente_id, local_id: local.id };
+    } else {
+      const { data: cliente } = await admin.from("cliente").select("id").eq("id", id).maybeSingle();
+      if (!cliente) return { error: "Ese cliente ya no existe. Recargá la página." };
+      membresia = { cliente_id: cliente.id, local_id: null };
+    }
+  }
   const { data, error } = await admin.auth.admin.createUser({ email, password: clave, email_confirm: true });
   if (error || !data.user) {
     return {
@@ -64,6 +82,16 @@ export async function crearUsuario(_previo: EstadoUsuarios, datos: FormData): Pr
           ? "Ese usuario ya lo tiene otra persona."
           : "No se pudo crear el usuario. Probá de nuevo en un rato.",
     };
+  }
+
+  if (membresia) {
+    const { error: errorMembresia } = await admin.from("membresia").insert({ perfil_id: data.user.id, ...membresia });
+    if (errorMembresia) {
+      // Un cliente sin locales no sirve: se deshace todo.
+      await admin.from("perfil").delete().eq("id", data.user.id);
+      await admin.auth.admin.deleteUser(data.user.id);
+      return { error: "No se pudo crear el usuario. Probá de nuevo en un rato." };
+    }
   }
 
   revalidatePath("/s/mas/usuarios");

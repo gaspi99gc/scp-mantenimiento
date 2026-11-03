@@ -16,10 +16,8 @@ export default function CodigoDesconocido() {
         <Cifra className="text-tinta">ESP1-MAT-01</Cifra>.
       </p>
       <div className="mt-8 flex flex-wrap gap-2">
-        <BotonLink href="/s/escanear">Escanear otro código</BotonLink>
-        <BotonLink href="/s/agenda" variante="secundario">
-          Ir a la Agenda
-        </BotonLink>
+        {/* La raíz lleva a cada uno a su inicio (supervisor o cliente). */}
+        <BotonLink href="/">Ir al inicio</BotonLink>
       </div>
     </main>
   );

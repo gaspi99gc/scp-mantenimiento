@@ -12,7 +12,7 @@ import "server-only";
 import { cache } from "react";
 import { TIPO } from "./catalogo";
 import { estadoDe } from "./fechas";
-import { exigirStaff } from "./sesion";
+import { exigirCliente, exigirStaff } from "./sesion";
 import { clienteServidor } from "./supabase/servidor";
 import type {
   Cliente, Control, Ejecucion, Elemento, EstadoControl, Local, Pedido, TipoControl, Unidad,
@@ -41,9 +41,10 @@ function enArgentina(ts: string): string {
   return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:${p.second}-03:00`;
 }
 
-async function leer(): Promise<Foto> {
+async function leer(guardia: () => Promise<unknown>): Promise<Foto> {
   // Los layouts no se vuelven a correr al navegar dentro de la app: cada lectura vuelve a verificar.
-  await exigirStaff();
+  // Las consultas son las mismas para el staff y para un cliente: la base le devuelve a cada uno lo suyo.
+  await guardia();
   const db = await clienteServidor();
   const [cli, loc, te, tc, eq, un, co, re, pe] = await Promise.all([
     db.from("cliente").select("id, nombre, razon_social, cuit"),
@@ -149,10 +150,20 @@ async function leer(): Promise<Foto> {
 // Un casillero por pedido: lo comparten la página, su layout y su generateMetadata.
 const casillero = cache((): { foto?: Foto } => ({}));
 
-/** Lee los datos de la base (una sola vez por pedido). Llamarla al principio de cada página. */
+/** Lee los datos de la base (una sola vez por pedido). Llamarla al principio de cada página del supervisor. */
 export async function cargarDatos(): Promise<Foto> {
   const c = casillero();
-  c.foto ??= await leer();
+  c.foto ??= await leer(exigirStaff);
+  return c.foto;
+}
+
+/**
+ * Lo mismo para la app del cliente. La base solo le devuelve sus locales (membresía), así que la foto
+ * tiene únicamente lo suyo y todas las consultas de abajo sirven igual.
+ */
+export async function cargarDatosCliente(): Promise<Foto> {
+  const c = casillero();
+  c.foto ??= await leer(exigirCliente);
   return c.foto;
 }
 

@@ -5,7 +5,7 @@
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
-import { destinoSeguro } from "@/lib/sesion";
+import { destinoSeguro, type Rol } from "@/lib/sesion";
 import { clienteAdmin } from "@/lib/supabase/admin";
 import { clienteServidor } from "@/lib/supabase/servidor";
 
@@ -27,17 +27,19 @@ async function emailDe(usuario: string): Promise<string | undefined> {
   return data?.email;
 }
 
-async function entrarCon(email: string, clave: string): Promise<string | undefined> {
+/** Abre la sesión. Devuelve el rol si entró, o el texto del error. */
+async function entrarCon(email: string, clave: string): Promise<{ rol: Rol } | { error: string }> {
   const supabase = await clienteServidor();
   const { data, error } = await supabase.auth.signInWithPassword({ email, password: clave });
-  if (error || !data.user) return ERROR_CREDENCIALES;
+  if (error || !data.user) return { error: ERROR_CREDENCIALES };
 
   // Con la sesión recién abierta, la base ya deja leer el propio perfil.
-  const { data: perfil } = await supabase.from("perfil").select("activo").eq("id", data.user.id).maybeSingle();
+  const { data: perfil } = await supabase.from("perfil").select("activo, rol").eq("id", data.user.id).maybeSingle();
   if (!perfil?.activo) {
     await supabase.auth.signOut();
-    return perfil ? "Tu usuario está desactivado. Hablá con el admin." : ERROR_CREDENCIALES;
+    return { error: perfil ? "Tu usuario está desactivado. Hablá con SCP." : ERROR_CREDENCIALES };
   }
+  return { rol: perfil.rol };
 }
 
 export async function iniciarSesion(_previo: EstadoLogin, datos: FormData): Promise<EstadoLogin> {
@@ -46,9 +48,9 @@ export async function iniciarSesion(_previo: EstadoLogin, datos: FormData): Prom
   if (!leidos.success) return { error: ERROR_CREDENCIALES, usuario };
 
   const email = await emailDe(leidos.data.usuario);
-  const error = email ? await entrarCon(email, leidos.data.clave) : ERROR_CREDENCIALES;
-  if (error) return { error, usuario };
-  redirect(destinoSeguro(datos.get("siguiente")));
+  const resultado = email ? await entrarCon(email, leidos.data.clave) : { error: ERROR_CREDENCIALES };
+  if ("error" in resultado) return { error: resultado.error, usuario };
+  redirect(destinoSeguro(datos.get("siguiente"), resultado.rol));
 }
 
 /** Botón de ingreso rápido: solo corriendo la app en la compu (npm run dev) y abierta desde esa misma compu. */
@@ -57,8 +59,10 @@ export async function entrarComoAdminDev(): Promise<EstadoLogin> {
   const clave = process.env.DEV_ADMIN_PASSWORD;
   if (process.env.NODE_ENV !== "development" || !email || !clave || !(await desdeEstaCompu())) notFound();
 
-  const error = await entrarCon(email, clave);
-  if (error) return { error: `${error} Revisá DEV_ADMIN_EMAIL y DEV_ADMIN_PASSWORD en .env.local y corré npm run crear-admin.` };
+  const resultado = await entrarCon(email, clave);
+  if ("error" in resultado) {
+    return { error: `${resultado.error} Revisá DEV_ADMIN_EMAIL y DEV_ADMIN_PASSWORD en .env.local y corré npm run crear-admin.` };
+  }
   redirect("/s");
 }
 

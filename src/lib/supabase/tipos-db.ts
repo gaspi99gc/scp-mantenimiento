@@ -238,6 +238,52 @@ export type Database = {
           },
         ]
       }
+      membresia: {
+        Row: {
+          cliente_id: string
+          creado_en: string
+          id: string
+          local_id: string | null
+          perfil_id: string
+        }
+        Insert: {
+          cliente_id: string
+          creado_en?: string
+          id?: string
+          local_id?: string | null
+          perfil_id: string
+        }
+        Update: {
+          cliente_id?: string
+          creado_en?: string
+          id?: string
+          local_id?: string | null
+          perfil_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "membresia_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "cliente"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "membresia_local_id_fkey"
+            columns: ["local_id"]
+            isOneToOne: false
+            referencedRelation: "local"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "membresia_perfil_id_fkey"
+            columns: ["perfil_id"]
+            isOneToOne: false
+            referencedRelation: "perfil"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pedido: {
         Row: {
           canal: Database["public"]["Enums"]["canal_pedido"]
@@ -575,7 +621,7 @@ export type Database = {
         | "observado"
         | "no_apto"
         | "no_realizado"
-      rol_usuario: "admin" | "supervisor"
+      rol_usuario: "admin" | "supervisor" | "cliente"
       rubro: "gastronomico" | "retail" | "farmacia" | "oficina" | "otro"
       urgencia_pedido: "emergencia" | "urgente" | "normal"
     }
@@ -720,7 +766,7 @@ export const Constants = {
         "no_apto",
         "no_realizado",
       ],
-      rol_usuario: ["admin", "supervisor"],
+      rol_usuario: ["admin", "supervisor", "cliente"],
       rubro: ["gastronomico", "retail", "farmacia", "oficina", "otro"],
       urgencia_pedido: ["emergencia", "urgente", "normal"],
     },

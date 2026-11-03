@@ -8,6 +8,7 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "crear-admin": "node --env-file=.env.local scripts/crear-admin.mjs",
+    "crear-usuario-prueba": "node --env-file=.env.local scripts/crear-usuario-prueba.mjs",
     "test:db": "node supabase/tests/correr-remoto.mjs",
     "cargar-ejemplo": "node --env-file=.env.local scripts/cargar-ejemplo.mjs"
   },

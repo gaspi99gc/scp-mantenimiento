@@ -18,7 +18,7 @@ export default async function PaginaLogin({
 }) {
   const { siguiente, cambio } = await searchParams;
   const usuario = await usuarioActual();
-  if (usuario?.activo) redirect(destinoSeguro(siguiente));
+  if (usuario?.activo) redirect(destinoSeguro(siguiente, usuario.rol));
 
   const host = ((await headers()).get("host") ?? "").replace(/:\d+$/, "");
   const ingresoRapido =

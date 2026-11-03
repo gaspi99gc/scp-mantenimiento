@@ -40,12 +40,23 @@ export async function exigirSesion(): Promise<Usuario> {
   return u;
 }
 
-/** Admin o supervisor activo. */
+/** Admin o supervisor activo. Un usuario de cliente que cae acá va a su propia app. */
 export async function exigirStaff(): Promise<Usuario> {
   const u = await exigirSesion();
+  if (u.rol === "cliente") redirect("/c");
   if (u.rol !== "admin" && u.rol !== "supervisor") notFound();
   return u;
 }
+
+/** Usuario de cliente activo. El staff que cae acá va a la app del supervisor. */
+export async function exigirCliente(): Promise<Usuario> {
+  const u = await exigirSesion();
+  if (u.rol !== "cliente") redirect("/s");
+  return u;
+}
+
+/** La pantalla de inicio de cada rol. */
+export const inicioDe = (rol: Rol) => (rol === "cliente" ? "/c" : "/s");
 
 /** Solo el admin. A los demás la página directamente no existe. */
 export async function exigirAdmin(): Promise<Usuario> {
@@ -54,11 +65,17 @@ export async function exigirAdmin(): Promise<Usuario> {
   return u;
 }
 
-/** Adónde volver después de entrar: solo rutas propias de la app, nunca otra web. */
-export function destinoSeguro(siguiente: unknown): string {
-  if (typeof siguiente !== "string") return "/s";
-  if (!/^\/(s|e)(\/|$|\?)/.test(siguiente) || siguiente.startsWith("//")) return "/s";
+/**
+ * Adónde volver después de entrar: solo rutas propias de la app, nunca otra web, y solo las del rol
+ * (al cliente que venía de una pantalla del supervisor se lo lleva a su inicio, y al revés).
+ * El QR (/e/…) sirve para los dos: decide él adónde llevar.
+ */
+export function destinoSeguro(siguiente: unknown, rol?: Rol): string {
+  const inicio = rol ? inicioDe(rol) : "/s";
+  if (typeof siguiente !== "string") return inicio;
+  if (!/^\/(s|c|e)(\/|$|\?)/.test(siguiente) || siguiente.startsWith("//")) return inicio;
+  if (rol && /^\/(s|c)(\/|$|\?)/.test(siguiente) && !siguiente.startsWith(inicio)) return inicio;
   return siguiente;
 }
 
-export const ROL_TEXTO: Record<Rol, string> = { admin: "Admin", supervisor: "Supervisor" };
+export const ROL_TEXTO: Record<Rol, string> = { admin: "Admin", supervisor: "Supervisor", cliente: "Cliente" };

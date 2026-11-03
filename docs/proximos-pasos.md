@@ -15,7 +15,7 @@
 3. [ ] **Avisos al celular de los vencimientos** (como Lasia: 7 días antes, 2 días antes y el mismo día, hasta que se registra). Le llegan al supervisor responsable del local.
 4. [ ] **Exportar la agenda a Excel**, con los filtros que estén puestos.
 5. [ ] **Pedidos de los clientes** (como los pedidos de Lasia que ve el supervisor técnico):
-   - usuarios para los clientes, que ven solo sus locales;
+   - [x] usuarios para los clientes, que ven solo sus locales (03/11: app del cliente en `/c`, solo lectura, D19);
    - el cliente carga un pedido desde su celular y le avisa al supervisor;
    - el supervisor lo toma, le cambia el estado y el cliente ve cómo va;
    - también cargar a mano los que llegan por WhatsApp o por teléfono.
