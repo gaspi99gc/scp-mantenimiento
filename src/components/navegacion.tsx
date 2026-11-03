@@ -10,16 +10,16 @@ import { IconoProveedores } from "./cuenta/iconos";
 import { IconoAgenda, IconoEscanear, IconoLocales, IconoMas } from "./iconos";
 import { cx, MarcaSCP } from "./ui";
 
-// Celular: Locales y Agenda a la izquierda, Escanear en el medio, Proveedores y Más a la derecha.
+// Celular: Agenda y Locales a la izquierda, Escanear en el medio, Proveedores y Más a la derecha.
 const ITEMS = [
-  { href: "/s/locales", texto: "Locales", Icono: IconoLocales },
   { href: "/s/agenda", texto: "Agenda", Icono: IconoAgenda },
+  { href: "/s/locales", texto: "Locales", Icono: IconoLocales },
   { href: "/s/escanear", texto: "Escanear", Icono: IconoEscanear, central: true },
   { href: "/s/proveedores", texto: "Proveedores", Icono: IconoProveedores },
   { href: "/s/mas", texto: "Más", Icono: IconoMas },
 ];
 // Computadora: el mismo orden, de arriba para abajo.
-const ORDEN_COMPU = ["/s/locales", "/s/agenda", "/s/proveedores", "/s/mas"];
+const ORDEN_COMPU = ["/s/agenda", "/s/locales", "/s/proveedores", "/s/mas"];
 
 function activo(path: string, href: string) {
   return path === href || path.startsWith(href + "/");
