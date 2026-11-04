@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { FilaMenu } from "@/components/cuenta/fila-menu";
 import {
-  IconoCatalogo, IconoClientes, IconoMuestras, IconoProveedores, IconoSalir, IconoUsuarios,
+  IconoCatalogo, IconoClientes, IconoMuestras, IconoSalir, IconoUsuarios,
 } from "@/components/cuenta/iconos";
 import { cerrarSesion } from "@/app/login/acciones";
 import { Encabezado, Planilla } from "@/components/ui";
@@ -44,7 +44,12 @@ export default async function Mas() {
       </section>
 
       <Planilla>
-        <FilaMenu icono={<IconoClientes />} titulo="Clientes" detalle="Razón social, CUIT, locales y abono" proximamente />
+        <FilaMenu
+          href="/s/clientes"
+          icono={<IconoClientes />}
+          titulo="Clientes"
+          detalle="Sus locales y los usuarios que ven la app del cliente"
+        />
         {esAdmin && (
           <FilaMenu
             href="/s/mas/usuarios"
@@ -58,12 +63,6 @@ export default async function Mas() {
           icono={<IconoCatalogo />}
           titulo="Catálogo de controles"
           detalle="Período, aviso y norma de cada control"
-        />
-        <FilaMenu
-          href="/s/proveedores"
-          icono={<IconoProveedores />}
-          titulo="Proveedores"
-          detalle="Recargadoras, fumigadoras y matriculados"
         />
         <FilaMenu
           href="/s/muestras"
