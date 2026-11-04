@@ -20,7 +20,7 @@ export function FormularioLogin({ siguiente, ingresoRapido }: { siguiente?: stri
   return (
     <div>
       <form action={entrar}>
-        <h1 className="titulo text-[28px]">Entrá con tu cuenta</h1>
+        <h1 className="titulo text-[26px] lg:text-[28px]">Entrá con tu cuenta</h1>
 
         {error && (
           <div className="mt-5">
@@ -33,7 +33,7 @@ export function FormularioLogin({ siguiente, ingresoRapido }: { siguiente?: stri
 
         <input type="hidden" name="siguiente" value={siguiente ?? ""} />
 
-        <div className="mt-6 grid gap-5">
+        <div className="mt-5 grid gap-4 lg:mt-6 lg:gap-5">
           <Campo id="usuario" rotulo="Usuario o email">
             <input
               id="usuario"
@@ -55,7 +55,7 @@ export function FormularioLogin({ siguiente, ingresoRapido }: { siguiente?: stri
           </Campo>
         </div>
 
-        <Boton type="submit" ancho className="mt-6" disabled={ocupado}>
+        <Boton type="submit" ancho className="mt-5 lg:mt-6" disabled={ocupado}>
           {entrando ? "Entrando…" : "Entrar"}
         </Boton>
       </form>
@@ -75,13 +75,10 @@ export function FormularioLogin({ siguiente, ingresoRapido }: { siguiente?: stri
       )}
 
       {ingresoRapido && (
-        <form action={entrarRapido} className="mt-8 border-t-2 border-dashed border-junta pt-5">
+        <form action={entrarRapido} className="mt-5 border-t-2 border-dashed border-junta pt-5">
           <Boton type="submit" variante="secundario" ancho disabled={ocupado}>
-            {entrandoRapido ? "Entrando…" : "Entrar como admin (solo en esta compu)"}
+            {entrandoRapido ? "Entrando…" : "Entrar como admin"}
           </Boton>
-          <p className="mt-2 text-sm text-cemento">
-            Aparece solo con <span className="font-medium text-tinta">npm run dev</span>. En la versión publicada no existe.
-          </p>
         </form>
       )}
     </div>

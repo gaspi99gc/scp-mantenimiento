@@ -29,16 +29,17 @@ export default async function PaginaLogin({
 
   return (
     <div className="min-h-dvh bg-papel lg:grid lg:grid-cols-[minmax(480px,5fr)_7fr] lg:bg-yeso">
-      <div className="flex min-h-dvh flex-col bg-papel px-4 pb-8 pt-12 sm:px-12 lg:border-r lg:border-junta lg:px-16 lg:pb-12 lg:pt-14">
+      {/* En el celular entra todo en una pantalla, sin scroll; en las pantallas bajas se esconde la tira de meses. */}
+      <div className="flex min-h-dvh flex-col bg-papel px-4 pb-6 pt-6 sm:px-12 lg:border-r lg:border-junta lg:px-16 lg:pb-12 lg:pt-14">
         <header>
           <p>
-            <MarcaSCP className="text-[80px] lg:text-[104px]" />
+            <MarcaSCP className="text-[56px] lg:text-[104px]" />
           </p>
-          <p className="rotulo mt-3 text-[22px]">Mantenimiento integral</p>
-          <TiraMeses className="mt-5 lg:hidden" />
+          <p className="rotulo mt-2 text-[20px] lg:mt-3 lg:text-[22px]">Mantenimiento integral</p>
+          <TiraMeses className="mt-3 lg:hidden [@media(max-height:620px)]:hidden" />
         </header>
 
-        <main className="mt-12 w-full max-w-[400px] lg:my-auto lg:py-12">
+        <main className="mt-6 w-full max-w-[400px] lg:my-auto lg:py-12">
           {cambio === "1" && (
             <p role="status" className="mb-6 rounded-[var(--radius-planilla)] border-2 border-verde bg-papel p-3 text-sm font-medium">
               Cambiaste tu contraseña. Entrá de nuevo con la nueva.
@@ -48,9 +49,6 @@ export default async function PaginaLogin({
             siguiente={typeof siguiente === "string" ? siguiente : undefined}
             ingresoRapido={ingresoRapido}
           />
-          <p className="mt-8 border-t border-junta pt-4 text-sm text-cemento">
-            El acceso es solo por invitación. Si no tenés usuario, pedíselo al admin de SCP.
-          </p>
         </main>
       </div>
 
