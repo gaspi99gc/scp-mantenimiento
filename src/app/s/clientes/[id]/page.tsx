@@ -109,7 +109,8 @@ async function UsuariosDelCliente({
   return (
     <>
       <section className="mb-8" aria-labelledby="usuarios-cliente">
-        <TituloPlanilla id="usuarios-cliente" titulo="Usuarios del cliente" aparte="Entran a la app del cliente, solo para mirar" />
+        <TituloPlanilla id="usuarios-cliente" titulo="Usuarios del cliente" />
+        <p className="-mt-1 mb-2 text-sm text-cemento">Entran a la app del cliente, solo para mirar.</p>
         {usuarios.length === 0 ? (
           <Vacio>Todavía nadie de {clienteNombre} tiene usuario. Creale uno abajo.</Vacio>
         ) : (

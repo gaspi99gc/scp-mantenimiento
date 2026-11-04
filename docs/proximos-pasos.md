@@ -24,7 +24,7 @@
 - [ ] Cambiar la contraseña `admin01` por una larga (Más → Usuarios → Cambiar mi usuario o contraseña).
 - [ ] Límite de intentos en el login.
 - [ ] Decidir si se sigue con este proyecto de Supabase o se arma uno aparte para producción (hoy la compu y Vercel usan la misma base).
-- [ ] En Supabase → Authentication → Providers → Email: largo mínimo de contraseña 10.
+- [ ] En Supabase → Authentication → Providers → Email: largo mínimo de contraseña 10, y activar "Leaked password protection" (lo marca el revisor de seguridad; requiere plan Pro).
 - [ ] Supabase gratis pausa el proyecto si pasa una semana sin uso. Con uso real no pasa; si molesta, el plan Pro lo evita.
 
 ## Más adelante
