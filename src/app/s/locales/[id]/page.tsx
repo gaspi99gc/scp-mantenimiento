@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { IconoUsuarios } from "@/components/cuenta/iconos";
 import { AccionesContacto } from "@/components/locales/contacto";
 import {
   clienteDeLocal,
@@ -32,7 +33,6 @@ import {
   Vacio,
 } from "@/components/ui";
 import { exigirStaff } from "@/lib/sesion";
-import { clienteServidor } from "@/lib/supabase/servidor";
 import {
   cargarDatos,
   controlesDeElemento,
@@ -87,20 +87,19 @@ export default async function FichaLocal({
   const estados = estadosDeLocal(local.id);
   const elementos = elementosDeLocal(local.id);
 
-  // Quiénes del cliente ven este local en su app (los de todo el cliente y los de este local).
-  const db = await clienteServidor();
-  const { data: membresias } = await db.from("membresia").select("perfil_id, local_id").eq("cliente_id", cliente.id);
-  const ids = (membresias ?? []).filter((m) => !m.local_id || m.local_id === local.id).map((m) => m.perfil_id);
-  const { data: perfiles } = ids.length
-    ? await db.from("perfil").select("nombre, usuario").in("id", ids).eq("activo", true).order("nombre")
-    : { data: [] as { nombre: string; usuario: string | null }[] };
-  const quienesVen = (perfiles ?? []).map((p) => (p.usuario ? `${p.nombre} (${p.usuario})` : p.nombre));
-
   return (
     <>
       <Encabezado
         volver={{ href: "/s/locales", texto: "Locales" }}
         titulo={local.nombre}
+        acciones={
+          usuario.rol === "admin" && (
+            <BotonLink href={`/s/clientes/${cliente.id}?desde=${local.id}`} variante="secundario" className="px-3">
+              <IconoUsuarios tamano={20} />
+              Usuarios
+            </BotonLink>
+          )
+        }
         bajada={
           <>
             <Link
@@ -117,17 +116,6 @@ export default async function FichaLocal({
           <Regla estados={estados} etiqueta={fraseResumen(resumen)} className="max-w-md" />
           <p className="mt-2 font-medium" aria-hidden>
             {fraseResumen(resumen)}
-          </p>
-          <p className="mt-1 text-sm text-cemento">
-            {quienesVen.length
-              ? `En la app del cliente lo ${quienesVen.length === 1 ? "ve" : "ven"}: ${quienesVen.join(", ")}.`
-              : "Nadie del cliente lo ve todavía en su app."}{" "}
-            <Link
-              href={`/s/clientes/${cliente.id}`}
-              className="font-medium text-tinta underline decoration-junta decoration-2 underline-offset-4 hover:decoration-tinta"
-            >
-              {usuario.rol === "admin" ? "Usuarios del cliente" : "Ver cliente"}
-            </Link>
           </p>
         </div>
       </Encabezado>

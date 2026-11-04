@@ -1,12 +1,10 @@
 // Ficha del cliente: sus locales y, para el admin, sus usuarios (quién entra a la app del cliente y qué ve).
 
 import { notFound } from "next/navigation";
-import { estadosDeLocal, fraseResumen, textoRegla } from "@/components/locales/consultas";
-import { Regla } from "@/components/locales/regla";
 import { FilaUsuario, type DatosUsuario } from "@/components/cuenta/usuarios";
 import { NuevoUsuarioCliente } from "@/components/cuenta/usuarios-cliente";
 import { CLASE_PLANILLA, Cifra, Encabezado, Fila, Planilla, TituloPlanilla, Vacio } from "@/components/ui";
-import { cargarDatos, clienteDe, resumenLocal } from "@/lib/datos";
+import { cargarDatos, clienteDe, localDe } from "@/lib/datos";
 import { esEmailInterno } from "@/lib/email-interno";
 import { exigirStaff } from "@/lib/sesion";
 import { clienteServidor } from "@/lib/supabase/servidor";
@@ -17,19 +15,32 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return { title: clienteDe(id)?.nombre ?? "Cliente" };
 }
 
-export default async function FichaCliente({ params }: { params: Promise<{ id: string }> }) {
+export default async function FichaCliente({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [clave: string]: string | string[] | undefined }>;
+}) {
   const { id } = await params;
+  const { desde } = await searchParams;
   const yo = await exigirStaff();
   const { locales: todos } = await cargarDatos();
   const cliente = clienteDe(id);
   if (!cliente) notFound();
   const locales = todos.filter((l) => l.clienteId === cliente.id).sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
   const esAdmin = yo.rol === "admin";
+  // Si se llegó desde la ficha de un local de este cliente, volver lleva a ese local.
+  const localDeOrigen = typeof desde === "string" ? localDe(desde) : undefined;
+  const volver =
+    localDeOrigen && localDeOrigen.clienteId === cliente.id
+      ? { href: `/s/locales/${localDeOrigen.id}`, texto: localDeOrigen.nombre }
+      : { href: "/s/locales", texto: "Locales" };
 
   return (
     <>
       <Encabezado
-        volver={{ href: "/s/locales", texto: "Locales" }}
+        volver={volver}
         titulo={cliente.nombre}
         bajada={
           <>
@@ -39,26 +50,9 @@ export default async function FichaCliente({ params }: { params: Promise<{ id: s
       />
 
       <Planilla titulo="Locales" aparte={locales.length === 1 ? "1 local" : `${locales.length} locales`}>
-        {locales.map((l) => {
-          const resumen = resumenLocal(l.id);
-          const regla = textoRegla(resumen);
-          return (
-            <Fila
-              key={l.id}
-              href={`/s/locales/${l.id}`}
-              estado={resumen.peor}
-              titulo={l.nombre}
-              detalle={`${l.barrio}, ${l.direccion}`}
-              derecha={
-                <span className="text-right">
-                  <span className={resumen.vencidos ? "block font-semibold text-rojo" : "block font-semibold"}>{regla.principal}</span>
-                  <span className="block text-sm text-cemento">{regla.secundario}</span>
-                </span>
-              }
-              debajo={<Regla estados={estadosDeLocal(l.id)} etiqueta={fraseResumen(resumen)} className="max-w-xs" />}
-            />
-          );
-        })}
+        {locales.map((l) => (
+          <Fila key={l.id} href={`/s/locales/${l.id}`} titulo={l.nombre} detalle={`${l.direccion}, ${l.barrio}`} />
+        ))}
       </Planilla>
 
       {esAdmin ? (
@@ -110,7 +104,6 @@ async function UsuariosDelCliente({
     <>
       <section className="mb-8" aria-labelledby="usuarios-cliente">
         <TituloPlanilla id="usuarios-cliente" titulo="Usuarios del cliente" />
-        <p className="-mt-1 mb-2 text-sm text-cemento">Entran a la app del cliente, solo para mirar.</p>
         {usuarios.length === 0 ? (
           <Vacio>Todavía nadie de {clienteNombre} tiene usuario. Creale uno abajo.</Vacio>
         ) : (
