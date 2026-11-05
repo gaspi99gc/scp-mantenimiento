@@ -26,6 +26,11 @@
 | D20 | 03/11/2026 | **Un solo QR para todos** | El QR del equipo lleva a la ficha que corresponde a quien escanea: la del supervisor para SCP, la de solo lectura para el cliente. Sin sesión pide entrar. No hay vista pública sin usuario |
 | D21 | 03/11/2026 | **Sin pedidos** | La app no tiene pedidos: ni el cliente los carga ni SCP los registra. El cliente solo ve el estado de sus locales. Se saca la pestaña Pedidos de la ficha del local. Reemplaza lo que decía D18 sobre pedidos y el punto 5 de los próximos pasos |
 | D22 | 03/11/2026 | **Resumen mensual en la app** | El resumen mensual (D6) lo ve el cliente dentro de la app. No se mandan mails |
+| D23 | 05/11/2026 | **Documentos para inspecciones** | Cada local tiene un registro por documento del catálogo de la empresa (4 solapas: AGC, HyS, Autoprotección, Residuos), con PDF, vencimiento y semáforo: Vigente, Por vencer, Vencido, Faltante, No aplica. Un documento puede estar en varias solapas y se carga una sola vez. Plan en [`plan-documentos.md`](plan-documentos.md) |
+| D24 | 05/11/2026 | **Quién sube los PDF** | Solo SCP. El cliente los ve todos, también los vencidos y faltantes, pero no sube nada (sigue D19) |
+| D25 | 05/11/2026 | **Tarjeta de inspección** | Cada local tiene una tarjeta con QR y chip NFC que guarda el encargado. El inspector la escanea y ve, sin usuario, solo los PDF vigentes del local. Se puede anular y reimprimir, y queda anotada cada apertura. Excepción a D20 solo para esta carpeta |
+| D26 | 05/11/2026 | **Checklist del local** | Las condiciones físicas las revisa el supervisor de SCP en el local, con foto de lo que está mal. El cliente las ve como recordatorios; el inspector, no |
+| D27 | 05/11/2026 | **Controles y documentos juntos** | Al registrar matafuegos, campana, tanque, fumigación o puesta a tierra se sube ahí el certificado y el documento se actualiza solo |
 
 ## Interpretaciones a confirmar
 

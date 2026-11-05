@@ -1,6 +1,6 @@
 # Próximos pasos
 
-> Actualizado el 02/11/2026. La app funciona con Supabase y login (admin y supervisores). Se avanza de a un punto por vez.
+> Actualizado el 05/11/2026. La app funciona con Supabase y login (admin y supervisores). Se avanza de a un punto por vez.
 > Varias ideas salen de **Lasia** (la app de la empresa de limpieza, `Documents/Lasia-Limpieza`), que ya las tiene resueltas: se toma cómo lo resolvió y se arma en SCP con su diseño y su seguridad, sin copiar pantallas enteras.
 
 ## Hecho
@@ -8,7 +8,19 @@
 - [x] Alta de clientes y locales.
 - [x] Alta de equipos con su QR.
 
-## Ahora, en este orden
+## Ahora: documentos para inspecciones (pedido de la empresa)
+
+Siete sprints, en este orden. El detalle de cada uno está en [`plan-documentos.md`](plan-documentos.md), con la lista de cada punto del documento de la empresa.
+
+1. [ ] **Sprint 1:** catálogo y lista de documentos por local, con las 4 solapas y "De corresponder".
+2. [ ] **Sprint 2:** subir los PDF, con historial, vencimiento y "Otros documentos".
+3. [ ] **Sprint 3:** el cliente ve sus documentos con el semáforo.
+4. [ ] **Sprint 4:** tarjeta con QR y NFC, y carpeta del inspector.
+5. [ ] **Sprint 5:** conectar los controles con los documentos, más el relevamiento y "no aplica" de los controles (los puntos 1 y 2 de abajo).
+6. [ ] **Sprint 6:** checklist del local, con fotos.
+7. [ ] **Sprint 7:** Agenda con documentos y avisos al celular (el punto 3 de abajo).
+
+## Lo que ya estaba (se reparte en los sprints)
 
 1. [ ] **Cargar la fecha actual de cada control** (relevamiento): la que dice la tarjeta o el certificado, para que deje de estar "sin datos". Sin esto, un local real queda todo en rojo.
 2. [ ] **Marcar "no aplica"** un control, con motivo, y **deshacer un registro equivocado**.
