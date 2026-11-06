@@ -20,6 +20,15 @@ Siete sprints, en este orden. El detalle de cada uno está en [`plan-documentos.
 6. [ ] **Sprint 6:** checklist del local, con fotos.
 7. [ ] **Sprint 7:** Agenda con documentos y avisos al celular (el punto 3 de abajo).
 
+Lo próximo es el **Sprint 2**. El Sprint 1 está en `dev`, sin publicar en Vercel.
+
+## Pendiente de respuesta
+
+- [ ] **Control de plagas:** en el catálogo de controles figura cada 5 meses, y la carga inicial decía todos los meses. ¿Fue a propósito?
+- [ ] **Pedidos (D21):** se sacaron de la app; confirmar si queda así.
+- [ ] **GitHub:** pasar la rama por defecto a `main` y después borrar `claude/great-volta-snt8z2`.
+- [ ] **Preguntas para la empresa** (las 8 de [`plan-documentos.md`](plan-documentos.md)): días de "Por vencer", en qué solapas van capacitaciones y plan de emergencia, campana mensual o cada 3 meses, luces de emergencia, si es solo para gastronómicos, cada cuánto el checklist, una tarjeta por local o por encargado, y validar HyS 1 a 4 y 13 a 15 y Residuos.
+
 ## Lo que ya estaba (se reparte en los sprints)
 
 1. [ ] **Cargar la fecha actual de cada control** (relevamiento): la que dice la tarjeta o el certificado, para que deje de estar "sin datos". Sin esto, un local real queda todo en rojo.
@@ -37,6 +46,8 @@ Siete sprints, en este orden. El detalle de cada uno está en [`plan-documentos.
 - [ ] Límite de intentos en el login.
 - [ ] Decidir si se sigue con este proyecto de Supabase o se arma uno aparte para producción (hoy la compu y Vercel usan la misma base).
 - [ ] En Supabase → Authentication → Providers → Email: largo mínimo de contraseña 10, y activar "Leaked password protection" (lo marca el revisor de seguridad; requiere plan Pro).
+- [ ] **Plan de Supabase para los PDF:** el gratis guarda alrededor de 1 GB de archivos y no alcanza para los papeles reales; el Pro, unos USD 25 por mes, guarda 100 GB (confirmar en supabase.com).
+- [ ] **Dominio definitivo antes de imprimir las tarjetas** de inspección: el QR y el chip guardan la dirección web.
 - [ ] Supabase gratis pausa el proyecto si pasa una semana sin uso. Con uso real no pasa; si molesta, el plan Pro lo evita.
 
 ## Más adelante
