@@ -37,7 +37,7 @@ No se borra nada de lo que ya funciona. Todo lo nuevo se suma.
 
 Cada sprint queda en `dev`. Se prueba con Playwright en la compu y en el celular, y se publica en Vercel solo cuando lo pedís.
 
-### Sprint 1: catálogo y lista de documentos (sin PDF todavía)
+### Sprint 1: catálogo y lista de documentos (sin PDF todavía) · hecho el 05/11
 
 - **Para qué:** ver, por cada local, qué papeles necesita y cuáles faltan.
 - **Qué vas a ver:**
@@ -200,12 +200,13 @@ Los PDF tienen datos sensibles: nómina de personal, ART, seguros y aptitud méd
 ## Notas técnicas (para armar cada sprint)
 
 - **Tablas nuevas:**
-  - `tipo_documento`: catálogo con nombre, grupo, detalle, `solapas solapa[]` (un enum: agc, hys, autoproteccion, residuos), aplica (siempre o de_corresponder), periodicidad (reusa `periodo_unidad`), `vence boolean`, `anticipacion_dias` (30 por defecto), orden, norma, activo y `a_validar`;
-  - `documento`: un registro por local e ítem, o un ítem libre con su propio nombre y solapas. Guarda vencimiento, emisión, `no_aplica` con motivo, decisión de "De corresponder", periodicidad propia del local (para simulacros) y observaciones;
+  - `tipo_documento` (sprint 1, hecho): catálogo con nombre, grupo, detalle, aplica (siempre o de_corresponder), periodicidad (reusa `periodo_unidad`; sin unidad = no vence), `anticipacion_dias` (30 por defecto, 7 en los mensuales), norma, activo y `a_validar`. Ids fijos `…d00SNN` (S = solapa, NN = número en la guía);
+  - `tipo_documento_solapa` (sprint 1, hecho): en qué solapas va cada uno y en qué lugar (la puesta a tierra es AGC 13 y HyS 5);
+  - `documento` (sprint 1, hecho): un registro por local e ítem, con `aplica` (null = "De corresponder" sin definir; una vez decidido no vuelve a null) y `motivo_no_aplica` obligatorio si no aplica. Quién y cuándo lo sella la base. Falta para el sprint 2: vencimiento, emisión, ítem libre con su propio nombre y solapas, periodicidad propia del local (simulacros) y observaciones;
   - `documento_version`: ruta del archivo, nombre, tamaño, fechas, `subido_por`, y `registro_id` si vino de un control;
   - `tarjeta_inspeccion`: local, token aleatorio, fecha en que se anuló. Más `apertura_carpeta` para anotar cuándo se abre;
   - `punto_checklist`, `revision` y `revision_punto` (resultado y foto).
-- **"Todos llevan todo":** un trigger como `app.crear_controles_local()` (`supabase/migrations/20261021000702_esquema.sql`). Al crear un ítem del catálogo, se suma a los locales que ya existen, igual que hace `guardarControl` en `src/app/s/mas/catalogo/acciones.ts`.
+- **"Todos llevan todo":** triggers `app.crear_documentos_local()` y `app.crear_documentos_tipo()` (`supabase/migrations/20261105235004_documentos.sql`): un local nuevo recibe todos los activos, y un documento que se crea o se activa llega a los locales que ya existen. Por ahora todos los locales llevan el catálogo (hoy son todos gastronómicos); si la empresa confirma que es solo para gastronómicos, se filtra por rubro.
 - **Estado:** misma regla que `estadoDe` en `src/lib/fechas.ts` (al_dia/pronto/vencido/sin_datos → Vigente/Por vencer/Vencido/Faltante). La propuesta de vencimiento reusa `sumarPeriodo` y `proponerVencimiento`.
 - **Permisos (RLS):**
   - el staff lee y escribe;

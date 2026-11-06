@@ -1,8 +1,10 @@
-// Ficha del local: estado, contacto y acceso arriba; controles, elementos e historial en pestañas.
+// Ficha del local: estado, contacto y acceso arriba; controles, documentos, equipos e historial en pestañas.
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { IconoUsuarios } from "@/components/cuenta/iconos";
+import { documentosDeLocal } from "@/components/documentos/consultas";
+import { DocumentosDelLocal } from "@/components/documentos/documentos-local";
 import { AccionesContacto } from "@/components/locales/contacto";
 import {
   clienteDeLocal,
@@ -45,10 +47,11 @@ import {
   resumenLocal,
   tipoDe,
 } from "@/lib/datos";
+import { solapaDe } from "@/lib/documentos";
 import { textoRelativo } from "@/lib/fechas";
 import type { Control, Local } from "@/lib/tipos";
 
-const SECCIONES = ["controles", "elementos", "historial"] as const;
+const SECCIONES = ["controles", "documentos", "elementos", "historial"] as const;
 type Seccion = (typeof SECCIONES)[number];
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -75,7 +78,7 @@ export default async function FichaLocal({
   searchParams: Promise<{ [clave: string]: string | string[] | undefined }>;
 }) {
   const { id } = await params;
-  const { ver } = await searchParams;
+  const { ver, solapa } = await searchParams;
   await cargarDatos();
   const usuario = await exigirStaff();
   const local = localDe(id);
@@ -86,6 +89,7 @@ export default async function FichaLocal({
   const resumen = resumenLocal(local.id);
   const estados = estadosDeLocal(local.id);
   const elementos = elementosDeLocal(local.id);
+  const documentos = await documentosDeLocal(local.id);
 
   return (
     <>
@@ -129,6 +133,7 @@ export default async function FichaLocal({
         activa={seccion}
         pestanas={[
           { clave: "controles", texto: "Controles", cantidad: resumen.total },
+          { clave: "documentos", texto: "Documentos", cantidad: documentos.length },
           { clave: "elementos", texto: "Equipos", cantidad: elementos.length },
           { clave: "historial", texto: "Historial" },
         ]}
@@ -136,6 +141,9 @@ export default async function FichaLocal({
 
       <div>
         {seccion === "controles" && <SeccionControles localId={local.id} />}
+        {seccion === "documentos" && (
+          <DocumentosDelLocal localId={local.id} documentos={documentos} solapa={solapaDe(solapa)} />
+        )}
         {seccion === "elementos" && <SeccionElementos localId={local.id} />}
         {seccion === "historial" && <SeccionHistorial localId={local.id} />}
       </div>

@@ -12,7 +12,7 @@
 
 Siete sprints, en este orden. El detalle de cada uno está en [`plan-documentos.md`](plan-documentos.md), con la lista de cada punto del documento de la empresa.
 
-1. [ ] **Sprint 1:** catálogo y lista de documentos por local, con las 4 solapas y "De corresponder".
+1. [x] **Sprint 1** (05/11): catálogo y lista de documentos por local, con las 4 solapas y "De corresponder".
 2. [ ] **Sprint 2:** subir los PDF, con historial, vencimiento y "Otros documentos".
 3. [ ] **Sprint 3:** el cliente ve sus documentos con el semáforo.
 4. [ ] **Sprint 4:** tarjeta con QR y NFC, y carpeta del inspector.

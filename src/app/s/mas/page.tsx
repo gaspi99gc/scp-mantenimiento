@@ -4,6 +4,7 @@ import {
   IconoCatalogo, IconoClientes, IconoMuestras, IconoSalir, IconoUsuarios,
 } from "@/components/cuenta/iconos";
 import { cerrarSesion } from "@/app/login/acciones";
+import { IconoDocumento } from "@/components/iconos";
 import { Encabezado, Planilla } from "@/components/ui";
 import { exigirStaff, ROL_TEXTO } from "@/lib/sesion";
 
@@ -63,6 +64,12 @@ export default async function Mas() {
           icono={<IconoCatalogo />}
           titulo="Catálogo de controles"
           detalle="Período, aviso y norma de cada control"
+        />
+        <FilaMenu
+          href="/s/mas/documentos"
+          icono={<IconoDocumento />}
+          titulo="Catálogo de documentos"
+          detalle="Los papeles de la inspección, por solapa"
         />
         <FilaMenu
           href="/s/muestras"

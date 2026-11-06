@@ -33,13 +33,18 @@ select is(
   (select count(*)::int from information_schema.role_table_grants
     where grantee = 'authenticated' and table_schema = 'public'
       and privilege_type in ('TRUNCATE', 'DELETE', 'TRIGGER', 'REFERENCES')
-      and not (table_name = 'tipo_control_equipo' and privilege_type = 'DELETE')), 0,
-  'nadie con sesión puede vaciar ni borrar tablas (salvo desvincular un control del catálogo)');
+      and not (table_name in ('tipo_control_equipo', 'tipo_documento_solapa') and privilege_type = 'DELETE')), 0,
+  'nadie con sesión puede vaciar ni borrar tablas (salvo desvincular algo del catálogo)');
 select is(app.sumar_periodo('2026-08-31', 6, 'mes'), '2027-02-28'::date, '31/08 + 6 meses recorta a fin de febrero');
 select is(app.sumar_periodo('2027-08-31', 6, 'mes'), '2028-02-29'::date, 'en año bisiesto recorta al 29/02');
 select is(app.sumar_periodo('2026-01-15', 20, 'anio'), '2046-01-15'::date, 'años');
 
 -- ——— Datos de prueba (como dueño de la base) ———
+-- El admin puede editar el catálogo real: para probar las reglas, recarga y plagas vuelven a las de la norma.
+update public.tipo_control set periodo_valor = 12, periodo_unidad = 'mes', base = 'desde_ejecucion'
+  where id = '00000000-0000-4000-8000-00000000c001';
+update public.tipo_control set periodo_valor = 1, periodo_unidad = 'mes', base = 'desde_vencimiento'
+  where id = '00000000-0000-4000-8000-00000000c010';
 insert into public.cliente (id, nombre, razon_social, cuit)
   values ('aaaaaaaa-0000-4000-8000-000000000001', 'Cliente de prueba', 'Prueba S.A.', '30-11111111-1');
 insert into public.local (id, cliente_id, nombre, direccion, barrio, rubro)

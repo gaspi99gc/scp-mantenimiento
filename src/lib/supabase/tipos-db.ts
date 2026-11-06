@@ -107,6 +107,58 @@ export type Database = {
           },
         ]
       }
+      documento: {
+        Row: {
+          aplica: boolean | null
+          decidido_en: string | null
+          decidido_por: string | null
+          id: string
+          local_id: string
+          motivo_no_aplica: string | null
+          tipo_documento_id: string
+        }
+        Insert: {
+          aplica?: boolean | null
+          decidido_en?: string | null
+          decidido_por?: string | null
+          id?: string
+          local_id: string
+          motivo_no_aplica?: string | null
+          tipo_documento_id: string
+        }
+        Update: {
+          aplica?: boolean | null
+          decidido_en?: string | null
+          decidido_por?: string | null
+          id?: string
+          local_id?: string
+          motivo_no_aplica?: string | null
+          tipo_documento_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documento_decidido_por_fkey"
+            columns: ["decidido_por"]
+            isOneToOne: false
+            referencedRelation: "perfil"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documento_local_id_fkey"
+            columns: ["local_id"]
+            isOneToOne: false
+            referencedRelation: "local"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documento_tipo_documento_id_fkey"
+            columns: ["tipo_documento_id"]
+            isOneToOne: false
+            referencedRelation: "tipo_documento"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       equipo: {
         Row: {
           codigo: string
@@ -522,6 +574,74 @@ export type Database = {
           },
         ]
       }
+      tipo_documento: {
+        Row: {
+          a_validar: boolean
+          activo: boolean
+          anticipacion_dias: number
+          aplica: Database["public"]["Enums"]["aplica_documento"]
+          detalle: string | null
+          grupo: string | null
+          id: string
+          nombre: string
+          norma: string | null
+          periodo_unidad: Database["public"]["Enums"]["periodo_unidad"] | null
+          periodo_valor: number | null
+        }
+        Insert: {
+          a_validar?: boolean
+          activo?: boolean
+          anticipacion_dias?: number
+          aplica?: Database["public"]["Enums"]["aplica_documento"]
+          detalle?: string | null
+          grupo?: string | null
+          id?: string
+          nombre: string
+          norma?: string | null
+          periodo_unidad?: Database["public"]["Enums"]["periodo_unidad"] | null
+          periodo_valor?: number | null
+        }
+        Update: {
+          a_validar?: boolean
+          activo?: boolean
+          anticipacion_dias?: number
+          aplica?: Database["public"]["Enums"]["aplica_documento"]
+          detalle?: string | null
+          grupo?: string | null
+          id?: string
+          nombre?: string
+          norma?: string | null
+          periodo_unidad?: Database["public"]["Enums"]["periodo_unidad"] | null
+          periodo_valor?: number | null
+        }
+        Relationships: []
+      }
+      tipo_documento_solapa: {
+        Row: {
+          orden: number
+          solapa: Database["public"]["Enums"]["solapa"]
+          tipo_documento_id: string
+        }
+        Insert: {
+          orden: number
+          solapa: Database["public"]["Enums"]["solapa"]
+          tipo_documento_id: string
+        }
+        Update: {
+          orden?: number
+          solapa?: Database["public"]["Enums"]["solapa"]
+          tipo_documento_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tipo_documento_solapa_tipo_documento_id_fkey"
+            columns: ["tipo_documento_id"]
+            isOneToOne: false
+            referencedRelation: "tipo_documento"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tipo_equipo: {
         Row: {
           activo: boolean
@@ -607,6 +727,7 @@ export type Database = {
       }
     }
     Enums: {
+      aplica_documento: "siempre" | "de_corresponder"
       base_recalculo: "desde_ejecucion" | "desde_vencimiento"
       canal_pedido: "portal" | "whatsapp" | "telefono"
       ejecutor_tipo: "scp" | "tercero"
@@ -623,6 +744,7 @@ export type Database = {
         | "no_realizado"
       rol_usuario: "admin" | "supervisor" | "cliente"
       rubro: "gastronomico" | "retail" | "farmacia" | "oficina" | "otro"
+      solapa: "agc" | "hys" | "autoproteccion" | "residuos"
       urgencia_pedido: "emergencia" | "urgente" | "normal"
     }
     CompositeTypes: {
@@ -751,6 +873,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      aplica_documento: ["siempre", "de_corresponder"],
       base_recalculo: ["desde_ejecucion", "desde_vencimiento"],
       canal_pedido: ["portal", "whatsapp", "telefono"],
       ejecutor_tipo: ["scp", "tercero"],
@@ -768,6 +891,7 @@ export const Constants = {
       ],
       rol_usuario: ["admin", "supervisor", "cliente"],
       rubro: ["gastronomico", "retail", "farmacia", "oficina", "otro"],
+      solapa: ["agc", "hys", "autoproteccion", "residuos"],
       urgencia_pedido: ["emergencia", "urgente", "normal"],
     },
   },

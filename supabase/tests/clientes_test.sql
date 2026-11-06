@@ -139,7 +139,7 @@ reset role;
 -- ——— El staff no cambió ———
 select pg_temp.como('22222222-2222-4222-8222-222222222222');
 select is((select count(*)::int from public.local where id::text like 'bbbbbbbb%'), 3, 'el supervisor sigue viendo todos los locales');
-select is((select count(*)::int from public.membresia), 3, 'el supervisor ve las membresías');
+select is((select count(*)::int from public.membresia where cliente_id::text like 'bbbbbbbb%'), 3, 'el supervisor ve las membresías');
 reset role;
 
 select ok(not has_function_privilege('anon', 'app.mis_locales()', 'execute'), 'sin sesión no se consultan locales de nadie');
